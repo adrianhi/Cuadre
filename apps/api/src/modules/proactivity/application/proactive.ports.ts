@@ -54,7 +54,8 @@ export interface EmailPreferenceRecord {
 }
 
 export interface EmailDeliveryRecord {
-  id: string; workspaceId: string; profileId: string; kind: string; recipient: string;
+  id: string; workspaceId: string | null; profileId: string | null; betaInviteId: string | null;
+  kind: string; recipient: string;
   subject: string; html: string | null; text: string | null; headers: Record<string, string> | null;
   attempts: number; maxAttempts: number; createdAt: Date; leaseToken: string | null;
 }
@@ -76,7 +77,7 @@ export interface ProactiveEmailRepository {
     subject: string; html: string; text: string; headers: Record<string, string>;
   }): Promise<{ id: string; created: boolean }>;
   claim(id?: string): Promise<EmailDeliveryRecord | null>;
-  accepted(job: EmailDeliveryRecord, providerMessageId: string): Promise<void>;
+  accepted(job: EmailDeliveryRecord, providerMessageId: string, mode: 'SMTP' | 'AUDIT_LOG'): Promise<void>;
   failed(job: EmailDeliveryRecord, error: { code: string; retryable: boolean; ambiguous: boolean }, now: Date): Promise<void>;
   testCount(profileId: string, since: Date): Promise<number>;
   recordProviderEvent(input: { providerEventId: string; providerMessageId: string; type: string; occurredAt: Date }): Promise<boolean>;

@@ -4,6 +4,7 @@ import { createApp } from '../src/app';
 import { prisma } from '../src/config/database';
 import { GmailQueryService } from '../src/modules/connections/infrastructure/gmail-query.service';
 import { registerRuleIntegrationTests } from './helpers/category-rule-integration';
+import { config } from '../src/config';
 
 const integrationDescribe =
   process.env.TEST_DATABASE_URL && process.env.DATABASE_URL === process.env.TEST_DATABASE_URL
@@ -31,6 +32,8 @@ function auth(user: typeof userA) {
 }
 
 async function cleanDatabase() {
+  await prisma.emailDeliveryEvent.deleteMany();
+  await prisma.emailDelivery.deleteMany();
   await prisma.integrationConsent.deleteMany();
   await prisma.legalAcceptance.deleteMany();
   await prisma.oAuthState.deleteMany();
@@ -52,6 +55,7 @@ async function cleanDatabase() {
   await prisma.workspaceMember.deleteMany();
   await prisma.workspace.deleteMany();
   await prisma.profile.deleteMany();
+  await prisma.betaInterest.deleteMany();
   await prisma.betaInvite.deleteMany();
   await prisma.financialInstitution.deleteMany();
   await prisma.legalDocument.deleteMany();
@@ -501,5 +505,61 @@ integrationDescribe('SaaS API integration and tenant isolation', () => {
     expect(response.status).toBe(200);
     expect(await prisma.profile.findUnique({ where: { id: userC.id } })).toBeNull();
     expect(await prisma.accountDeletionAudit.count()).toBe(1);
+  });
+
+  it('requires and consumes a matching opaque beta invitation', async () => {
+    const invited = {
+      id: '44444444-4444-4444-8444-444444444444',
+      email: 'diana@bills.test',
+      name: 'Diana',
+    };
+    const other = {
+      id: '55555555-5555-4555-8555-555555555555',
+      email: 'elena@bills.test',
+      name: 'Elena',
+    };
+    const expiredUser = {
+      id: '66666666-6666-4666-8666-666666666666',
+      email: 'fabiana@bills.test',
+      name: 'Fabiana',
+    };
+    const code = 'opaque_beta_invite_code_for_diana_123456';
+    const original = config.requireBetaInvite;
+    config.requireBetaInvite = true;
+    try {
+      await prisma.betaInvite.create({ data: {
+        email: invited.email, code, expiresAt: new Date(Date.now() + 86_400_000), trialDays: 30,
+      } });
+      await prisma.betaInvite.create({ data: {
+        email: expiredUser.email,
+        code: 'expired_opaque_beta_invite_code_1234567',
+        expiresAt: new Date(Date.now() - 86_400_000),
+      } });
+      const expired = await request(app).post('/api/v1/me/bootstrap').set(auth(expiredUser))
+        .send({ inviteCode: 'expired_opaque_beta_invite_code_1234567' });
+      expect(expired.status).toBe(403);
+      expect(expired.body.error.code).toBe('BETA_INVITE_EXPIRED');
+
+      const withoutLink = await request(app).post('/api/v1/me/bootstrap').set(auth(invited));
+      expect(withoutLink.status).toBe(403);
+      expect(withoutLink.body.error.code).toBe('BETA_INVITE_LINK_REQUIRED');
+
+      const wrongAccount = await request(app).post('/api/v1/me/bootstrap').set(auth(other)).send({ inviteCode: code });
+      expect(wrongAccount.status).toBe(403);
+      expect(wrongAccount.body.error.code).toBe('BETA_INVITE_EMAIL_MISMATCH');
+
+      const activated = await request(app).post('/api/v1/me/bootstrap').set(auth(invited)).send({ inviteCode: code });
+      expect(activated.status).toBe(200);
+      const stored = await prisma.betaInvite.findUniqueOrThrow({ where: { email: invited.email } });
+      expect(stored.usedAt).toBeInstanceOf(Date);
+      expect(stored.trialStartedAt).toEqual(stored.usedAt);
+      expect(stored.trialEndsAt!.getTime() - stored.trialStartedAt!.getTime()).toBe(30 * 86_400_000);
+
+      const reused = await request(app).post('/api/v1/me/bootstrap').set(auth(other)).send({ inviteCode: code });
+      expect(reused.status).toBe(403);
+      expect(reused.body.error.code).toBe('BETA_INVITE_INVALID');
+    } finally {
+      config.requireBetaInvite = original;
+    }
   });
 });

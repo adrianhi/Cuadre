@@ -3,7 +3,6 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '../../../config/database';
 import type { EmailDeliveryRecord, EmailPreferenceRecord, ProactiveEmailRepository } from '../application/proactive.ports';
 import { decideEmailFailure } from '../domain/email-retry';
-
 const preferenceSelect = {
   workspaceId: true, profileId: true, weeklyDigestEnabled: true, criticalAlertsEnabled: true,
   digestSchedule: true, nextWeeklyDigestAt: true,
@@ -90,6 +89,65 @@ export class PrismaEmailRepository implements ProactiveEmailRepository {
     }
   }
 
+  async enqueueBetaInvite(input: {
+    betaInviteId: string; recipient: string; contextKey: string;
+    subject: string; html: string; text: string; headers?: Record<string, string>;
+  }) {
+    try {
+      const delivery = await prisma.emailDelivery.create({ data: {
+        betaInviteId: input.betaInviteId,
+        kind: 'BETA_INVITE',
+        recipient: input.recipient,
+        contextKey: input.contextKey,
+        subject: input.subject,
+        html: input.html,
+        text: input.text,
+        headers: input.headers || {},
+      }, select: { id: true } });
+      return { id: delivery.id, created: true };
+    } catch (error) {
+      if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== 'P2002') throw error;
+      const delivery = await prisma.emailDelivery.findUniqueOrThrow({ where: {
+        betaInviteId_kind_contextKey: {
+          betaInviteId: input.betaInviteId,
+          kind: 'BETA_INVITE',
+          contextKey: input.contextKey,
+        },
+      }, select: { id: true } });
+      return { id: delivery.id, created: false };
+    }
+  }
+
+  latestBetaInviteDelivery(betaInviteId: string) {
+    return prisma.emailDelivery.findFirst({
+      where: { betaInviteId, kind: 'BETA_INVITE' },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      select: {
+        id: true, status: true, deliveryMode: true, providerMessageId: true,
+        errorCode: true, processedAt: true, nextAttemptAt: true, contextKey: true,
+      },
+    });
+  }
+
+  betaInviteDelivery(id: string) {
+    return prisma.emailDelivery.findUnique({ where: { id }, select: {
+      id: true, status: true, deliveryMode: true, providerMessageId: true,
+      errorCode: true, processedAt: true, nextAttemptAt: true, contextKey: true,
+    } });
+  }
+
+  async suppressRetryableBetaInviteDeliveries(betaInviteId: string, now: Date) {
+    const result = await prisma.emailDelivery.updateMany({
+      where: {
+        betaInviteId,
+        kind: 'BETA_INVITE',
+        OR: [{ status: 'PENDING' }, { status: 'FAILED', processedAt: null }],
+      },
+      data: { status: 'SUPPRESSED', processedAt: now, leaseToken: null, leaseUntil: null },
+    });
+    return result.count;
+  }
+
   async claim(id?: string): Promise<EmailDeliveryRecord | null> {
     const now = new Date();
     const row = await prisma.emailDelivery.findFirst({ where: {
@@ -108,16 +166,18 @@ export class PrismaEmailRepository implements ProactiveEmailRepository {
     return { ...row, headers, attempts: row.attempts + 1, leaseToken };
   }
 
-  async accepted(job: EmailDeliveryRecord, providerMessageId: string) {
+  async accepted(job: EmailDeliveryRecord, providerMessageId: string, mode: 'SMTP' | 'AUDIT_LOG') {
     await prisma.$transaction(async (tx) => {
       const result = await tx.emailDelivery.updateMany({ where: { id: job.id, leaseToken: job.leaseToken }, data: {
-        status: 'ACCEPTED', providerMessageId, acceptedAt: new Date(), processedAt: new Date(),
+        status: 'ACCEPTED', providerMessageId, deliveryMode: mode, acceptedAt: new Date(), processedAt: new Date(),
         leaseToken: null, leaseUntil: null, errorCode: null,
       } });
       if (!result.count) throw new Error('EMAIL_DELIVERY_LEASE_LOST');
-      await tx.productEvent.upsert({ where: { workspaceId_profileId_name_contextKey: {
-        workspaceId: job.workspaceId, profileId: job.profileId, name: 'EMAIL_ACCEPTED', contextKey: job.id,
-      } }, create: { workspaceId: job.workspaceId, profileId: job.profileId, name: 'EMAIL_ACCEPTED', contextKey: job.id }, update: {} });
+      if (job.workspaceId && job.profileId) {
+        await tx.productEvent.upsert({ where: { workspaceId_profileId_name_contextKey: {
+          workspaceId: job.workspaceId, profileId: job.profileId, name: 'EMAIL_ACCEPTED', contextKey: job.id,
+        } }, create: { workspaceId: job.workspaceId, profileId: job.profileId, name: 'EMAIL_ACCEPTED', contextKey: job.id }, update: {} });
+      }
     });
   }
 
@@ -157,14 +217,16 @@ export class PrismaEmailRepository implements ProactiveEmailRepository {
         await tx.emailDelivery.updateMany({ where: { id: delivery.id, status: { in: allowedFrom } }, data: {
           status, ...(status === 'DELIVERED' ? { deliveredAt: input.occurredAt } : {}), processedAt: input.occurredAt,
         } });
-        if (status === 'BOUNCED' || status === 'COMPLAINED' || status === 'SUPPRESSED') {
+        if (delivery.profileId && (status === 'BOUNCED' || status === 'COMPLAINED' || status === 'SUPPRESSED')) {
           await tx.emailNotificationPreference.updateMany({ where: { profileId: delivery.profileId }, data: {
             weeklyDigestEnabled: false, criticalAlertsEnabled: false, nextWeeklyDigestAt: null,
           } });
         }
-        await tx.productEvent.upsert({ where: { workspaceId_profileId_name_contextKey: {
-          workspaceId: delivery.workspaceId, profileId: delivery.profileId, name: `EMAIL_${status}`, contextKey: input.providerEventId,
-        } }, create: { workspaceId: delivery.workspaceId, profileId: delivery.profileId, name: `EMAIL_${status}`, contextKey: input.providerEventId }, update: {} });
+        if (delivery.workspaceId && delivery.profileId) {
+          await tx.productEvent.upsert({ where: { workspaceId_profileId_name_contextKey: {
+            workspaceId: delivery.workspaceId, profileId: delivery.profileId, name: `EMAIL_${status}`, contextKey: input.providerEventId,
+          } }, create: { workspaceId: delivery.workspaceId, profileId: delivery.profileId, name: `EMAIL_${status}`, contextKey: input.providerEventId }, update: {} });
+        }
       });
       return true;
     } catch (error) {

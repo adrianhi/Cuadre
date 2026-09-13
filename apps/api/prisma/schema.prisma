@@ -148,12 +148,18 @@ enum EmailDigestSchedule {
 }
 
 enum EmailDeliveryKind {
+  BETA_INVITE
   WEEKLY_DIGEST
   IMMINENT_BILL
   PRICE_HIKE
   PACING_WARNING
   PAYDAY_RITUAL
   TEST
+}
+
+enum EmailDeliveryMode {
+  SMTP
+  AUDIT_LOG
 }
 
 enum EmailDeliveryStatus {
@@ -191,47 +197,47 @@ model Profile {
 }
 
 model Workspace {
-  id               String                   @id @default(uuid()) @db.Uuid
-  name             String
-  type             WorkspaceType            @default(PERSONAL)
-  planTier         PlanTier                 @default(BETA) @map("plan_tier")
-  members          WorkspaceMember[]
-  transactions     Transaction[]
-  categoryRules    CategoryRule[]
-  ruleApplications RuleApplication[]
-  bankConnections  BankConnection[]
-  inboxConnections InboxConnection[]
-  oauthStates      OAuthState[]
-  ingestionEvents  IngestionEvent[]
-  ingestionJobs    IngestionJob[]
-  statusEvents     TransactionStatusEvent[]
+  id                   String                   @id @default(uuid()) @db.Uuid
+  name                 String
+  type                 WorkspaceType            @default(PERSONAL)
+  planTier             PlanTier                 @default(BETA) @map("plan_tier")
+  members              WorkspaceMember[]
+  transactions         Transaction[]
+  categoryRules        CategoryRule[]
+  ruleApplications     RuleApplication[]
+  bankConnections      BankConnection[]
+  inboxConnections     InboxConnection[]
+  oauthStates          OAuthState[]
+  ingestionEvents      IngestionEvent[]
+  ingestionJobs        IngestionJob[]
+  statusEvents         TransactionStatusEvent[]
   spendingBudgetLimits SpendingBudgetLimit[]
-  incomeStreams    IncomeStream[]
-  recurringBills   RecurringBill[]
-  recurringScanJob RecurringScanJob?
-  paydayRitualReviews PaydayRitualReview[]
-  productEvents    ProductEvent[]
-  createdAt        DateTime                 @default(now()) @map("created_at")
-  updatedAt        DateTime                 @updatedAt @map("updated_at")
+  incomeStreams        IncomeStream[]
+  recurringBills       RecurringBill[]
+  recurringScanJob     RecurringScanJob?
+  paydayRitualReviews  PaydayRitualReview[]
+  productEvents        ProductEvent[]
+  createdAt            DateTime                 @default(now()) @map("created_at")
+  updatedAt            DateTime                 @updatedAt @map("updated_at")
 
   @@map("workspaces")
 }
 
 model SpendingBudgetLimit {
-  id            String          @id @default(uuid()) @db.Uuid
-  workspaceId   String          @map("workspace_id") @db.Uuid
-  currency      String
-  scope         BudgetScope
-  targetKey     String          @map("target_key")
-  categoryKey   String?         @map("category_key")
-  categoryLabel String?         @map("category_label")
-  kind          BudgetLimitKind
-  effectiveMonth DateTime       @map("effective_month") @db.Date
-  amount        Decimal?        @db.Decimal(12, 2)
-  disabled      Boolean         @default(false)
-  workspace     Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  createdAt     DateTime        @default(now()) @map("created_at")
-  updatedAt     DateTime        @updatedAt @map("updated_at")
+  id             String          @id @default(uuid()) @db.Uuid
+  workspaceId    String          @map("workspace_id") @db.Uuid
+  currency       String
+  scope          BudgetScope
+  targetKey      String          @map("target_key")
+  categoryKey    String?         @map("category_key")
+  categoryLabel  String?         @map("category_label")
+  kind           BudgetLimitKind
+  effectiveMonth DateTime        @map("effective_month") @db.Date
+  amount         Decimal?        @db.Decimal(12, 2)
+  disabled       Boolean         @default(false)
+  workspace      Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
 
   @@unique([workspaceId, currency, targetKey, kind, effectiveMonth])
   @@index([workspaceId, currency, effectiveMonth])
@@ -263,25 +269,25 @@ model IncomeStream {
 }
 
 model RecurringBill {
-  id                 String            @id @default(uuid()) @db.Uuid
-  workspaceId        String            @map("workspace_id") @db.Uuid
-  identityKey        String            @map("identity_key")
-  displayName        String            @map("display_name")
-  currency           String
-  cadence            RecurringCadence
-  expectedAmount     Decimal           @map("expected_amount") @db.Decimal(18, 2)
-  nextExpectedDate   DateTime          @map("next_expected_date") @db.Date
-  lastSeenAt         DateTime          @map("last_seen_at")
-  occurrenceCount    Int               @default(2) @map("occurrence_count")
-  confidence         Float             @default(0.5)
-  status             RecurringStatus   @default(SUGGESTED)
-  userEditedAt       DateTime?         @map("user_edited_at")
-  dismissedAmount    Decimal?          @map("dismissed_amount") @db.Decimal(18, 2)
-  workspace          Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  occurrences        RecurringOccurrence[]
-  alerts             RecurringAlert[]
-  createdAt          DateTime          @default(now()) @map("created_at")
-  updatedAt          DateTime          @updatedAt @map("updated_at")
+  id               String                @id @default(uuid()) @db.Uuid
+  workspaceId      String                @map("workspace_id") @db.Uuid
+  identityKey      String                @map("identity_key")
+  displayName      String                @map("display_name")
+  currency         String
+  cadence          RecurringCadence
+  expectedAmount   Decimal               @map("expected_amount") @db.Decimal(18, 2)
+  nextExpectedDate DateTime              @map("next_expected_date") @db.Date
+  lastSeenAt       DateTime              @map("last_seen_at")
+  occurrenceCount  Int                   @default(2) @map("occurrence_count")
+  confidence       Float                 @default(0.5)
+  status           RecurringStatus       @default(SUGGESTED)
+  userEditedAt     DateTime?             @map("user_edited_at")
+  dismissedAmount  Decimal?              @map("dismissed_amount") @db.Decimal(18, 2)
+  workspace        Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  occurrences      RecurringOccurrence[]
+  alerts           RecurringAlert[]
+  createdAt        DateTime              @default(now()) @map("created_at")
+  updatedAt        DateTime              @updatedAt @map("updated_at")
 
   @@unique([workspaceId, identityKey, currency])
   @@index([workspaceId, currency, status, nextExpectedDate])
@@ -370,49 +376,54 @@ model EmailNotificationPreference {
   profileId             String              @map("profile_id") @db.Uuid
   weeklyDigestEnabled   Boolean             @default(false) @map("weekly_digest_enabled")
   criticalAlertsEnabled Boolean             @default(false) @map("critical_alerts_enabled")
-    digestSchedule        EmailDigestSchedule @default(MONDAY_0730) @map("digest_schedule")
-    nextWeeklyDigestAt    DateTime?           @map("next_weekly_digest_at")
-    lastCriticalScanAt    DateTime            @default(now()) @map("last_critical_scan_at")
-    membership            WorkspaceMember      @relation("EmailPreferenceMembership", fields: [workspaceId, profileId], references: [workspaceId, profileId], onDelete: Cascade)
+  digestSchedule        EmailDigestSchedule @default(MONDAY_0730) @map("digest_schedule")
+  nextWeeklyDigestAt    DateTime?           @map("next_weekly_digest_at")
+  lastCriticalScanAt    DateTime            @default(now()) @map("last_critical_scan_at")
+  membership            WorkspaceMember     @relation("EmailPreferenceMembership", fields: [workspaceId, profileId], references: [workspaceId, profileId], onDelete: Cascade)
   createdAt             DateTime            @default(now()) @map("created_at")
   updatedAt             DateTime            @updatedAt @map("updated_at")
 
   @@id([workspaceId, profileId])
-    @@index([weeklyDigestEnabled, nextWeeklyDigestAt])
-    @@index([criticalAlertsEnabled, lastCriticalScanAt])
+  @@index([weeklyDigestEnabled, nextWeeklyDigestAt])
+  @@index([criticalAlertsEnabled, lastCriticalScanAt])
   @@map("email_notification_preferences")
 }
 
 model EmailDelivery {
-  id                String              @id @default(uuid()) @db.Uuid
-  workspaceId       String              @map("workspace_id") @db.Uuid
-  profileId         String              @map("profile_id") @db.Uuid
+  id                String               @id @default(uuid()) @db.Uuid
+  workspaceId       String?              @map("workspace_id") @db.Uuid
+  profileId         String?              @map("profile_id") @db.Uuid
+  betaInviteId      String?              @map("beta_invite_id") @db.Uuid
   kind              EmailDeliveryKind
-  status            EmailDeliveryStatus @default(PENDING)
+  status            EmailDeliveryStatus  @default(PENDING)
+  deliveryMode      EmailDeliveryMode?   @map("delivery_mode")
   recipient         String
-  contextKey        String              @map("context_key")
+  contextKey        String               @map("context_key")
   subject           String
-  html              String?             @db.Text
-  text              String?             @db.Text
+  html              String?              @db.Text
+  text              String?              @db.Text
   headers           Json?
-  providerMessageId String?             @unique @map("provider_message_id")
-  attempts          Int                 @default(0)
-  maxAttempts       Int                 @default(5) @map("max_attempts")
-  nextAttemptAt     DateTime            @default(now()) @map("next_attempt_at")
-  leaseToken        String?             @map("lease_token")
-  leaseUntil        DateTime?           @map("lease_until")
-  errorCode         String?             @map("error_code")
-  acceptedAt        DateTime?           @map("accepted_at")
-  deliveredAt       DateTime?           @map("delivered_at")
-  processedAt       DateTime?           @map("processed_at")
-    membership        WorkspaceMember      @relation("EmailDeliveryMembership", fields: [workspaceId, profileId], references: [workspaceId, profileId], onDelete: Cascade)
+  providerMessageId String?              @unique @map("provider_message_id")
+  attempts          Int                  @default(0)
+  maxAttempts       Int                  @default(5) @map("max_attempts")
+  nextAttemptAt     DateTime             @default(now()) @map("next_attempt_at")
+  leaseToken        String?              @map("lease_token")
+  leaseUntil        DateTime?            @map("lease_until")
+  errorCode         String?              @map("error_code")
+  acceptedAt        DateTime?            @map("accepted_at")
+  deliveredAt       DateTime?            @map("delivered_at")
+  processedAt       DateTime?            @map("processed_at")
+  membership        WorkspaceMember?     @relation("EmailDeliveryMembership", fields: [workspaceId, profileId], references: [workspaceId, profileId], onDelete: Cascade)
+  betaInvite        BetaInvite?          @relation(fields: [betaInviteId], references: [id], onDelete: Cascade)
   events            EmailDeliveryEvent[]
-  createdAt         DateTime            @default(now()) @map("created_at")
-  updatedAt         DateTime            @updatedAt @map("updated_at")
+  createdAt         DateTime             @default(now()) @map("created_at")
+  updatedAt         DateTime             @updatedAt @map("updated_at")
 
   @@unique([workspaceId, profileId, kind, contextKey])
+  @@unique([betaInviteId, kind, contextKey])
   @@index([status, nextAttemptAt, leaseUntil])
   @@index([profileId, createdAt])
+  @@index([betaInviteId, createdAt])
   @@map("email_deliveries")
 }
 
@@ -429,15 +440,15 @@ model EmailDeliveryEvent {
   @@map("email_delivery_events")
 }
 
-  model WorkspaceMember {
-  workspaceId String        @map("workspace_id") @db.Uuid
-  profileId   String        @map("profile_id") @db.Uuid
-  role        WorkspaceRole @default(OWNER)
-  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-    profile     Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
-    emailNotificationPreferences EmailNotificationPreference[] @relation("EmailPreferenceMembership")
-    emailDeliveries EmailDelivery[] @relation("EmailDeliveryMembership")
-  createdAt   DateTime      @default(now()) @map("created_at")
+model WorkspaceMember {
+  workspaceId                  String                        @map("workspace_id") @db.Uuid
+  profileId                    String                        @map("profile_id") @db.Uuid
+  role                         WorkspaceRole                 @default(OWNER)
+  workspace                    Workspace                     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  profile                      Profile                       @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  emailNotificationPreferences EmailNotificationPreference[] @relation("EmailPreferenceMembership")
+  emailDeliveries              EmailDelivery[]               @relation("EmailDeliveryMembership")
+  createdAt                    DateTime                      @default(now()) @map("created_at")
 
   @@id([workspaceId, profileId])
   @@index([profileId])
@@ -684,15 +695,20 @@ model IngestionJob {
 }
 
 model BetaInvite {
-  id                String    @id @default(uuid()) @db.Uuid
-  email             String    @unique
-  code              String?   @unique
-  source            String?
-  campaignCode      String?   @map("campaign_code")
-  referrerProfileId String?   @map("referrer_profile_id") @db.Uuid
-  expiresAt         DateTime? @map("expires_at")
-  usedAt            DateTime? @map("used_at")
-  createdAt         DateTime  @default(now()) @map("created_at")
+  id                   String          @id @default(uuid()) @db.Uuid
+  email                String          @unique
+  code                 String?         @unique
+  source               String?
+  campaignCode         String?         @map("campaign_code")
+  referrerProfileId    String?         @map("referrer_profile_id") @db.Uuid
+  expiresAt            DateTime?       @map("expires_at")
+  usedAt               DateTime?       @map("used_at")
+  trialDays            Int             @default(30) @map("trial_days")
+  trialStartedAt       DateTime?       @map("trial_started_at")
+  trialEndsAt          DateTime?       @map("trial_ends_at")
+  emailDispatchVersion Int             @default(0) @map("email_dispatch_version")
+  emailDeliveries      EmailDelivery[]
+  createdAt            DateTime        @default(now()) @map("created_at")
 
   @@map("beta_invites")
 }
@@ -711,39 +727,39 @@ model BetaInterest {
 }
 
 model Transaction {
-  id               String                   @id @default(uuid())
-  workspaceId      String?                  @map("workspace_id") @db.Uuid
-  institutionCode  String                   @default("BHD") @map("institution_code")
-  ingestionChannel IngestionChannel         @default(EMAIL_FORWARD) @map("ingestion_channel")
-  externalId       String                   @map("external_id")
-  cardLast4        String?                  @map("card_last_4")
-  cardType         String?                  @map("card_type")
-  rawMerchant      String                   @map("raw_merchant")
-  merchantKey      String?                  @map("merchant_key")
-  merchantIdentityLabel String?             @map("merchant_identity_label")
-  categoryOrigin   String                   @default("LEGACY_UNKNOWN") @map("category_origin")
-  merchantOrigin   String                   @default("LEGACY_UNKNOWN") @map("merchant_origin")
-  categoryRuleId   String?                  @map("category_rule_id")
-  merchantRuleId   String?                  @map("merchant_rule_id")
-  classificationVersion Int                @default(0) @map("classification_version")
-  merchant         String
-  category         String
-  amount           Decimal                  @db.Decimal(18, 2)
-  currency         String                   @default("DOP")
-  status           String                   @default("Aprobada")
-  statusCode       TransactionStatusCode    @default(APPROVED) @map("status_code")
-  statusUpdatedAt  DateTime?                @map("status_updated_at")
-  transactionType  String                   @default("Compra") @map("transaction_type")
-  transactionDate  DateTime                 @map("transaction_date")
-  source           String                   @default("BHD_EMAIL")
-  notes            String?
-  deletedAt        DateTime?                @map("deleted_at")
-  createdAt        DateTime                 @default(now()) @map("created_at")
-  updatedAt        DateTime                 @updatedAt @map("updated_at")
-  workspace        Workspace?               @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  institution      FinancialInstitution     @relation(fields: [institutionCode], references: [code], onDelete: Restrict)
-  statusEvents     TransactionStatusEvent[]
-  recurringOccurrence RecurringOccurrence?
+  id                    String                   @id @default(uuid())
+  workspaceId           String?                  @map("workspace_id") @db.Uuid
+  institutionCode       String                   @default("BHD") @map("institution_code")
+  ingestionChannel      IngestionChannel         @default(EMAIL_FORWARD) @map("ingestion_channel")
+  externalId            String                   @map("external_id")
+  cardLast4             String?                  @map("card_last_4")
+  cardType              String?                  @map("card_type")
+  rawMerchant           String                   @map("raw_merchant")
+  merchantKey           String?                  @map("merchant_key")
+  merchantIdentityLabel String?                  @map("merchant_identity_label")
+  categoryOrigin        String                   @default("LEGACY_UNKNOWN") @map("category_origin")
+  merchantOrigin        String                   @default("LEGACY_UNKNOWN") @map("merchant_origin")
+  categoryRuleId        String?                  @map("category_rule_id")
+  merchantRuleId        String?                  @map("merchant_rule_id")
+  classificationVersion Int                      @default(0) @map("classification_version")
+  merchant              String
+  category              String
+  amount                Decimal                  @db.Decimal(18, 2)
+  currency              String                   @default("DOP")
+  status                String                   @default("Aprobada")
+  statusCode            TransactionStatusCode    @default(APPROVED) @map("status_code")
+  statusUpdatedAt       DateTime?                @map("status_updated_at")
+  transactionType       String                   @default("Compra") @map("transaction_type")
+  transactionDate       DateTime                 @map("transaction_date")
+  source                String                   @default("BHD_EMAIL")
+  notes                 String?
+  deletedAt             DateTime?                @map("deleted_at")
+  createdAt             DateTime                 @default(now()) @map("created_at")
+  updatedAt             DateTime                 @updatedAt @map("updated_at")
+  workspace             Workspace?               @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  institution           FinancialInstitution     @relation(fields: [institutionCode], references: [code], onDelete: Restrict)
+  statusEvents          TransactionStatusEvent[]
+  recurringOccurrence   RecurringOccurrence?
 
   @@unique([workspaceId, institutionCode, externalId])
   @@index([workspaceId, transactionDate])
@@ -806,53 +822,55 @@ model CategoryRule {
 }
 
 model RuleApplication {
-  id String @id @default(uuid()) @db.Uuid
-  workspaceId String @map("workspace_id") @db.Uuid
-  ruleId String @map("rule_id")
-  phase String @default("PREVIEW")
-  status String @default("QUEUED")
-  includeUnknown Boolean @default(false) @map("include_unknown")
-  startDate DateTime? @map("start_date")
-  endDate DateTime? @map("end_date")
-  cutoff DateTime @default(now())
-  rulesSnapshot Json @map("rules_snapshot")
-  fingerprint String
-  cursor String?
-  scanned Int @default(0)
-  matched Int @default(0)
-  changes Int @default(0)
-  categoryChanges Int @default(0) @map("category_changes")
-  merchantChanges Int @default(0) @map("merchant_changes")
-  protectedManual Int @default(0) @map("protected_manual")
-  protectedUnknown Int @default(0) @map("protected_unknown")
-  otherRule Int @default(0) @map("other_rule")
-  applied Int @default(0)
-  skipped Int @default(0)
-  attempts Int @default(0)
-  leaseToken String? @map("lease_token")
-  leaseUntil DateTime? @map("lease_until")
-  nextAttemptAt DateTime @default(now()) @map("next_attempt_at")
-  errorCode String? @map("error_code")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  items RuleApplicationItem[]
+  id               String                @id @default(uuid()) @db.Uuid
+  workspaceId      String                @map("workspace_id") @db.Uuid
+  ruleId           String                @map("rule_id")
+  phase            String                @default("PREVIEW")
+  status           String                @default("QUEUED")
+  includeUnknown   Boolean               @default(false) @map("include_unknown")
+  startDate        DateTime?             @map("start_date")
+  endDate          DateTime?             @map("end_date")
+  cutoff           DateTime              @default(now())
+  rulesSnapshot    Json                  @map("rules_snapshot")
+  fingerprint      String
+  cursor           String?
+  scanned          Int                   @default(0)
+  matched          Int                   @default(0)
+  changes          Int                   @default(0)
+  categoryChanges  Int                   @default(0) @map("category_changes")
+  merchantChanges  Int                   @default(0) @map("merchant_changes")
+  protectedManual  Int                   @default(0) @map("protected_manual")
+  protectedUnknown Int                   @default(0) @map("protected_unknown")
+  otherRule        Int                   @default(0) @map("other_rule")
+  applied          Int                   @default(0)
+  skipped          Int                   @default(0)
+  attempts         Int                   @default(0)
+  leaseToken       String?               @map("lease_token")
+  leaseUntil       DateTime?             @map("lease_until")
+  nextAttemptAt    DateTime              @default(now()) @map("next_attempt_at")
+  errorCode        String?               @map("error_code")
+  createdAt        DateTime              @default(now()) @map("created_at")
+  updatedAt        DateTime              @updatedAt @map("updated_at")
+  workspace        Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  items            RuleApplicationItem[]
+
   @@index([status, nextAttemptAt])
   @@index([workspaceId, createdAt])
   @@map("rule_applications")
 }
 
 model RuleApplicationItem {
-  id String @id @default(uuid()) @db.Uuid
-  applicationId String @map("application_id") @db.Uuid
-  transactionId String @map("transaction_id")
-  version Int
-  before Json
-  after Json
-  reason String
-  status String @default("PENDING")
-  appliedAt DateTime? @map("applied_at")
-  application RuleApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  id            String          @id @default(uuid()) @db.Uuid
+  applicationId String          @map("application_id") @db.Uuid
+  transactionId String          @map("transaction_id")
+  version       Int
+  before        Json
+  after         Json
+  reason        String
+  status        String          @default("PENDING")
+  appliedAt     DateTime?       @map("applied_at")
+  application   RuleApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
   @@unique([applicationId, transactionId])
   @@index([applicationId, status, id])
   @@map("rule_application_items")

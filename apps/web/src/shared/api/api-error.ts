@@ -39,6 +39,13 @@ export function normalizeApiError(error: unknown): ApiClientError {
     if (error.code === 'ERR_CANCELED') {
       return new ApiClientError('La solicitud fue cancelada.', 'REQUEST_CANCELLED');
     }
+    if (error.response?.status && [502, 503, 504].includes(error.response.status)) {
+      return new ApiClientError(
+        'No pudimos conectar con el servidor backend (asegúrate de que la API esté corriendo en el puerto 3000).',
+        'SERVER_UNAVAILABLE',
+        error.response.status,
+      );
+    }
     return new ApiClientError(
       error.response ? 'El servidor rechazó la solicitud.' : 'No pudimos conectar con el servidor.',
       error.response ? 'HTTP_ERROR' : 'NETWORK_ERROR',

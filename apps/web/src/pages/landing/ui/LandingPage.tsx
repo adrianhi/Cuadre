@@ -58,7 +58,7 @@ export function LandingPage({ hasSession = false }: LandingPageProps) {
             Cuadre no te pide anotar gastos ni revisar gráficos complicados. Conecta tus bancos dominicanos vía Gmail y te dice cada mañana tu margen seguro diario.
           </p>
 
-          <div className="mt-8 flex justify-center">
+          <div id="beta-waitlist" className="mt-8 flex scroll-mt-24 justify-center">
             <BetaWaitlistForm source="LANDING_HERO" className="max-w-lg" />
           </div>
 
@@ -142,7 +142,7 @@ export function LandingPage({ hasSession = false }: LandingPageProps) {
                 <span>Privacidad y Seguridad Garantizada</span>
               </div>
               <ul className="space-y-2.5 text-xs text-slate-400 leading-relaxed">
-                <li>• <strong>Solo lectura bancaria:</strong> Cuadre no puede transferir ni tocar tus fondos.</li>
+                <li>• <strong>Gmail en solo lectura:</strong> Cuadre procesa notificaciones compatibles y no puede mover tus fondos.</li>
                 <li>• <strong>Cifrado AES-256:</strong> Credenciales protegidas con cifrado simétrico en reposo.</li>
                 <li>• <strong>Cero publicidad:</strong> No vendemos datos ni entrenamos IA pública con tus finanzas.</li>
               </ul>
@@ -151,14 +151,14 @@ export function LandingPage({ hasSession = false }: LandingPageProps) {
             <div className="rounded-2xl border border-emerald-500/20 bg-emerald-950/20 p-6">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Precio Fundador</span>
-                <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300">90 DÍAS GRATIS</span>
+                <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300">30 DÍAS GRATIS</span>
               </div>
               <div className="flex items-baseline gap-1.5 mt-2">
                 <span className="text-3xl font-black text-white">RD$ 299</span>
                 <span className="text-xs text-slate-400">/ mes</span>
               </div>
               <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-                Los 100 usuarios de la beta disfrutan 90 días sin costo y precio congelado durante 12 meses. Sin cobros automáticos.
+                Los 100 usuarios de la beta disfrutan 30 días sin costo desde la activación. Sin cobros automáticos.
               </p>
             </div>
           </div>

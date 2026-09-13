@@ -1,22 +1,51 @@
-import { z } from 'zod';
+import { appContainer } from '../app-container';
 import { prisma } from '../config/database';
 
-const EmailSchema = z.string().trim().toLowerCase().email();
+const usage = `Usage:
+  npm run beta:invite -- user@example.com
+  npm run beta:invite -- user@example.com --no-email
+  npm run beta:invite -- user@example.com --resend
+  npm run beta:invite -- --waitlist 25`;
 
 async function main() {
-  const parsed = EmailSchema.safeParse(process.argv[2]);
-  if (!parsed.success) {
-    throw new Error('Usage: npm run beta:invite -- user@example.com');
+  const args = process.argv.slice(2);
+  const waitlistAt = args.indexOf('--waitlist');
+  if (waitlistAt >= 0) {
+    if (args.includes('--resend') || args.includes('--no-email') || args.length !== 2) throw new Error(usage);
+    const limit = Number(args[waitlistAt + 1]);
+    const result = await appContainer.betaInviteService.inviteBatchFromWaitlist(limit);
+    console.table(result.results.map((item) => ({
+      email: item.email,
+      estado: item.delivery?.status || 'NO_ENCOLADO',
+      modo: item.delivery?.deliveryMode || '—',
+      aceptado: item.firstAttemptAccepted ? 'sí' : 'no',
+    })));
+    console.log(`Seleccionados: ${result.selected}; aceptados: ${result.accepted}; sin aceptar: ${result.failed}.`);
+    if (result.failed > 0) process.exitCode = 1;
+    return;
   }
 
-  const invite = await prisma.betaInvite.upsert({
-    where: { email: parsed.data },
-    update: {},
-    create: { email: parsed.data },
-    select: { email: true, usedAt: true },
-  });
+  const email = args[0];
+  const noEmail = args.includes('--no-email');
+  const forceResend = args.includes('--resend');
+  if (!email || email.startsWith('--') || args.some((arg, index) => index > 0 && !['--no-email', '--resend'].includes(arg))
+    || (noEmail && forceResend)) throw new Error(usage);
 
-  console.log(invite.usedAt ? `Invite already used: ${invite.email}` : `Invite ready: ${invite.email}`);
+  const result = await appContainer.betaInviteService.inviteUser({ email, sendEmail: !noEmail, forceResend });
+  if (result.used) {
+    console.log(`Invite already activated: ${result.email}`);
+    return;
+  }
+  if (noEmail) {
+    console.log(`Invite ready: ${result.email}`);
+    console.log(`Activation URL: ${result.activationUrl}`);
+    return;
+  }
+  console.log(`Invite: ${result.email}`);
+  console.log(`Delivery status: ${result.delivery?.status || 'NOT_QUEUED'}`);
+  console.log(`Delivery mode: ${result.delivery?.deliveryMode || '—'}`);
+  if (result.delivery?.providerMessageId) console.log(`Provider message: ${result.delivery.providerMessageId}`);
+  if (!result.firstAttemptAccepted) process.exitCode = 1;
 }
 
 main()

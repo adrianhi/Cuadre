@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import { bootstrapInputSchema } from '@bills/contracts';
 import { AppError } from '../../../errors/app-error';
 import { IdentityApplicationService } from '../application/identity.service';
 import { z } from 'zod';
@@ -11,7 +12,10 @@ const user = (req: Request) => {
 };
 export class IdentityController {
   constructor(private readonly service: IdentityApplicationService) {}
-  bootstrap = async (req: Request, res: Response) => { res.status(200).json({ success: true, data: await this.service.bootstrap(user(req)) }); };
+  bootstrap = async (req: Request, res: Response) => {
+    const input = bootstrapInputSchema.parse(req.body || {});
+    res.status(200).json({ success: true, data: await this.service.bootstrap(user(req), input.inviteCode) });
+  };
   me = async (req: Request, res: Response) => { res.status(200).json({ success: true, data: await this.service.me(user(req), req.auth!.workspaceId!, req.auth!.role) }); };
   completeOnboarding = async (req: Request, res: Response) => { res.status(200).json({ success: true, data: await this.service.completeOnboarding(user(req).id) }); };
   updateProductGuide = async (req: Request, res: Response) => {

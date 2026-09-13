@@ -29,12 +29,23 @@ function resolvePublicDir(): string {
   return path.resolve(process.cwd(), 'public');
 }
 
+function safeRequestUrl(req: Request): string {
+  try {
+    const url = new URL(req.originalUrl, 'http://localhost');
+    if (url.searchParams.has('invite')) url.searchParams.set('invite', '[REDACTED]');
+    return `${url.pathname}${url.search}`;
+  } catch {
+    return req.path;
+  }
+}
+
 export function createApp(): Express {
   const app = express();
 
   app.disable('x-powered-by');
   app.set('trust proxy', 1);
   app.use((req: Request, res: Response, next) => {
+
     const incoming = req.headers['x-request-id'];
     req.requestId = typeof incoming === 'string' && incoming.length <= 100 ? incoming : crypto.randomUUID();
     res.setHeader('x-request-id', req.requestId);
@@ -66,7 +77,7 @@ export function createApp(): Express {
           callback(null, true);
           return;
         }
-        callback(new Error('Origin is not allowed by CORS'));
+        callback(null, false);
       },
       credentials: true,
     })
@@ -93,7 +104,8 @@ export function createApp(): Express {
   app.use(express.urlencoded({ extended: true }));
 
   if (config.nodeEnv === 'development') {
-    app.use(morgan('dev'));
+    morgan.token('safe-url', (req) => safeRequestUrl(req as Request));
+    app.use(morgan(':method :safe-url :status :response-time ms - :res[content-length]'));
   } else if (config.nodeEnv !== 'test') {
     app.use((req: Request, res: Response, next) => {
       const startedAt = Date.now();

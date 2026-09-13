@@ -12,7 +12,7 @@ const preference: EmailPreferenceRecord = {
 function fixture() {
   let claimed = false;
   const job: EmailDeliveryRecord = {
-    id: 'delivery', workspaceId: 'workspace', profileId: 'profile', kind: 'TEST', recipient: preference.email,
+    id: 'delivery', workspaceId: 'workspace', profileId: 'profile', betaInviteId: null, kind: 'TEST', recipient: preference.email,
     subject: 'Test', html: '<p>Test</p>', text: 'Test', headers: {}, attempts: 1, maxAttempts: 5,
     createdAt: new Date('2026-09-12T12:00:00Z'), leaseToken: 'lease',
   };
@@ -53,7 +53,7 @@ describe('ProactiveEmailService', () => {
     expect(results.filter((result) => result.accepted)).toHaveLength(1);
     expect(transport.sendEmail).toHaveBeenCalledTimes(1);
     expect(transport.sendEmail).toHaveBeenCalledWith(expect.objectContaining({ idempotencyKey: 'cuadre/delivery' }));
-    expect(repository.accepted).toHaveBeenCalledTimes(1);
+    expect(repository.accepted).toHaveBeenCalledWith(expect.objectContaining({ id: 'delivery' }), 'email_1', 'SMTP');
   });
 
   it('rejects a fourth test email inside an hour', async () => {

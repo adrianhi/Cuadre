@@ -1,11 +1,15 @@
-import { AlertCircle, Loader2, Lock, ShieldCheck } from "lucide-react";
+import { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { AlertCircle, Loader2, Lock, ShieldCheck, Sparkles } from "lucide-react";
 import { Button, Card, CardContent } from "@/shared/ui";
 import { isSupabaseConfigured } from "@/shared/lib";
 import { useSignInActions } from "../model/useSignInActions";
+import { hasInviteCode } from '../model/invite-context';
+import type { AuthSetupError } from '../model/useAuthSession';
 
 interface AuthScreenProps {
   checkingSession?: boolean;
-  setupError?: string;
+  setupError?: AuthSetupError | null;
 }
 
 function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -36,6 +40,16 @@ export function AuthScreen({
   setupError,
 }: AuthScreenProps) {
   const { loading, error, signInWithGoogle } = useSignInActions();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const invited = hasInviteCode();
+  const inviteFailure = setupError?.code.startsWith('BETA_INVITE_') ? setupError : null;
+
+  useEffect(() => {
+    if (new URLSearchParams(location.search).has('invite')) {
+      navigate(invited ? '/login?invited=true' : '/login', { replace: true });
+    }
+  }, [invited, location.search, navigate]);
 
   if (checkingSession) {
     return (
@@ -62,6 +76,41 @@ export function AuthScreen({
 
         <Card className="border-border/60 bg-card/90 shadow-xl backdrop-blur-md">
           <CardContent className="space-y-5 p-6">
+            {invited && !inviteFailure && (
+              <div className="flex gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-700 dark:text-emerald-300">
+                <Sparkles className="h-4 w-4 shrink-0" />
+                <span><strong>Tu invitación de fundador está lista.</strong> Incluye 30 días sin costo desde la activación.</span>
+              </div>
+            )}
+
+            {inviteFailure && (
+              <div className="space-y-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs text-amber-800 dark:text-amber-200">
+                <div className="flex gap-2">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  <div>
+                    <p className="font-semibold">
+                      {inviteFailure.code === 'BETA_INVITE_EMAIL_MISMATCH'
+                        ? 'Esta no es la cuenta invitada'
+                        : inviteFailure.code === 'BETA_INVITE_EXPIRED'
+                          ? 'La invitación venció'
+                          : 'Necesitas una invitación activa'}
+                    </p>
+                    <p className="mt-1 opacity-90">{inviteFailure.message}</p>
+                  </div>
+                </div>
+                {inviteFailure.code === 'BETA_INVITE_EMAIL_MISMATCH' ? (
+                  <Button type="button" variant="outline" className="w-full" disabled={Boolean(loading)}
+                    onClick={() => void signInWithGoogle()}>
+                    Cambiar cuenta de Google
+                  </Button>
+                ) : (
+                  <a href="/#beta-waitlist" className="block text-center font-semibold underline underline-offset-2">
+                    Solicitar acceso a la beta
+                  </a>
+                )}
+              </div>
+            )}
+
             {!isSupabaseConfigured ? (
               <div className="flex gap-2 rounded-xl bg-amber-500/10 p-3 text-xs text-amber-700 dark:text-amber-300">
                 <AlertCircle className="h-4 w-4 shrink-0" />
@@ -96,10 +145,10 @@ export function AuthScreen({
               </>
             )}
 
-            {(error || setupError) && (
+            {(error || (setupError && !inviteFailure)) && (
               <div className="flex gap-2 rounded-xl bg-destructive/10 p-3 text-xs text-destructive">
                 <AlertCircle className="h-4 w-4 shrink-0" />
-                <span>{error || setupError}</span>
+                <span>{error || setupError?.message}</span>
               </div>
             )}
           </CardContent>

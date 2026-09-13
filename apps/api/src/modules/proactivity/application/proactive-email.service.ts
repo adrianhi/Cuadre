@@ -109,7 +109,7 @@ export class ProactiveEmailService {
         recipient: job.recipient, subject: job.subject, html: job.html, text: job.text,
         headers: job.headers || undefined, idempotencyKey: `cuadre/${job.id}`,
       });
-      await this.repository.accepted(job, result.providerMessageId);
+      await this.repository.accepted(job, result.providerMessageId, result.mode);
       return { processed: true, accepted: result.accepted, mode: result.mode };
     } catch (error) {
       const detail = error as { code?: string; message?: string; retryable?: boolean; ambiguous?: boolean };

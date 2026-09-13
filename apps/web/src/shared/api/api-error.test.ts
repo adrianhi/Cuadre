@@ -11,4 +11,16 @@ describe('normalizeApiError', () => {
     const error = await client.get('/failure').catch((reason: unknown) => normalizeApiError(reason));
     expect(error).toMatchObject({ code: 'INVALID_SESSION', status: 401, requestId: 'req-1' });
   });
+
+  it('provides a friendly message for gateway errors when backend is down', async () => {
+    const client = axios.create();
+    const mock = new AxiosMockAdapter(client);
+    mock.onGet('/down').reply(502, 'Bad Gateway');
+    const error = await client.get('/down').catch((reason: unknown) => normalizeApiError(reason));
+    expect(error).toMatchObject({
+      code: 'SERVER_UNAVAILABLE',
+      status: 502,
+      message: 'No pudimos conectar con el servidor backend (asegúrate de que la API esté corriendo en el puerto 3000).',
+    });
+  });
 });

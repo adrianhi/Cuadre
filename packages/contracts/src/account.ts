@@ -6,6 +6,10 @@ export const productGuideStateSchema = z.object({
   completedAt: z.string().datetime().nullable(), completed: z.boolean(),
 });
 export type ProductGuideState = z.infer<typeof productGuideStateSchema>;
+export const bootstrapInputSchema = z.object({
+  inviteCode: z.string().trim().min(20).max(128).optional(),
+}).default({});
+export type BootstrapInput = z.infer<typeof bootstrapInputSchema>;
 export const bootstrapResponseSchema = z.object({
   success: z.literal(true),
   data: z.object({

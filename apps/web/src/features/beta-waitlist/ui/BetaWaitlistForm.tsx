@@ -63,7 +63,7 @@ export function BetaWaitlistForm({ source = 'LANDING_HERO', className = '' }: Be
 
       <div className="mt-3 flex items-center gap-2 text-xs text-slate-400 justify-center sm:justify-start">
         <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-        <span>Beta privada limitada a 100 usuarios. 90 días gratis incluidos.</span>
+        <span>Beta privada limitada a 100 usuarios. 30 días sin costo incluidos.</span>
       </div>
     </div>
   );

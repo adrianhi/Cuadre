@@ -5,14 +5,32 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 dotenv.config({ path: path.resolve(__dirname, '../../../../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
+function parseCorsOrigins(raw: string | undefined): string[] {
+  const list = (raw || 'http://localhost:5173,http://localhost:3000')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  const set = new Set(list);
+  for (const origin of list) {
+    try {
+      const url = new URL(origin);
+      if (url.hostname.startsWith('www.')) {
+        set.add(`${url.protocol}//${url.hostname.slice(4)}${url.port ? `:${url.port}` : ''}`);
+      } else if (!url.hostname.startsWith('localhost') && !url.hostname.includes('127.0.0.1')) {
+        set.add(`${url.protocol}//www.${url.hostname}${url.port ? `:${url.port}` : ''}`);
+      }
+    } catch {
+      // ignore malformed URLs
+    }
+  }
+  return Array.from(set);
+}
+
 export const config = {
   port: parseInt(process.env.PORT || '3000', 10),
   nodeEnv: process.env.NODE_ENV || 'development',
   databaseUrl: process.env.DATABASE_URL || '',
-  corsOrigins: (process.env.CORS_ORIGIN || 'http://localhost:5173,http://localhost:3000')
-    .split(',')
-    .map((origin) => origin.trim())
-    .filter(Boolean),
+  corsOrigins: parseCorsOrigins(process.env.CORS_ORIGIN),
   supabaseUrl: process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '',
   supabasePublishableKey:
     process.env.SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY || '',

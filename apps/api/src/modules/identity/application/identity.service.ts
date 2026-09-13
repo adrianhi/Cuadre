@@ -16,7 +16,7 @@ interface ProfileRepository {
 }
 
 interface WorkspaceBootstrapper {
-  bootstrap(user: AuthenticatedUser): Promise<Record<string, unknown>>;
+  bootstrap(user: AuthenticatedUser, inviteCode?: string): Promise<Record<string, unknown>>;
 }
 
 interface LegalAcceptanceChecker {
@@ -39,9 +39,9 @@ export class IdentityApplicationService {
     private readonly workspaces: WorkspaceBootstrapper,
     private readonly legal: LegalAcceptanceChecker
   ) {}
-  async bootstrap(user: AuthenticatedUser) {
+  async bootstrap(user: AuthenticatedUser, inviteCode?: string) {
     const [workspace, legalAcceptanceRequired, profile] = await Promise.all([
-      this.workspaces.bootstrap(user),
+      this.workspaces.bootstrap(user, inviteCode),
       this.legal.hasCurrentRequired(user.id).then((accepted) => !accepted),
       this.profiles.findSummary(user.id),
     ]);

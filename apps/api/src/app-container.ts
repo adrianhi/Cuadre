@@ -65,7 +65,10 @@ import {
   ProactiveController, ProactiveEmailRunner, ProactiveEmailScheduler, ProactiveEmailService,
   ProactiveEngineService, WeeklyEmailBuilder,
 } from './modules/proactivity';
-import { BetaInterestController, BetaInterestService, PrismaBetaInterestRepository } from './modules/auth';
+import {
+  BetaInterestController, BetaInterestService, BetaInviteService,
+  PrismaBetaInterestRepository, PrismaBetaInviteRepository,
+} from './modules/auth';
 
 const analyticsService = new AnalyticsService(new PrismaAnalyticsRepository());
 const incomeRepository = new PrismaIncomeRepository();
@@ -177,6 +180,9 @@ const weeklyEmailBuilder = new WeeklyEmailBuilder(
 const proactiveEmailService = new ProactiveEmailService(emailRepository, emailTransport, weeklyEmailBuilder, {
   appUrl: config.appUrl, apiPublicUrl: config.apiPublicUrl, unsubscribeSecret: config.emailUnsubscribeSecret,
 });
+const betaInviteService = new BetaInviteService(
+  new PrismaBetaInviteRepository(), emailRepository, proactiveEmailService, config.appUrl,
+);
 const proactiveEmailScheduler = new ProactiveEmailScheduler(
   emailRepository, { radar: (wId, curr, win) => recurringService.radar(wId, curr, win) },
   { getMonthlyBudget: (wId, month, curr) => getMonthlyBudget.execute(wId, month, curr) },
@@ -192,6 +198,7 @@ const proactiveController = new ProactiveController(proactiveEngineService, proa
 const emailNotificationController = new EmailNotificationController(proactiveEmailService);
 
 export const appContainer = {
+  betaInviteService,
   proactiveController,
   proactiveEmailRunner,
   emailNotificationController,

@@ -5,7 +5,7 @@ import type { AuthenticatedUser } from '../../../types/auth';
 import { AppError } from '../../../errors/app-error';
 
 export class WorkspaceService {
-  public static async bootstrap(user: AuthenticatedUser) {
+  public static async bootstrap(user: AuthenticatedUser, inviteCode?: string) {
     const normalizedEmail = user.email.trim().toLowerCase();
 
     // Fast-path: if membership already exists, return immediately without locks
@@ -93,16 +93,34 @@ export class WorkspaceService {
 
         const shouldClaimLegacy =
           Boolean(config.legacyOwnerEmail) && normalizedEmail === config.legacyOwnerEmail;
-        const invite = (shouldClaimLegacy || !config.requireBetaInvite)
-          ? null
-          : await tx.betaInvite.findUnique({ where: { email: normalizedEmail } });
-
-        if (config.requireBetaInvite && !shouldClaimLegacy && (!invite || invite.usedAt)) {
-          throw new AppError(
-            403,
-            'BETA_INVITE_REQUIRED',
-            'Esta beta es por invitación. Solicita acceso antes de crear tu espacio.'
-          );
+        let invite = null;
+        if (config.requireBetaInvite && !shouldClaimLegacy) {
+          if (inviteCode) {
+            invite = await tx.betaInvite.findUnique({ where: { code: inviteCode } });
+            if (!invite || invite.usedAt) {
+              throw new AppError(403, 'BETA_INVITE_INVALID', 'Este enlace de invitación no es válido.');
+            }
+            if (invite.email.trim().toLowerCase() !== normalizedEmail) {
+              throw new AppError(403, 'BETA_INVITE_EMAIL_MISMATCH',
+                'Inicia sesión con la misma cuenta de Google en la que recibiste la invitación.');
+            }
+            if (invite.expiresAt && invite.expiresAt <= new Date()) {
+              throw new AppError(403, 'BETA_INVITE_EXPIRED', 'Este enlace de invitación venció. Solicita uno nuevo.');
+            }
+          } else {
+            invite = await tx.betaInvite.findUnique({ where: { email: normalizedEmail } });
+            if (!invite || invite.usedAt) {
+              throw new AppError(403, 'BETA_INVITE_REQUIRED',
+                'Esta beta es por invitación. Solicita acceso antes de crear tu espacio.');
+            }
+            if (invite.code) {
+              throw new AppError(403, 'BETA_INVITE_LINK_REQUIRED',
+                'Abre el enlace que recibiste en tu correo para activar la invitación.');
+            }
+            if (invite.expiresAt && invite.expiresAt <= new Date()) {
+              throw new AppError(403, 'BETA_INVITE_EXPIRED', 'Este enlace de invitación venció. Solicita uno nuevo.');
+            }
+          }
         }
 
         const workspace = await tx.workspace.create({
@@ -129,9 +147,11 @@ export class WorkspaceService {
             }),
           ]);
         } else if (invite) {
+          const trialStartedAt = new Date();
+          const trialEndsAt = new Date(trialStartedAt.getTime() + invite.trialDays * 24 * 60 * 60 * 1000);
           await tx.betaInvite.update({
             where: { id: invite.id },
-            data: { usedAt: new Date() },
+            data: { usedAt: trialStartedAt, trialStartedAt, trialEndsAt },
           });
         }
 

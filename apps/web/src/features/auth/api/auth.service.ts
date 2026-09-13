@@ -19,8 +19,8 @@ export const authService = {
     return requireSupabase().auth.onAuthStateChange(listener).data.subscription;
   },
 
-  async bootstrap(token: string) {
-    const response = await httpClient.post('/me/bootstrap', undefined, {
+  async bootstrap(token: string, inviteCode?: string) {
+    const response = await httpClient.post('/me/bootstrap', inviteCode ? { inviteCode } : {}, {
       headers: { Authorization: `Bearer ${token}` },
     });
     return parseResponse(bootstrapResponseSchema, response.data).data;

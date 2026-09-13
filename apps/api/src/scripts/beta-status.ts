@@ -1,7 +1,26 @@
 import { prisma } from '../config/database';
 import { PRODUCT_GUIDE_VERSION } from '@bills/contracts';
+import { appContainer } from '../app-container';
 
 async function main() {
+  const metrics = await appContainer.betaInviteService.getFunnelMetrics();
+  console.table([{
+    interesados: metrics.interestedTotal,
+    pendientes: metrics.interestedPending,
+    invitados: metrics.invitedTotal,
+    activados: metrics.activatedTotal,
+    onboarding: metrics.onboardingCompleted,
+    gmailActivo: metrics.gmailConnectedUsers,
+    bancosHabilitados: metrics.enabledBanks,
+    emailAudit: metrics.emailAudit,
+    emailAceptado: metrics.emailAccepted,
+    emailEntregado: metrics.emailDelivered,
+    emailPendiente: metrics.emailPending,
+    emailFallido: metrics.emailFailed,
+    sinCorreo: metrics.emailNotSent,
+    conversión: `${metrics.conversionPercent}%`,
+  }]);
+
   const invites = await prisma.betaInvite.findMany({
     orderBy: { createdAt: 'asc' },
     select: { email: true, createdAt: true, usedAt: true },

@@ -4,6 +4,7 @@ import {
   updateTransactionInputSchema,
   createCategoryRuleInputSchema,
   bootstrapResponseSchema,
+  bootstrapInputSchema,
   PRODUCT_GUIDE_VERSION,
   recordProductViewSchema,
   updateRecurringBillSchema,
@@ -82,6 +83,15 @@ describe('bootstrapResponseSchema', () => {
       },
     });
     expect(parsed.success).toBe(true);
+  });
+});
+
+describe('bootstrapInputSchema', () => {
+  it('accepts an optional opaque invite code and rejects short values', () => {
+    expect(bootstrapInputSchema.parse({})).toEqual({});
+    expect(bootstrapInputSchema.parse({ inviteCode: 'abcdefghijklmnopqrstuvwxyz_1234567890' }))
+      .toEqual({ inviteCode: 'abcdefghijklmnopqrstuvwxyz_1234567890' });
+    expect(bootstrapInputSchema.safeParse({ inviteCode: 'short' }).success).toBe(false);
   });
 });
 

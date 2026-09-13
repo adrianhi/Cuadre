@@ -1,30 +1,38 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { configureHttpAuth } from '@/shared/api';
+import { ApiClientError, configureHttpAuth } from '@/shared/api';
 import { authService } from '../api/auth.service';
 import type { ProductGuideState } from '@bills/contracts';
+import { captureInviteCode, clearInviteCode, getInviteCode } from './invite-context';
 
 const EMPTY_GUIDE: ProductGuideState = { currentVersion: '', versionSeen: null, completedAt: null, completed: false };
+export interface AuthSetupError { code: string; message: string }
+
+const RETAIN_INVITE_ERRORS = new Set(['BETA_INVITE_EMAIL_MISMATCH']);
+const CLEAR_INVITE_ERRORS = new Set(['BETA_INVITE_INVALID', 'BETA_INVITE_EXPIRED']);
 
 export function useAuthSession() {
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [checkingSession, setCheckingSession] = useState(true);
-  const [setupError, setSetupError] = useState('');
+  const [setupError, setSetupError] = useState<AuthSetupError | null>(null);
   const [onboardingComplete, setOnboardingComplete] = useState(false);
   const [legalAcceptanceRequired, setLegalAcceptanceRequired] = useState(false);
   const [productGuide, setProductGuide] = useState<ProductGuideState>(EMPTY_GUIDE);
   const tokenRef = useRef<string | null>(null);
   const activatingTokenRef = useRef<string | null>(null);
+  const rejectedErrorRef = useRef<AuthSetupError | null>(null);
+  const inviteCodeRef = useRef(captureInviteCode());
 
-  const clearSession = useCallback(() => {
+  const clearSession = useCallback((clearError = true) => {
     tokenRef.current = null;
     setAuthToken(null);
     setOnboardingComplete(false);
     setLegalAcceptanceRequired(false);
     setProductGuide(EMPTY_GUIDE);
-    setSetupError('');
+    if (clearError) setSetupError(null);
   }, []);
 
   const handleLock = useCallback(async () => {
+    rejectedErrorRef.current = null;
     clearSession();
     await authService.signOut();
   }, [clearSession]);
@@ -40,7 +48,8 @@ export function useAuthSession() {
       if (!active) return;
       if (!token) {
         activatingTokenRef.current = null;
-        clearSession();
+        clearSession(!rejectedErrorRef.current);
+        if (rejectedErrorRef.current) setSetupError(rejectedErrorRef.current);
         setCheckingSession(false);
         return;
       }
@@ -48,18 +57,32 @@ export function useAuthSession() {
       activatingTokenRef.current = token;
       tokenRef.current = token;
       setCheckingSession(true);
-      setSetupError('');
+      setSetupError(null);
       try {
-        const bootstrap = await authService.bootstrap(token);
+        const bootstrap = await authService.bootstrap(token, inviteCodeRef.current || getInviteCode());
         if (!active) return;
+        rejectedErrorRef.current = null;
+        clearInviteCode();
+        inviteCodeRef.current = undefined;
         setAuthToken(token);
         setLegalAcceptanceRequired(bootstrap.legalAcceptanceRequired);
         setOnboardingComplete(bootstrap.onboardingComplete);
         setProductGuide(bootstrap.productGuide);
       } catch (error) {
         if (active) {
-          clearSession();
-          setSetupError(error instanceof Error ? error.message : 'No se pudo iniciar la sesión.');
+          const setup = error instanceof ApiClientError
+            ? { code: error.code, message: error.message }
+            : { code: 'SESSION_SETUP_FAILED', message: error instanceof Error ? error.message : 'No se pudo iniciar la sesión.' };
+          rejectedErrorRef.current = setup;
+          if (CLEAR_INVITE_ERRORS.has(setup.code)) {
+            clearInviteCode();
+            inviteCodeRef.current = undefined;
+          } else if (!RETAIN_INVITE_ERRORS.has(setup.code)) {
+            inviteCodeRef.current = getInviteCode();
+          }
+          clearSession(false);
+          setSetupError(setup);
+          window.setTimeout(() => { void authService.signOut().catch(() => undefined); }, 0);
         }
       } finally {
         activatingTokenRef.current = null;
@@ -71,7 +94,7 @@ export function useAuthSession() {
       .then((session) => activateSession(session?.access_token))
       .catch((error: unknown) => {
         if (active) {
-          setSetupError(error instanceof Error ? error.message : 'No se pudo comprobar la sesión.');
+          setSetupError({ code: 'SESSION_CHECK_FAILED', message: error instanceof Error ? error.message : 'No se pudo comprobar la sesión.' });
           setCheckingSession(false);
         }
       });

@@ -112,6 +112,26 @@ describe('PrismaEmailRepository.recordProviderEvent', () => {
     });
   });
 
+  it('records beta invite delivery without membership side effects', async () => {
+    mockPrisma.emailDelivery.findUnique.mockResolvedValue({
+      id: 'beta-delivery-123',
+      workspaceId: null,
+      profileId: null,
+      betaInviteId: 'beta-invite-456',
+    });
+
+    const result = await repository.recordProviderEvent({
+      providerEventId: 'evt_beta_delivered',
+      providerMessageId: 'msg_beta_delivered',
+      type: 'email.delivered',
+      occurredAt: new Date('2026-09-13T05:00:00.000Z'),
+    });
+
+    expect(result).toBe(true);
+    expect(mockPrisma.__mockTx.emailNotificationPreference.updateMany).not.toHaveBeenCalled();
+    expect(mockPrisma.__mockTx.productEvent.upsert).not.toHaveBeenCalled();
+  });
+
   it('returns false when delivery is not found', async () => {
     mockPrisma.emailDelivery.findUnique.mockResolvedValue(null);
 
