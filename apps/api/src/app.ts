@@ -162,6 +162,11 @@ export function createApp(): Express {
     });
   });
 
+  // Prevent missing static assets from falling back to index.html (which causes MIME type errors)
+  app.use('/assets', (_req: Request, res: Response) => {
+    res.status(404).type('text/plain').send('Asset not found');
+  });
+
   // Fallback for frontend SPA routes
   app.get('*', (_req: Request, res: Response) => {
     res.sendFile(path.join(publicDir, 'index.html'));

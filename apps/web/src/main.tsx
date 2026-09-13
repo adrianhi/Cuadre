@@ -4,6 +4,11 @@ import './index.css'
 import App from './App.tsx'
 import { AppProviders } from './app/providers/AppProviders.tsx'
 
+// Auto-reload on stale dynamic import chunks after new deployments
+window.addEventListener('vite:preloadError', () => {
+  window.location.reload();
+});
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AppProviders>
@@ -11,3 +16,4 @@ createRoot(document.getElementById('root')!).render(
     </AppProviders>
   </StrictMode>,
 )
+
