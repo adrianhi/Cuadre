@@ -20,6 +20,11 @@ async function main() {
       modo: item.delivery?.deliveryMode || '—',
       aceptado: item.firstAttemptAccepted ? 'sí' : 'no',
     })));
+    for (const item of result.results) {
+      if (item.activationUrl) {
+        console.log(`Activation URL (${item.email}): ${item.activationUrl}`);
+      }
+    }
     console.log(`Seleccionados: ${result.selected}; aceptados: ${result.accepted}; sin aceptar: ${result.failed}.`);
     if (result.failed > 0) process.exitCode = 1;
     return;
