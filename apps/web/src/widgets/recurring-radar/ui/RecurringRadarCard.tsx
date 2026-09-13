@@ -44,13 +44,13 @@ export function RecurringRadarCard(props: {
   onStatus: (bill: RecurringBillDto, status: 'CONFIRMED' | 'PAUSED' | 'DISMISSED') => void;
   onAcknowledge: (alertId: string) => void;
 }) {
-  if (props.loading) return <div className="h-40 animate-pulse rounded-2xl bg-muted" />;
+  if (props.loading) return <div className="h-40 animate-pulse rounded-2xl bg-muted" data-product-tour="recurring-radar" />;
   const radar = props.radar;
-  if (!radar || radar.analysisStatus !== 'READY') return <Card><CardContent className="p-5 text-sm text-muted-foreground">Analizando tus movimientos para encontrar cobros recurrentes…</CardContent></Card>;
+  if (!radar || radar.analysisStatus !== 'READY') return <Card data-product-tour="recurring-radar"><CardContent className="p-5 text-sm text-muted-foreground">Analizando tus movimientos para encontrar cobros recurrentes…</CardContent></Card>;
   const bills = [...radar.attention, ...radar.suggestions, ...radar.upcoming, ...radar.paused]
     .filter((bill, index, all) => all.findIndex((item) => item.id === bill.id) === index).slice(0, 5);
   return (
-    <Card className="border-border/60 shadow-sm"><CardContent className="p-4 sm:p-5">
+    <Card className="border-border/60 shadow-sm" data-product-tour="recurring-radar"><CardContent className="p-4 sm:p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="flex gap-2"><CalendarClock className="mt-0.5 h-5 w-5 text-primary" /><div><h3 className="font-black">Radar de cobros</h3><p className="text-xs text-muted-foreground">Lo próximo y lo que requiere tu atención.</p></div></div>
         <p className="text-right text-xs text-muted-foreground">{radar.upcomingWindows.in7} en 7 días · {radar.upcomingWindows.in30} en 30<br/><strong className="text-foreground">{props.hideBalances ? '••••••' : formatCurrency(radar.fixedMonthlyBurden, radar.currency)} / mes</strong></p>

@@ -15,7 +15,7 @@ export async function mockRules(page: Page) {
     const json = (data: unknown) => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ success: true, data }) });
     if (request.method() !== 'GET') calls.push({ path, body: request.postDataJSON() || {} });
     if (path.endsWith('/me/bootstrap')) return json({ onboardingComplete: true, legalAcceptanceRequired: false,
-      productGuide: { currentVersion: '2026-09-01.1', versionSeen: '2026-09-01.1', completed: true, completedAt: new Date().toISOString() } });
+      productGuide: { currentVersion: '2026-09-13.1', versionSeen: '2026-09-13.1', completed: true, completedAt: new Date().toISOString() } });
     if (path.endsWith('/transactions')) return route.fulfill({ contentType: 'application/json', body: JSON.stringify({
       success: true, data: [transaction], pagination: { page: 1, limit: 20, total: 1, totalItems: 1, totalPages: 1 },
     }) });

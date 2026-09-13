@@ -26,7 +26,8 @@ export function useSignInActions() {
     loading,
     error,
     message,
-    signInWithGoogle: () => execute('google', () => authService.signInWithGoogle(callbackUrl)),
+    signInWithGoogle: (options?: { selectAccount?: boolean }) =>
+      execute('google', () => authService.signInWithGoogle(callbackUrl, options)),
     sendMagicLink: (email: string) => {
       const cleanEmail = email.trim().toLowerCase();
       if (!isValidEmail(cleanEmail)) {

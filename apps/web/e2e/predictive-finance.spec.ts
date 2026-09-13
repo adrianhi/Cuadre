@@ -32,7 +32,7 @@ test('shows and completes the predictive finance workflow', async ({ page }) => 
 
   await page.goto('/app/home');
   await page.getByRole('button', { name: 'Saltar', exact: true }).click();
-  await expect(page.getByText('Dinero libre hoy')).toBeVisible();
+  await expect(page.getByText('Margen Seguro Diario')).toBeVisible();
   await expect(page.getByText('RD$ 550.00')).toBeVisible();
   await expect(page.getByText('Netflix')).toBeVisible();
   await page.getByRole('button', { name: 'Confirmar' }).click();

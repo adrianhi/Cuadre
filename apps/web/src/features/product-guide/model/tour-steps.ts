@@ -12,38 +12,20 @@ export interface TourStep {
 export const PRODUCT_TOUR_STEPS: readonly TourStep[] = [
   {
     section: 'home',
-    target: 'connection-health',
-    title: 'Tu conexión, siempre clara',
-    description: 'Aquí sabrás si Gmail está actualizado, importando o necesita atención. Tus movimientos guardados no se pierden.',
+    target: 'safe-to-spend',
+    title: 'Tu Margen Seguro Diario',
+    description: 'Este número te dice cuánto puedes gastar hoy sin salirte de tu límite mensual ni olvidar tus compromisos.',
   },
   {
     section: 'home',
-    target: 'period',
-    title: 'Mira el período que te importa',
-    description: 'Cambia fechas y moneda para que el resumen muestre exactamente lo que quieres analizar.',
+    target: 'recurring-radar',
+    title: 'Tus compromisos ya están considerados',
+    description: 'Los cobros que confirmes se reservan antes de calcular tu margen para que no gastes dinero que necesitarás después.',
   },
   {
     section: 'transactions',
     target: 'transactions',
-    title: 'Encuentra cualquier movimiento',
-    description: 'Busca y filtra por banco, tipo, categoría o estado. Toca un registro para corregir su información.',
-  },
-  {
-    section: 'transactions',
-    target: 'new-movement',
-    title: 'Añade lo que falte',
-    description: 'Este botón registra movimientos manuales. El recorrido no abrirá el formulario ni creará datos.',
-  },
-  {
-    section: 'analytics',
-    target: 'analytics',
-    title: 'Detecta patrones',
-    description: 'Compara categorías y días para entender cómo cambia tu gasto durante el período elegido.',
-  },
-  {
-    section: 'budget',
-    target: 'budget-overview',
-    title: 'Decide antes de gastar',
-    description: 'Define límites mensuales y revisa si tus categorías siguen dentro del ritmo que elegiste.',
+    title: 'Tus movimientos mantienen el cálculo actualizado',
+    description: 'Cuadre importa tus avisos bancarios y aquí puedes revisar o corregir cualquier movimiento que afecte tu margen.',
   },
 ] as const;

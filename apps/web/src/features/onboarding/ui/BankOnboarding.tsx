@@ -24,13 +24,14 @@ export function BankOnboarding({ authToken, onComplete, onLogout }: BankOnboardi
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500 text-xl font-black text-white shadow-lg shadow-emerald-500/20">C.</div>
-              <div><p className="font-bold">Tu punto de partida</p><p className="text-xs text-muted-foreground">Define tus ingresos y gastos fijos base.</p></div>
+              <div><p className="font-bold">Tu Margen Seguro</p><p className="text-xs text-muted-foreground">Define tu límite y los compromisos que debemos reservar.</p></div>
             </div>
             <Button variant="ghost" size="sm" className="gap-2" onClick={onLogout}><LogOut className="h-4 w-4" /> Salir</Button>
           </div>
 
           <FinancialBaselineStep
             busy={busy === 'complete'}
+            error={error}
             onFinish={finishWithBaseline}
             onSkip={skipToDashboard}
           />
@@ -45,7 +46,7 @@ export function BankOnboarding({ authToken, onComplete, onLogout }: BankOnboardi
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500 text-xl font-black text-white shadow-lg shadow-emerald-500/20">C.</div>
-            <div><p className="font-bold">Activa tus movimientos automáticos</p><p className="text-xs text-muted-foreground">Sin tocar tu banca en línea.</p></div>
+              <div><p className="font-bold">Configura tu Margen Seguro</p><p className="text-xs text-muted-foreground">Tus movimientos lo mantienen actualizado.</p></div>
           </div>
           <Button variant="ghost" size="sm" className="gap-2" onClick={onLogout}><LogOut className="h-4 w-4" /> Salir</Button>
         </div>
@@ -53,8 +54,9 @@ export function BankOnboarding({ authToken, onComplete, onLogout }: BankOnboardi
         <Card className="overflow-hidden border-border/60 shadow-xl">
           <div className="bg-gradient-to-br from-emerald-600 to-teal-600 p-6 text-white">
             <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-white/15"><Sparkles className="h-6 w-6" /></div>
-            <h1 className="text-2xl font-bold">Conecta tu correo y listo</h1>
-            <p className="mt-2 max-w-lg text-sm text-emerald-50/90">Elige tus bancos y Cuadre buscará únicamente sus notificaciones compatibles.</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-emerald-100">Paso 1 de 2 · Movimientos</p>
+            <h1 className="mt-1 text-2xl font-bold">Trae tus movimientos automáticamente</h1>
+            <p className="mt-2 max-w-lg text-sm text-emerald-50/90">Elige tus bancos y Cuadre buscará únicamente sus notificaciones compatibles para mantener actualizado tu Margen Seguro.</p>
           </div>
           <CardContent className="space-y-5 p-6">
             {loading ? <div className="flex min-h-40 items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-emerald-500" /></div> : activeInbox ? (

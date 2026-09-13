@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const GUIDE_VERSION = '2026-09-01.1';
+const GUIDE_VERSION = '2026-09-13.1';
 
 async function mockAuthenticatedDashboard(page: Page) {
   const productGuideUpdates: boolean[] = [];
@@ -108,7 +108,7 @@ async function expectSettledStep(page: Page, title: string) {
   await expect(page.locator('[data-product-tour-phase="settled"]')).toBeVisible();
   await expect(page.locator('[data-product-tour-card]')).toBeVisible();
   await expect(page.getByRole('heading', { name: title })).toBeVisible();
-  const primaryAction = title === 'Decide antes de gastar' ? 'Terminar' : 'Siguiente';
+  const primaryAction = title === 'Tus movimientos mantienen el cálculo actualizado' ? 'Terminar' : 'Siguiente';
   await expect(page.getByRole('button', { name: primaryAction })).toBeFocused();
 }
 
@@ -129,29 +129,11 @@ test('the tour settles every target before revealing its card', async ({ page })
   await page.goto('/app/home');
   await page.getByRole('button', { name: 'Ver recorrido' }).click();
 
-  await expectSettledStep(page, 'Tu conexión, siempre clara');
-  await moveTour(page, 'Siguiente', 'Mira el período que te importa');
-  await moveTour(page, 'Atrás', 'Tu conexión, siempre clara');
-  await moveTour(page, 'Siguiente', 'Mira el período que te importa');
-
-  for (const title of [
-    'Encuentra cualquier movimiento',
-    'Añade lo que falte',
-    'Detecta patrones',
-    'Decide antes de gastar',
-  ]) {
-    await moveTour(page, 'Siguiente', title);
-  }
-
-  const target = page.locator('[data-product-tour="budget-overview"]');
-  const bottomNavigation = page.locator('[data-product-tour-occluder="bottom-navigation"]');
-  const targetBox = await target.boundingBox();
-  expect(targetBox).not.toBeNull();
-  if (await bottomNavigation.isVisible()) {
-    const navigationBox = await bottomNavigation.boundingBox();
-    expect(navigationBox).not.toBeNull();
-    expect(targetBox!.y + targetBox!.height).toBeLessThan(navigationBox!.y);
-  }
+  await expectSettledStep(page, 'Tu Margen Seguro Diario');
+  await moveTour(page, 'Siguiente', 'Tus compromisos ya están considerados');
+  await moveTour(page, 'Atrás', 'Tu Margen Seguro Diario');
+  await moveTour(page, 'Siguiente', 'Tus compromisos ya están considerados');
+  await moveTour(page, 'Siguiente', 'Tus movimientos mantienen el cálculo actualizado');
 
   await page.getByRole('button', { name: 'Terminar' }).click();
   await expect(page.locator('[data-product-tour-phase]')).toHaveCount(0);
@@ -162,7 +144,7 @@ test('Escape cancels the tour and leaves normal navigation usable', async ({ pag
   const productGuideUpdates = await mockAuthenticatedDashboard(page);
   await page.goto('/app/home');
   await page.getByRole('button', { name: 'Ver recorrido' }).click();
-  await expectSettledStep(page, 'Tu conexión, siempre clara');
+  await expectSettledStep(page, 'Tu Margen Seguro Diario');
   await page.keyboard.press('Escape');
   await expect(page.locator('[data-product-tour-phase]')).toHaveCount(0);
   expect(productGuideUpdates).toEqual([false, false]);

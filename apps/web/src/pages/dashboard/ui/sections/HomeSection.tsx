@@ -120,6 +120,13 @@ export const HomeSection: React.FC<HomeSectionProps> = ({
         {periodToolbar}
       </div>
 
+      <SafeToSpendDial
+        value={safeToSpend.data || null}
+        loading={safeToSpend.isLoading}
+        hideBalances={hideBalances}
+        onManageBudget={onOpenBudget}
+      />
+
       <ConnectionHealthCard
         connection={primaryConnection}
         loading={connectionsLoading}
@@ -127,6 +134,15 @@ export const HomeSection: React.FC<HomeSectionProps> = ({
         onOpenConnections={onOpenConnections}
         onSync={onSyncConnection}
         syncing={syncingConnection}
+      />
+
+      <RecurringRadarCard
+        radar={recurring.data || null}
+        loading={recurring.isLoading}
+        hideBalances={hideBalances}
+        onEdit={setEditingRecurring}
+        onStatus={(bill, status) => recurringActions.update.mutate({ id: bill.id, input: { status } })}
+        onAcknowledge={(alertId) => recurringActions.acknowledge.mutate(alertId)}
       />
 
       <ProactiveFeedCard
@@ -138,22 +154,6 @@ export const HomeSection: React.FC<HomeSectionProps> = ({
         onQuickCategorize={(items) => { setTriageItems(items); setIsTriageOpen(true); }}
         onOpenWeeklyCheckin={() => setIsWeeklyCheckinOpen(true)}
         onOpenSimulator={() => setIsSimulatorOpen(true)}
-      />
-
-      <SafeToSpendDial
-        value={safeToSpend.data || null}
-        loading={safeToSpend.isLoading}
-        hideBalances={hideBalances}
-        onManageBudget={onOpenBudget}
-      />
-
-      <RecurringRadarCard
-        radar={recurring.data || null}
-        loading={recurring.isLoading}
-        hideBalances={hideBalances}
-        onEdit={setEditingRecurring}
-        onStatus={(bill, status) => recurringActions.update.mutate({ id: bill.id, input: { status } })}
-        onAcknowledge={(alertId) => recurringActions.acknowledge.mutate(alertId)}
       />
 
       <PaydayRitualCard

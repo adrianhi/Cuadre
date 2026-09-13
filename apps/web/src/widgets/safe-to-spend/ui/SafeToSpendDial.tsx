@@ -16,18 +16,18 @@ export function SafeToSpendDial(props: {
   hideBalances: boolean;
   onManageBudget: () => void;
 }) {
-  if (props.loading) return <div className="h-64 animate-pulse rounded-3xl bg-muted" />;
+  if (props.loading) return <div className="h-64 animate-pulse rounded-3xl bg-muted" data-product-tour="safe-to-spend" />;
   const value = props.value;
   if (!value || value.status === 'UNSET') return (
-    <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-primary/10 via-card to-card">
+    <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-primary/10 via-card to-card" data-product-tour="safe-to-spend">
       <CardContent className="flex flex-col items-center p-6 text-center">
         <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-primary">
           <Gauge className="h-6 w-6" />
         </span>
-        <h3 className="mt-3 text-lg font-black">Tu dinero libre diario</h3>
+        <h3 className="mt-3 text-lg font-black">Activa tu Margen Seguro Diario</h3>
         <p className="mt-1 max-w-md text-sm text-muted-foreground">{copy.UNSET}</p>
         <Button className="mt-4 gap-2" onClick={props.onManageBudget}>
-          <Settings2 className="h-4 w-4" /> Crear presupuesto
+          <Settings2 className="h-4 w-4" /> Definir límite mensual
         </Button>
       </CardContent>
     </Card>
@@ -39,10 +39,10 @@ export function SafeToSpendDial(props: {
   const color = value.status === 'EXCEEDED' ? '#ef4444'
     : value.status === 'ADJUSTING' ? '#f59e0b' : '#10b981';
   return (
-    <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-primary/10 via-card to-card shadow-sm">
+    <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-primary/10 via-card to-card shadow-sm" data-product-tour="safe-to-spend">
       <CardContent className="flex flex-col items-center p-5 sm:p-7">
         <div className="flex w-full items-center justify-between">
-          <div className="flex items-center gap-2 text-sm font-bold"><Gauge className="h-4 w-4 text-primary" /> Dinero libre hoy</div>
+          <div className="flex items-center gap-2 text-sm font-bold"><Gauge className="h-4 w-4 text-primary" /> Margen Seguro Diario</div>
           <span className="text-xs text-muted-foreground">{value.daysRemaining} días restantes</span>
         </div>
         <div

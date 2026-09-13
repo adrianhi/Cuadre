@@ -30,7 +30,7 @@ export function ProductTourInvite({ open, onStart, onDismiss, onStateChange }: P
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary"><Compass className="h-5 w-5" /></span>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-bold">¿Quieres un recorrido rápido?</p>
-          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">Te mostramos cada sección en menos de un minuto. No cambiaremos ningún dato.</p>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">Te mostramos tu Margen Seguro, los compromisos que reserva y de dónde salen tus movimientos. Toma menos de un minuto.</p>
           <div className="mt-3 flex items-center gap-2">
             <Button size="sm" className="min-h-11 flex-1" disabled={guide.saving} onClick={() => void choose(true)}>{guide.saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Ver recorrido'}</Button>
             <Button size="sm" variant="ghost" className="min-h-11" disabled={guide.saving} onClick={() => void choose(false)}>Saltar</Button>

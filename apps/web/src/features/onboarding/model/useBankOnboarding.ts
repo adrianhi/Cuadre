@@ -3,10 +3,17 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import type { IncomeFrequency } from '@bills/contracts';
 import { accountService } from '@/entities/account';
+import { budgetKeys, budgetService, currentBudgetMonth } from '@/entities/budget';
 import { connectionService, type InboxConnection } from '@/entities/connection';
-import { incomeService } from '@/entities/income';
-import { recurringService } from '@/entities/recurring-bill';
+import { incomeKeys, incomeService } from '@/entities/income';
+import { recurringKeys, recurringService } from '@/entities/recurring-bill';
 import { ApiClientError } from '@/shared/api';
+
+function santoDomingoToday() {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Santo_Domingo', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).format(new Date());
+}
 
 export function useBankOnboarding(authenticated: boolean, onComplete: () => void) {
   const queryClient = useQueryClient();
@@ -18,6 +25,7 @@ export function useBankOnboarding(authenticated: boolean, onComplete: () => void
   const [selectionOwner, setSelectionOwner] = useState('');
   const [step, setStep] = useState<'connection' | 'baseline'>('connection');
   const [savingBaseline, setSavingBaseline] = useState(false);
+  const [baselineError, setBaselineError] = useState('');
 
   const query = useQuery({
     queryKey: ['onboarding-connections'],
@@ -64,21 +72,44 @@ export function useBankOnboarding(authenticated: boolean, onComplete: () => void
   const completeMutation = useMutation({ mutationFn: accountService.completeOnboarding, onSuccess: onComplete });
 
   const finishWithBaseline = async (
+    monthlySpendingLimit: number,
     income?: { amount: number; frequency: IncomeFrequency },
     recurringServices?: Array<{ name: string; amount: number }>,
   ) => {
     setSavingBaseline(true);
+    setBaselineError('');
     try {
+      await budgetService.replace({
+        month: currentBudgetMonth(),
+        currency: 'DOP',
+        propagation: 'CURRENT_AND_FUTURE',
+        globalLimit: monthlySpendingLimit,
+        categories: [],
+      });
+
       if (income && income.amount > 0) {
-        await incomeService.createStream({
-          name: 'Nómina Principal',
-          amount: income.amount,
-          frequency: income.frequency,
-          currency: 'DOP',
-        });
+        const streams = await incomeService.listStreams();
+        const existing = streams.find((stream) =>
+          stream.currency === 'DOP' && stream.name.trim().toLocaleLowerCase('es') === 'nómina principal');
+        if (existing) {
+          await incomeService.updateStream(existing.id, {
+            amount: income.amount,
+            frequency: income.frequency,
+            currency: 'DOP',
+            isActive: true,
+          });
+        } else {
+          await incomeService.createStream({
+            name: 'Nómina Principal',
+            amount: income.amount,
+            frequency: income.frequency,
+            currency: 'DOP',
+          });
+        }
       }
+
       if (recurringServices && recurringServices.length > 0) {
-        const todayStr = new Date().toISOString().slice(0, 10);
+        const todayStr = santoDomingoToday();
         await Promise.all(
           recurringServices.map((service) =>
             recurringService.create({
@@ -91,10 +122,19 @@ export function useBankOnboarding(authenticated: boolean, onComplete: () => void
           ),
         );
       }
-    } catch {
-      // Continue to dashboard even if initial streams fail
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: budgetKeys.all }),
+        queryClient.invalidateQueries({ queryKey: incomeKeys.all }),
+        queryClient.invalidateQueries({ queryKey: recurringKeys.all }),
+      ]);
+      await completeMutation.mutateAsync();
+    } catch (reason) {
+      setBaselineError(reason instanceof Error
+        ? reason.message
+        : 'No pudimos guardar tu punto de partida. Inténtalo nuevamente.');
     } finally {
-      completeMutation.mutate();
+      setSavingBaseline(false);
     }
   };
 
@@ -111,7 +151,7 @@ export function useBankOnboarding(authenticated: boolean, onComplete: () => void
     syncState, isSyncing,
     loading: query.isLoading, busy: googleMutation.isPending ? 'google' : syncMutation.isPending ? 'sync' :
       selectionMutation.isPending ? 'selection' : (completeMutation.isPending || savingBaseline) ? 'complete' : null,
-    error: oauthError || error?.message || '',
+    error: baselineError || oauthError || error?.message || '',
     notice, googleUnavailable,
     connectGoogle: () => googleMutation.mutate(), sync: (connection: InboxConnection) => syncMutation.mutate(connection),
     saveSelection: () => selectionMutation.mutate(),

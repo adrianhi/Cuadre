@@ -32,10 +32,13 @@ export const authService = {
     if (error) throw error;
   },
 
-  async signInWithGoogle(redirectTo: string) {
+  async signInWithGoogle(redirectTo: string, options?: { selectAccount?: boolean }) {
     const { error } = await requireSupabase().auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo },
+      options: {
+        redirectTo,
+        ...(options?.selectAccount ? { queryParams: { prompt: 'select_account' } } : {}),
+      },
     });
     if (error) throw error;
   },

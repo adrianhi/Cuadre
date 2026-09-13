@@ -14,5 +14,5 @@ test('an unauthenticated visitor reaches the sign-in experience', async ({ page 
   await page.goto('/login');
   await expect(page.getByRole('heading', { name: /cuadre/i })).toBeVisible();
   await expect(page.getByRole('button', { name: /continuar con google/i })).toBeVisible();
-  await expect(page.getByText(/autenticación rápida y segura con tu cuenta de gmail/i)).toBeVisible();
+  await expect(page.getByText(/autenticación rápida y segura con tu cuenta de google/i)).toBeVisible();
 });

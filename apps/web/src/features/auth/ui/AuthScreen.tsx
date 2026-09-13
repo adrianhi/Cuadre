@@ -70,7 +70,7 @@ export function AuthScreen({
             Cuadre<span className="text-emerald-500">.</span>
           </h1>
           <p className="text-sm text-muted-foreground">
-            Tus finanzas y tus bancos, siempre al día.
+            Tu margen seguro, actualizado con tus bancos.
           </p>
         </div>
 
@@ -79,7 +79,7 @@ export function AuthScreen({
             {invited && !inviteFailure && (
               <div className="flex gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-700 dark:text-emerald-300">
                 <Sparkles className="h-4 w-4 shrink-0" />
-                <span><strong>Tu invitación de fundador está lista.</strong> Incluye 30 días sin costo desde la activación.</span>
+                <span><strong>Invitación verificada.</strong> Entra con la cuenta de Google que recibió este correo. Tus 30 días comienzan al activar.</span>
               </div>
             )}
 
@@ -100,7 +100,7 @@ export function AuthScreen({
                 </div>
                 {inviteFailure.code === 'BETA_INVITE_EMAIL_MISMATCH' ? (
                   <Button type="button" variant="outline" className="w-full" disabled={Boolean(loading)}
-                    onClick={() => void signInWithGoogle()}>
+                    onClick={() => void signInWithGoogle({ selectAccount: true })}>
                     Cambiar cuenta de Google
                   </Button>
                 ) : (
@@ -126,20 +126,22 @@ export function AuthScreen({
                   variant="outline"
                   className="h-12 w-full gap-3 rounded-2xl border-border/80 bg-background font-semibold text-foreground shadow-sm transition-all hover:bg-muted hover:shadow-md"
                   disabled={Boolean(loading)}
-                  onClick={() => void signInWithGoogle()}
+                  onClick={() => void signInWithGoogle({ selectAccount: invited })}
                 >
                   {loading === "google" ? (
                     <Loader2 className="h-5 w-5 animate-spin text-emerald-500" />
                   ) : (
                     <GoogleIcon className="h-5 w-5 shrink-0" />
                   )}
-                  <span>Continuar con Google</span>
+                  <span>{invited ? 'Entrar con la cuenta invitada' : 'Continuar con Google'}</span>
                 </Button>
 
                 <div className="flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
                   <Lock className="h-3.5 w-3.5 text-emerald-500" />
                   <span>
-                    Autenticación rápida y segura con tu cuenta de Gmail
+                    {invited
+                      ? 'Este paso solo confirma tu identidad. Conectar Gmail viene después.'
+                      : 'Autenticación rápida y segura con tu cuenta de Google'}
                   </span>
                 </div>
               </>
@@ -160,7 +162,7 @@ export function AuthScreen({
             Bancos compatibles en piloto: BHD, Qik, Banreservas y Popular.
           </p>
           <p>
-            Al continuar aceptas nuestros{" "}
+            Antes de conectar datos podrás revisar nuestros{" "}
             <a
               href="/legal/terms"
               target="_blank"
