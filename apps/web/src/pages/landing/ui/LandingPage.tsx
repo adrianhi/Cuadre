@@ -4,7 +4,7 @@ import { LandingHowItWorksSection } from './sections/LandingHowItWorksSection';
 import { LandingComparisonSection } from './sections/LandingComparisonSection';
 import { LandingBankCoverageSection } from './sections/LandingBankCoverageSection';
 import { LandingSecuritySection } from './sections/LandingSecuritySection';
-import { LandingPricingSection } from './sections/LandingPricingSection';
+// import { LandingPricingSection } from './sections/LandingPricingSection';
 import { LandingFaqSection } from './sections/LandingFaqSection';
 import { LandingFooter } from './sections/LandingFooter';
 
@@ -22,7 +22,8 @@ export function LandingPage({ hasSession = false }: LandingPageProps) {
         <LandingComparisonSection />
         <LandingBankCoverageSection />
         <LandingSecuritySection />
-        <LandingPricingSection />
+        {/* Sección de planes oculta temporalmente durante la beta privada */}
+        {/* <LandingPricingSection /> */}
         <LandingFaqSection />
       </main>
       <LandingFooter />

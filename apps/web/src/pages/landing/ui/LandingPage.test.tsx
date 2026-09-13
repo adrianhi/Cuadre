@@ -20,8 +20,8 @@ describe('LandingPage', () => {
     expect(html).toContain('Ya tengo invitación');
     expect(html).toContain('href="#como-funciona"');
     expect(html).toContain('href="#seguridad"');
-    expect(html).toContain('href="#planes"');
     expect(html).toContain('href="#preguntas"');
+    expect(html).not.toContain('href="#planes"');
 
     // Waitlist Form
     expect(html).toContain('tu.correo@ejemplo.com');
@@ -57,18 +57,15 @@ describe('LandingPage', () => {
     expect(html).toContain('Scotiabank República Dominicana');
   });
 
-  it('shows projected plans Free and Pro with correct prices and no billing active', () => {
+  it('hides the plans section during the initial private beta phase', () => {
     const html = renderToStaticMarkup(
       <MemoryRouter>
         <LandingPage hasSession={false} />
       </MemoryRouter>
     );
 
-    expect(html).toContain('Planes previstos después de la beta');
-    expect(html).toContain('RD$ 0');
-    expect(html).toContain('RD$ 299');
-    expect(html).toContain('Free');
-    expect(html).toContain('Pro');
+    expect(html).not.toContain('Planes previstos después de la beta');
+    expect(html).not.toContain('href="#planes"');
   });
 
   it('strictly excludes mentions of 90 days and frozen prices', () => {

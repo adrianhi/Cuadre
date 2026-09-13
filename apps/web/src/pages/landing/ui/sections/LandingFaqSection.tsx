@@ -28,9 +28,9 @@ export function LandingFaqSection() {
         'Cuadre está optimizado nativamente para el ritmo laboral dominicano: puedes configurar pagos quincenales (15 y 30), mensuales (1 cobro al mes) o semanales. El Margen Seguro Diario se recalcula considerando exactamente cuántos días faltan para tu próximo cobro.',
     },
     {
-      question: '¿Cuáles son los planes previstos después de la beta?',
+      question: '¿Qué costo tiene usar Cuadre durante la beta privada?',
       answer:
-        'Al concluir la fase beta, existirá un plan Free de costo RD$0 con funciones esenciales y 1 banco conectado, y un plan Pro de RD$299/mes con todos los bancos, Radar de Cobros, Pulso Semanal y exportaciones. Mientras la beta esté en curso, todos los invitados disfrutan de la experiencia Pro completa sin costo.',
+        'Durante toda la fase de beta privada, el acceso es 100% gratuito por 30 días desde la activación. No solicitamos tarjetas ni realizamos cobros automáticos. Próximamente anunciaremos los planes comerciales una vez concluya el período de prueba privada.',
     },
   ];
 

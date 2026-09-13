@@ -31,9 +31,6 @@ export function LandingHeader({ hasSession }: LandingHeaderProps) {
           <a href="#seguridad" className="hover:text-white transition-colors">
             Seguridad
           </a>
-          <a href="#planes" className="hover:text-white transition-colors">
-            Planes
-          </a>
           <a href="#preguntas" className="hover:text-white transition-colors">
             Preguntas
           </a>
@@ -77,13 +74,6 @@ export function LandingHeader({ hasSession }: LandingHeaderProps) {
             className="py-1.5 hover:text-emerald-400 transition-colors"
           >
             Seguridad
-          </a>
-          <a
-            href="#planes"
-            onClick={() => setMobileMenuOpen(false)}
-            className="py-1.5 hover:text-emerald-400 transition-colors"
-          >
-            Planes
           </a>
           <a
             href="#preguntas"
