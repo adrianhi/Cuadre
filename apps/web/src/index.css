@@ -94,6 +94,48 @@ button, a, input, select, textarea {
     background: #10b981;
     box-shadow: 0 0 0 4px rgb(16 185 129 / 18%);
   }
+
+  @keyframes landingFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-7px); }
+  }
+
+  @keyframes landingPulseGlow {
+    0%, 100% { opacity: 0.12; transform: scale(1); }
+    50% { opacity: 0.22; transform: scale(1.06); }
+  }
+
+  @keyframes landingFadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-landing-float {
+    animation: landingFloat 5s ease-in-out infinite;
+  }
+
+  .animate-landing-glow {
+    animation: landingPulseGlow 7s ease-in-out infinite;
+  }
+
+  .animate-fade-in-up {
+    animation: landingFadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .landing-card-interactive {
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+    will-change: transform;
+  }
+
+  .landing-card-interactive:hover {
+    transform: translateY(-3px);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

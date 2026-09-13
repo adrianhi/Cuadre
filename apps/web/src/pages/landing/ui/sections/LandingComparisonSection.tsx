@@ -45,7 +45,7 @@ export function LandingComparisonSection() {
         {/* Desktop Table / Mobile Cards */}
         <div className="grid gap-6 md:grid-cols-2">
           {/* Traditional Card */}
-          <div className="rounded-3xl border border-slate-800 bg-slate-900/40 p-6 sm:p-8 flex flex-col justify-between">
+          <div className="rounded-3xl border border-slate-800 bg-slate-900/40 p-6 sm:p-8 flex flex-col justify-between landing-card-interactive hover:border-slate-700 shadow-sm">
             <div>
               <div className="flex items-center justify-between pb-4 border-b border-slate-800/80 mb-6">
                 <h3 className="text-base font-bold text-slate-300">Registro tradicional o manual</h3>
@@ -74,11 +74,11 @@ export function LandingComparisonSection() {
           </div>
 
           {/* Cuadre Card */}
-          <div className="rounded-3xl border border-emerald-500/30 bg-gradient-to-b from-emerald-950/20 via-slate-900/60 to-slate-900/80 p-6 sm:p-8 flex flex-col justify-between shadow-xl shadow-emerald-950/10">
+          <div className="rounded-3xl border border-emerald-500/30 bg-gradient-to-b from-emerald-950/20 via-slate-900/60 to-slate-900/80 p-6 sm:p-8 flex flex-col justify-between landing-card-interactive hover:border-emerald-500/50 hover:shadow-2xl hover:shadow-emerald-950/20 shadow-xl shadow-emerald-950/10">
             <div>
               <div className="flex items-center justify-between pb-4 border-b border-emerald-500/20 mb-6">
                 <div className="flex items-center gap-2">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-emerald-500 text-xs font-black text-white">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-emerald-500 text-xs font-black text-white shadow-xs shadow-emerald-500/30">
                     C.
                   </span>
                   <h3 className="text-base font-bold text-white">Decisiones con Cuadre</h3>

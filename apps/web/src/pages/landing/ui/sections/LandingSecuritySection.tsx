@@ -63,13 +63,13 @@ export function LandingSecuritySection() {
             return (
               <div
                 key={pillar.title}
-                className="rounded-3xl border border-slate-800 bg-slate-900/60 p-6 flex flex-col justify-between hover:border-slate-700 transition-colors"
+                className="rounded-3xl border border-slate-800 bg-slate-900/60 p-6 flex flex-col justify-between landing-card-interactive hover:border-emerald-500/40 hover:shadow-lg hover:shadow-emerald-950/20 transition-all group"
               >
                 <div>
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 mb-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 mb-4 group-hover:scale-110 group-hover:bg-emerald-500/20 transition-all duration-300">
                     <Icon className="h-5 w-5" />
                   </div>
-                  <h3 className="text-sm font-bold text-white leading-snug">{pillar.title}</h3>
+                  <h3 className="text-sm font-bold text-white leading-snug group-hover:text-emerald-300 transition-colors">{pillar.title}</h3>
                   <p className="mt-2.5 text-xs text-slate-400 leading-relaxed">{pillar.description}</p>
                 </div>
               </div>

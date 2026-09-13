@@ -39,15 +39,15 @@ export function LandingBankCoverageSection() {
             {activeBanks.map((bank) => (
               <div
                 key={bank.name}
-                className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 flex flex-col justify-between hover:border-emerald-500/40 transition-colors shadow-xs"
+                className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 flex flex-col justify-between landing-card-interactive hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-950/20 shadow-xs group"
               >
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase">
+                    <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase group-hover:bg-emerald-500/20 transition-colors">
                       {bank.status}
                     </span>
                   </div>
-                  <h3 className="text-sm font-bold text-white leading-tight">{bank.name}</h3>
+                  <h3 className="text-sm font-bold text-white leading-tight group-hover:text-emerald-300 transition-colors">{bank.name}</h3>
                   <p className="mt-2 text-[11px] text-slate-400 leading-relaxed">{bank.detail}</p>
                 </div>
               </div>

@@ -55,16 +55,16 @@ export function LandingFaqSection() {
           {faqs.map((faq, index) => (
             <details
               key={faq.question}
-              className="group rounded-2xl border border-slate-800/90 bg-slate-900/50 p-5 transition-colors open:border-emerald-500/30 open:bg-slate-900/80"
+              className="group rounded-2xl border border-slate-800/90 bg-slate-900/50 p-5 transition-all duration-300 hover:border-slate-700 open:border-emerald-500/30 open:bg-slate-900/80 hover:shadow-md hover:shadow-emerald-950/10"
               data-faq-index={index}
             >
-              <summary className="flex cursor-pointer list-none items-center justify-between font-bold text-sm text-white transition-colors hover:text-emerald-400 focus:outline-hidden">
+              <summary className="flex cursor-pointer list-none items-center justify-between font-bold text-sm text-white transition-colors hover:text-emerald-300 focus:outline-hidden">
                 <span className="pr-4">{faq.question}</span>
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-slate-400 group-open:bg-emerald-500/20 group-open:text-emerald-400 transition-transform duration-200 group-open:rotate-180">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-slate-400 group-open:bg-emerald-500/20 group-open:text-emerald-400 transition-transform duration-300 ease-out group-open:rotate-180">
                   <ChevronDown className="h-3.5 w-3.5" />
                 </span>
               </summary>
-              <div className="mt-3.5 pt-3 border-t border-slate-800/60 text-xs text-slate-300 leading-relaxed">
+              <div className="mt-3.5 pt-3 border-t border-slate-800/60 text-xs text-slate-300 leading-relaxed animate-in fade-in duration-200">
                 <p>{faq.answer}</p>
               </div>
             </details>

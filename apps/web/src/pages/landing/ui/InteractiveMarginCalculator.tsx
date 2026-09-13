@@ -179,17 +179,20 @@ export function InteractiveMarginCalculator() {
             <span>{params.daysRemaining} días restantes</span>
           </div>
 
-          {/* Conic Dial Meter */}
+          {/* Conic Dial Meter with Dynamic Ambient Glow */}
           <div
-            className="mt-4 grid h-40 w-40 place-items-center rounded-full p-2.5 transition-all duration-500"
-            style={{ background: `conic-gradient(${color} ${percentage}%, #1e293b ${percentage}% 100%)` }}
+            className="mt-4 grid h-40 w-40 place-items-center rounded-full p-2.5 transition-all duration-500 hover:scale-105 cursor-default"
+            style={{
+              background: `conic-gradient(${color} ${percentage}%, #1e293b ${percentage}% 100%)`,
+              boxShadow: `0 0 35px -8px ${color}35`,
+            }}
             role="meter"
             aria-label="Dinero simulado disponible para hoy"
             aria-valuemin={0}
             aria-valuemax={result.initialDailyAllowance}
             aria-valuenow={result.todayAvailable}
           >
-            <div className="grid h-full w-full place-items-center rounded-full bg-slate-950 p-2 shadow-inner">
+            <div className="grid h-full w-full place-items-center rounded-full bg-slate-950 p-2 shadow-inner transition-colors duration-500">
               <div>
                 <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Puedes gastar</p>
                 <p className="mt-0.5 text-2xl font-black tracking-tight text-white">
