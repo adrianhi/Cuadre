@@ -1,5 +1,5 @@
 import { Check } from 'lucide-react';
-import { formatCurrency } from '@/shared/lib';
+import { formatAmountInput, formatCurrency, parseAmountInput } from '@/shared/lib';
 import { Input } from '@/shared/ui';
 import { COMMON_RD_SERVICES } from '../model/common-recurring-services';
 
@@ -63,13 +63,13 @@ export function RecurringServiceSelector({
                 <label className="grid gap-1 border-t border-border/50 px-3 pb-3 pt-2 text-[11px] font-medium text-muted-foreground">
                   Monto mensual estimado (DOP)
                   <Input
-                    type="number"
-                    min="1"
-                    max="999999999.99"
-                    step="100"
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="Ej. 2,500"
                     value={serviceAmounts[service.id]}
-                    onChange={(event) => onAmountChange(service.id, event.target.value)}
-                    aria-invalid={Number(serviceAmounts[service.id]) <= 0}
+                    onChange={(event) => onAmountChange(service.id, formatAmountInput(event.target.value))}
+                    aria-invalid={Number(parseAmountInput(serviceAmounts[service.id])) <= 0}
+                    className="font-mono text-xs font-semibold"
                   />
                 </label>
               )}

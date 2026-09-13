@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { AlertCircle, ArrowRight, Loader2, Sparkles, Wallet } from 'lucide-react';
 import type { IncomeFrequency } from '@bills/contracts';
-import { formatCurrency } from '@/shared/lib';
+import { formatAmountInput, formatCurrency, parseAmountInput } from '@/shared/lib';
 import { Button, Card, CardContent, Input } from '@/shared/ui';
 import { COMMON_RD_SERVICES } from '../model/common-recurring-services';
 import { RecurringServiceSelector } from './RecurringServiceSelector';
@@ -28,11 +28,11 @@ export function FinancialBaselineStep({
   const [frequency, setFrequency] = useState<IncomeFrequency>('BIWEEKLY_15_30');
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [serviceAmounts, setServiceAmounts] = useState<Record<string, string>>(
-    Object.fromEntries(COMMON_RD_SERVICES.map((service) => [service.id, String(service.defaultAmount)])),
+    Object.fromEntries(COMMON_RD_SERVICES.map((service) => [service.id, formatAmountInput(service.defaultAmount)])),
   );
 
-  const parsedLimit = Number(monthlySpendingLimit) || 0;
-  const parsedIncome = Number(incomeAmount) || 0;
+  const parsedLimit = Number(parseAmountInput(monthlySpendingLimit)) || 0;
+  const parsedIncome = Number(parseAmountInput(incomeAmount)) || 0;
   const monthlyIncome = parsedIncome > 0
     ? frequency === 'BIWEEKLY_15_30'
       ? parsedIncome * 2
@@ -43,7 +43,7 @@ export function FinancialBaselineStep({
 
   const estimatedFixedExpenses = COMMON_RD_SERVICES
     .filter((s) => selectedServices.includes(s.id))
-    .reduce((sum, s) => sum + (Number(serviceAmounts[s.id]) || 0), 0);
+    .reduce((sum, s) => sum + (Number(parseAmountInput(serviceAmounts[s.id])) || 0), 0);
 
   const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'America/Santo_Domingo', year: 'numeric', month: '2-digit', day: '2-digit',
@@ -56,7 +56,7 @@ export function FinancialBaselineStep({
   const estimatedDailyMargin = daysRemaining > 0 ? variableMonthlyMargin / daysRemaining : 0;
   const validLimit = parsedLimit > 0 && parsedLimit <= 999_999_999.99;
   const validServices = selectedServices.every((id) => {
-    const amount = Number(serviceAmounts[id]);
+    const amount = Number(parseAmountInput(serviceAmounts[id]));
     return amount > 0 && amount <= 999_999_999.99;
   });
 
@@ -70,7 +70,7 @@ export function FinancialBaselineStep({
     const incomeData = parsedIncome > 0 ? { amount: parsedIncome, frequency } : undefined;
     const recurringData = COMMON_RD_SERVICES
       .filter((s) => selectedServices.includes(s.id))
-      .map((s) => ({ name: s.name, amount: Number(serviceAmounts[s.id]) }));
+      .map((s) => ({ name: s.name, amount: Number(parseAmountInput(serviceAmounts[s.id])) }));
 
     if (!validLimit || !validServices) return;
     onFinish(parsedLimit, incomeData, recurringData);
@@ -103,14 +103,13 @@ export function FinancialBaselineStep({
           <label className="grid gap-1 text-xs font-medium text-muted-foreground">
             Límite mensual (DOP)
             <Input
-              type="number"
-              min="1"
-              max="999999999.99"
-              step="500"
+              type="text"
+              inputMode="decimal"
               placeholder="Ej. 45,000"
               value={monthlySpendingLimit}
-              onChange={(event) => setMonthlySpendingLimit(event.target.value)}
+              onChange={(event) => setMonthlySpendingLimit(formatAmountInput(event.target.value))}
               aria-invalid={monthlySpendingLimit.length > 0 && !validLimit}
+              className="font-mono text-base font-semibold"
             />
           </label>
           {monthlySpendingLimit.length > 0 && !validLimit && (
@@ -130,12 +129,12 @@ export function FinancialBaselineStep({
             <label className="grid gap-1 text-xs font-medium text-muted-foreground">
               Monto (DOP)
               <Input
-                type="number"
-                min="0"
-                step="500"
+                type="text"
+                inputMode="decimal"
                 placeholder="Ej. 35,000"
                 value={incomeAmount}
-                onChange={(e) => setIncomeAmount(e.target.value)}
+                onChange={(e) => setIncomeAmount(formatAmountInput(e.target.value))}
+                className="font-mono text-base font-semibold"
               />
             </label>
             <label className="grid gap-1 text-xs font-medium text-muted-foreground">
