@@ -15,6 +15,8 @@ import type {
 } from '../application/ingestion-job.port';
 import { IngestionScheduler } from './ingestion-scheduler';
 
+import type { SyncCompletedNotifier } from '../application/sync-completed-notifier';
+
 const NEVER_RETRY = new Date('9999-12-31T23:59:59.999Z');
 
 function errorCode(error: unknown): string {
@@ -35,7 +37,8 @@ function timeBucket(date: Date, minutes: number): number {
 export class IngestionJobService implements IngestionJobQueue, IngestionJobProcessor {
   public constructor(
     private readonly handlers: GmailJobHandlerRegistry,
-    private readonly scheduler: IngestionScheduler
+    private readonly scheduler: IngestionScheduler,
+    private readonly notifier?: SyncCompletedNotifier
   ) {}
 
   public enqueue(input: EnqueueJobInput) {
@@ -165,6 +168,20 @@ export class IngestionJobService implements IngestionJobQueue, IngestionJobProce
           payload: { ...payload, result: (result ?? {}) as Prisma.InputJsonValue },
         },
       });
+
+      if (['GMAIL_INITIAL_BACKFILL', 'GMAIL_BANK_BACKFILL'].includes(candidate.type) && this.notifier) {
+        const summary = (result && typeof result === 'object' && 'created' in result)
+          ? (result as { scanned: number; created: number })
+          : null;
+        if (summary) {
+          void this.notifier.notify(
+            candidate.workspaceId,
+            candidate.inboxConnectionId,
+            summary,
+            candidate.id
+          ).catch(() => undefined);
+        }
+      }
     } catch (error) {
       await this.fail(candidate.id, candidate.inboxConnectionId, candidate.attempts + 1, candidate.maxAttempts, error);
     } finally {

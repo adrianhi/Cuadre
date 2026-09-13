@@ -26,6 +26,7 @@ import { GmailSyncService } from './modules/ingestion/infrastructure/gmail/gmail
 import { GmailJobHandlerRegistry } from './modules/ingestion/application/gmail-job-handler.registry';
 import { IngestionScheduler } from './modules/ingestion/infrastructure/ingestion-scheduler';
 import { IngestionJobService } from './modules/ingestion/infrastructure/ingestion-job.service';
+import { SyncCompletedNotifier } from './modules/ingestion/application/sync-completed-notifier';
 import { IngestionRunner } from './ingestion/ingestion-runner';
 import { HandleGmailPush } from './modules/ingestion/application/handle-gmail-push';
 import { GoogleOidcAdapter } from './modules/ingestion/providers/google/google-oidc.adapter';
@@ -144,10 +145,12 @@ const gmailSyncService = new GmailSyncService(
   gmailQueryService,
   gmailMessageProcessor
 );
+const emailTransport = new EmailTransportService();
+const syncCompletedNotifier = new SyncCompletedNotifier(emailTransport, config.appUrl);
 const gmailJobHandlers = new GmailJobHandlerRegistry(gmailSyncService);
 let ingestionJobService!: IngestionJobService;
 const ingestionScheduler = new IngestionScheduler((input) => ingestionJobService.enqueue(input));
-ingestionJobService = new IngestionJobService(gmailJobHandlers, ingestionScheduler);
+ingestionJobService = new IngestionJobService(gmailJobHandlers, ingestionScheduler, syncCompletedNotifier);
 const ingestionRunner = new IngestionRunner(ingestionJobService);
 const gmailPushHandler = new HandleGmailPush(
   new GoogleOidcAdapter(),
@@ -171,7 +174,6 @@ const proactiveEngineService = new ProactiveEngineService(
   proactiveRepository,
 );
 const emailRepository = new PrismaEmailRepository();
-const emailTransport = new EmailTransportService();
 const weeklyEmailBuilder = new WeeklyEmailBuilder(
   { radar: (wId, curr, win) => recurringService.radar(wId, curr, win) },
   { getSafeToSpend: (wId, curr) => getSafeToSpend.execute(wId, curr) },
@@ -243,5 +245,6 @@ export const appContainer = {
   betaInterestController: new BetaInterestController(
     new BetaInterestService(new PrismaBetaInterestRepository(), betaInviteService),
   ),
+  syncCompletedNotifier,
 };
 

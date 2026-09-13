@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ProductGuideState } from '@bills/contracts';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { connectionService } from '@/entities/connection';
+import { toast } from '@/shared/ui';
 import { APP_SECTIONS, type AppSection } from '@/widgets/bottom-nav';
 
 export const DASHBOARD_SECTION_TITLES: Record<AppSection, string> = {
@@ -54,6 +55,30 @@ export function useDashboardShell(productGuide: ProductGuideState) {
       await connectionsQuery.refetch();
     },
   });
+  const queryClient = useQueryClient();
+  const wasSyncingRef = useRef(false);
+
+  useEffect(() => {
+    const isCurrentlySyncing = connectionsQuery.data?.some(
+      (connection) =>
+        connection.currentJob?.status === 'PENDING' ||
+        connection.currentJob?.status === 'PROCESSING'
+    ) ?? false;
+
+    if (wasSyncingRef.current && !isCurrentlySyncing) {
+      const active = connectionsQuery.data?.find((c) => c.status === 'ACTIVE');
+      const created = active?.lastSyncSummary?.created;
+      const message = typeof created === 'number' && created > 0
+        ? `Se agregaron ${created} transacciones de tus bancos.`
+        : 'Tus movimientos están al día.';
+      toast.success(message, '🎉 ¡Sincronización completada!');
+      void queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      void queryClient.invalidateQueries({ queryKey: ['stats'] });
+      void queryClient.invalidateQueries({ queryKey: ['budgets'] });
+    }
+
+    wasSyncingRef.current = isCurrentlySyncing;
+  }, [connectionsQuery.data, queryClient]);
 
   useEffect(() => {
     if (location.pathname.includes('/mas') || location.pathname.includes('/more')) {
