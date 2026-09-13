@@ -190,7 +190,14 @@ export class PrismaEmailRepository implements ProactiveEmailRepository {
   }
 
   testCount(profileId: string, since: Date) {
-    return prisma.emailDelivery.count({ where: { profileId, kind: 'TEST', createdAt: { gte: since } } });
+    return prisma.emailDelivery.count({
+      where: {
+        profileId,
+        kind: 'TEST',
+        createdAt: { gte: since },
+        status: { in: ['PENDING', 'PROCESSING', 'ACCEPTED', 'DELIVERED'] },
+      },
+    });
   }
 
   async recordProviderEvent(input: Parameters<ProactiveEmailRepository['recordProviderEvent']>[0]) {

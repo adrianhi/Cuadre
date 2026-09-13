@@ -43,6 +43,8 @@ export class EmailTransportService implements ProactiveEmailTransport {
           }),
         });
       if (!res.ok) {
+        const errorText = await res.text().catch(() => '');
+        logger.error('resend_http_error', { status: res.status, errorText });
         const retryable = res.status === 429 || res.status >= 500;
         throw new EmailTransportError(`RESEND_HTTP_${res.status}`, retryable, false);
       }
