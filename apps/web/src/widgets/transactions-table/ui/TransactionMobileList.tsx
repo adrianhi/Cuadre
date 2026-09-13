@@ -15,7 +15,7 @@ export const TransactionMobileList = ({ groups, hideBalances, onEdit }: {
   <div className="block lg:hidden">
     {groups.map((group) => (
       <div key={group.dateKey} className="border-b border-border/40 last:border-b-0">
-        <div className="sticky top-0 z-10 flex items-center justify-between border-y border-border/50 bg-muted/95 px-4 py-2 shadow-xs backdrop-blur-md dark:bg-muted/90">
+        <div className="sticky top-[calc(4rem+env(safe-area-inset-top))] z-10 flex items-center justify-between border-y border-border/50 bg-muted/95 px-4 py-2 shadow-xs backdrop-blur-md dark:bg-muted/90">
           <div className="flex items-center gap-1.5">
             <Calendar className="h-3.5 w-3.5 text-emerald-500" />
             <span className="text-xs font-extrabold text-foreground">{group.title}</span>
