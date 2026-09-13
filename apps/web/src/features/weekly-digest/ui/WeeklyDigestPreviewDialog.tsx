@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { CheckCircle2, Mail, Send, Sparkles } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Mail, Send, Sparkles } from 'lucide-react';
 import { useSendWeeklyDigestTest, useWeeklyDigestPreview } from '@/entities/proactive';
+import { normalizeApiError } from '@/shared/api';
 import {
   Button,
   Dialog,
@@ -9,6 +10,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  toast,
 } from '@/shared/ui';
 
 export interface WeeklyDigestPreviewDialogProps {
@@ -25,16 +27,22 @@ export function WeeklyDigestPreviewDialog({
   const activeCurrency = currency === 'USD' ? 'USD' : 'DOP';
   const preview = useWeeklyDigestPreview(activeCurrency, open);
   const sendTestMutation = useSendWeeklyDigestTest();
-  const [sendSuccess, setSendSuccess] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const handleSendTest = async () => {
+    setFeedback(null);
     try {
       const res = await sendTestMutation.mutateAsync({ currency: activeCurrency });
-      setSendSuccess(
-        `Prueba procesada (${res.mode === 'SMTP' ? 'Enviado por correo' : 'Registrado en log'}).`
-      );
-    } catch {
-      setSendSuccess('No se pudo enviar la prueba.');
+      const msg = res.mode === 'SMTP'
+        ? `¡Correo de prueba enviado con éxito a ${res.recipient || 'tu correo'}!`
+        : 'Prueba registrada en modo auditoría.';
+      setFeedback({ type: 'success', message: msg });
+      toast.success(msg);
+    } catch (err) {
+      const apiErr = normalizeApiError(err);
+      const msg = apiErr.message || 'No se pudo enviar el correo de prueba.';
+      setFeedback({ type: 'error', message: msg });
+      toast.error(msg);
     }
   };
 
@@ -74,10 +82,26 @@ export function WeeklyDigestPreviewDialog({
             <p className="text-xs text-muted-foreground">No se pudo cargar la vista previa.</p>
           )}
 
-          {sendSuccess && (
-            <div className="flex items-center gap-2 rounded-lg bg-emerald-500/10 p-2.5 text-xs text-emerald-700 dark:text-emerald-300">
-              <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-              <span>{sendSuccess}</span>
+          {feedback && (
+            <div
+              role={feedback.type === 'error' ? 'alert' : 'status'}
+              className={`flex items-start gap-2.5 rounded-xl border p-3 text-xs animate-in fade-in ${
+                feedback.type === 'error'
+                  ? 'border-destructive/30 bg-destructive/10 text-destructive'
+                  : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+              }`}
+            >
+              {feedback.type === 'error' ? (
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+              ) : (
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+              )}
+              <div className="flex-1 space-y-0.5">
+                <p className="font-bold leading-tight">
+                  {feedback.type === 'error' ? 'Error al enviar prueba' : 'Envío completado'}
+                </p>
+                <p className="text-[11px] opacity-90 leading-relaxed">{feedback.message}</p>
+              </div>
             </div>
           )}
         </div>

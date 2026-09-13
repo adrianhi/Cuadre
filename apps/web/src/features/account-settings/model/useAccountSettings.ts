@@ -5,6 +5,7 @@ import { accountService } from '@/entities/account';
 import { connectionService } from '@/entities/connection';
 import { proactiveService, type UpdateEmailNotificationPreferencesInput } from '@/entities/proactive';
 import { downloadBlob } from '@/shared/lib';
+import { toast } from '@/shared/ui';
 
 export function useAccountSettings(isOpen: boolean, authenticated: boolean, onAccountDeleted: () => void) {
   const queryClient = useQueryClient();
@@ -38,22 +39,73 @@ export function useAccountSettings(isOpen: boolean, authenticated: boolean, onAc
   const google = useMutation({
     mutationFn: (institutionCodes: string[]) => connectionService.startGoogle('/app/home?settings=connections', institutionCodes),
     onSuccess: ({ authorizationUrl }) => window.location.assign(authorizationUrl),
+    onError: (err) => toast.error(err.message || 'Error al conectar con Google.'),
   });
   const selectionMutation = useMutation({
     mutationFn: ({ id, codes }: { id: string; codes: string[] }) => connectionService.updateInstitutions(id, codes),
-    onSuccess: async () => { setNotice('Selección guardada. Los bancos nuevos se importarán en segundo plano.'); await refresh(); },
+    onSuccess: async () => {
+      const msg = 'Selección guardada. Los bancos nuevos se importarán en segundo plano.';
+      setNotice(msg);
+      toast.success(msg);
+      await refresh();
+    },
+    onError: (err) => toast.error(err.message || 'Error al guardar selección de bancos.'),
   });
-  const syncMutation = useMutation({ mutationFn: connectionService.sync, onSuccess: async () => { setNotice('Sincronización en cola; continuará en segundo plano.'); await refresh(); } });
-  const disconnectMutation = useMutation({ mutationFn: connectionService.disconnect, onSuccess: refresh });
-  const exportMutation = useMutation({ mutationFn: accountService.exportData, onSuccess: (blob) => downloadBlob(blob, `cuadre-account-export-${new Date().toISOString().slice(0, 10)}.json`) });
-  const deleteMutation = useMutation({ mutationFn: accountService.deleteAccount, onSuccess: onAccountDeleted });
+  const syncMutation = useMutation({
+    mutationFn: connectionService.sync,
+    onSuccess: async () => {
+      const msg = 'Sincronización en cola; continuará en segundo plano.';
+      setNotice(msg);
+      toast.info(msg);
+      await refresh();
+    },
+    onError: (err) => toast.error(err.message || 'Error al solicitar sincronización.'),
+  });
+  const disconnectMutation = useMutation({
+    mutationFn: connectionService.disconnect,
+    onSuccess: async () => {
+      toast.info('Conexión desvinculada.');
+      await refresh();
+    },
+    onError: (err) => toast.error(err.message || 'Error al desvincular.'),
+  });
+  const exportMutation = useMutation({
+    mutationFn: accountService.exportData,
+    onSuccess: (blob) => {
+      downloadBlob(blob, `cuadre-account-export-${new Date().toISOString().slice(0, 10)}.json`);
+      toast.success('Archivo de exportación descargado.');
+    },
+    onError: (err) => toast.error(err.message || 'Error al exportar datos.'),
+  });
+  const deleteMutation = useMutation({
+    mutationFn: accountService.deleteAccount,
+    onSuccess: onAccountDeleted,
+    onError: (err) => toast.error(err.message || 'Error al eliminar la cuenta.'),
+  });
   const emailPreferencesMutation = useMutation({
     mutationFn: proactiveService.updateEmailPreferences,
-    onSuccess: async () => { setNotice('Preferencias de correo guardadas.'); await refresh(); },
+    onSuccess: async () => {
+      const msg = 'Preferencias de correo guardadas.';
+      setNotice(msg);
+      toast.success(msg);
+      await refresh();
+    },
+    onError: (err) => {
+      setNotice('');
+      toast.error(err.message || 'No se pudieron guardar las preferencias.');
+    },
   });
   const emailTestMutation = useMutation({
     mutationFn: () => proactiveService.sendWeeklyDigestTest({ currency: 'DOP' }),
-    onSuccess: ({ mode }) => setNotice(mode === 'SMTP' ? 'Correo de prueba enviado.' : 'Prueba registrada en modo auditoría.'),
+    onSuccess: ({ mode }) => {
+      const msg = mode === 'SMTP' ? 'Correo de prueba enviado con éxito.' : 'Prueba registrada en modo auditoría.';
+      setNotice(msg);
+      toast.success(msg);
+    },
+    onError: (err) => {
+      setNotice('');
+      toast.error(err.message || 'No se pudo enviar el correo de prueba.');
+    },
   });
   const error = query.error || google.error || selectionMutation.error || syncMutation.error || disconnectMutation.error || exportMutation.error || deleteMutation.error || emailPreferencesMutation.error || emailTestMutation.error;
   const busy = google.isPending ? 'google' : syncMutation.isPending ? `sync:${syncMutation.variables ?? ''}` :

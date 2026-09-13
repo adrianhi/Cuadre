@@ -11,3 +11,4 @@ export * from './loading-screen';
 export * from './card-overlay-loader';
 export * from './select';
 export * from './switch';
+export * from './toast';

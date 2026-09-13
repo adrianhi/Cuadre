@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Loader2, Mail, Send } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Loader2, Mail, Send } from 'lucide-react';
 import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch } from '@/shared/ui';
 import type { AccountSettingsModel } from '../model/useAccountSettings';
 
@@ -104,10 +104,30 @@ export function AccountEmailNotificationsSection({ model }: { model: AccountSett
         )}
       </Button>
 
-      {model.notice && (
-        <p role="status" className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">
-          {model.notice}
-        </p>
+      {model.error && (
+        <div
+          role="alert"
+          className="flex items-start gap-2.5 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive animate-in fade-in"
+        >
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+          <div className="flex-1 space-y-0.5">
+            <p className="font-bold leading-tight">No se pudo completar</p>
+            <p className="text-[11px] opacity-90 leading-relaxed">{model.error}</p>
+          </div>
+        </div>
+      )}
+
+      {model.notice && !model.error && (
+        <div
+          role="status"
+          className="flex items-start gap-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-700 dark:text-emerald-300 animate-in fade-in"
+        >
+          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+          <div className="flex-1 space-y-0.5">
+            <p className="font-bold leading-tight">Operación completada</p>
+            <p className="text-[11px] opacity-90 leading-relaxed">{model.notice}</p>
+          </div>
+        </div>
       )}
     </section>
   );

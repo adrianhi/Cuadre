@@ -1,3 +1,4 @@
+import { AlertCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/shared/ui';
 import { useAccountSettings } from '../model/useAccountSettings';
 import { AccountConnectionsSection } from './AccountConnectionsSection';
@@ -46,6 +47,20 @@ export function AccountSettingsModal({
               : 'Controla tus conexiones, notificaciones y derechos sobre los datos.'}
           </DialogDescription>
         </DialogHeader>
+
+        {model.error && (
+          <div
+            role="alert"
+            className="flex items-start gap-2.5 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive animate-in fade-in"
+          >
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <div className="flex-1 space-y-0.5">
+              <p className="font-bold leading-tight">Aviso</p>
+              <p className="text-[11px] opacity-90 leading-relaxed">{model.error}</p>
+            </div>
+          </div>
+        )}
+
         <AccountConnectionsSection model={model} />
         {!mustSelectBanks && <AccountEmailNotificationsSection model={model} />}
         {!mustSelectBanks && <AccountToolsSection darkMode={darkMode} setDarkMode={setDarkMode} onRepeatTour={onRepeatTour} onOpenRules={onOpenRules} onOpenExport={onOpenExport} onLock={onLock} />}
