@@ -39,11 +39,11 @@ test.describe('Landing Page E2E Suite', () => {
 
     // Click on 30k preset
     await page.getByRole('button', { name: 'RD$ 30,000' }).click();
-    await expect(page.getByLabel('Límite mensual previsto')).toHaveValue('30000');
+    await expect(page.getByLabel('Límite mensual previsto')).toHaveValue('30,000');
 
     // Click on 80k preset
     await page.getByRole('button', { name: 'RD$ 80,000' }).click();
-    await expect(page.getByLabel('Límite mensual previsto')).toHaveValue('80000');
+    await expect(page.getByLabel('Límite mensual previsto')).toHaveValue('80,000');
 
     // Input high spending today to trigger adjusting state
     const todayInput = page.getByLabel('Gastado hoy');

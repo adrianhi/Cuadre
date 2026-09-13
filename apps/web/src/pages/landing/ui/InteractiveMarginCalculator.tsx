@@ -1,43 +1,91 @@
 import { useState } from 'react';
 import { Calculator, Calendar, Gauge, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Input } from '@/shared/ui';
+import { cn, formatAmountInput, parseAmountInput } from '@/shared/lib';
 import { calculateSimulatedMargin, SIMULATOR_PRESETS, type MarginSimulatorInput } from '../model/margin-simulator';
 
+interface SimulatorForm {
+  monthlyLimit: string;
+  commitments: string;
+  spentBeforeToday: string;
+  spentToday: string;
+  daysRemaining: string;
+}
+
+interface AmountFieldProps {
+  label: string;
+  value: string;
+  onChange: (val: string) => void;
+  isBold?: boolean;
+}
+
+function AmountField({ label, value, onChange, isBold }: AmountFieldProps) {
+  return (
+    <div>
+      <label className="text-xs font-semibold text-slate-300">{label}</label>
+      <div className="relative mt-1">
+        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-500 z-10">RD$</span>
+        <Input
+          type="text"
+          inputMode="numeric"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          aria-label={label}
+          className={cn(
+            'h-10 rounded-xl border-slate-700/80 bg-slate-900/90 pl-10 pr-3 text-white focus-visible:border-emerald-500 focus-visible:ring-emerald-500',
+            isBold && 'font-semibold'
+          )}
+        />
+      </div>
+    </div>
+  );
+}
+
 export function InteractiveMarginCalculator() {
-  const [params, setParams] = useState<MarginSimulatorInput>({
-    monthlyLimit: 50000,
-    spentBeforeToday: 14000,
-    spentToday: 850,
-    commitments: 18000,
-    daysRemaining: 12,
+  const [form, setForm] = useState<SimulatorForm>({
+    monthlyLimit: formatAmountInput(50000),
+    commitments: formatAmountInput(18000),
+    spentBeforeToday: formatAmountInput(14000),
+    spentToday: formatAmountInput(850),
+    daysRemaining: '12',
   });
 
   const [activePreset, setActivePreset] = useState<string>('preset-50k');
+
+  const params: MarginSimulatorInput = {
+    monthlyLimit: Number(parseAmountInput(form.monthlyLimit)) || 0,
+    commitments: Number(parseAmountInput(form.commitments)) || 0,
+    spentBeforeToday: Number(parseAmountInput(form.spentBeforeToday)) || 0,
+    spentToday: Number(parseAmountInput(form.spentToday)) || 0,
+    daysRemaining: Math.max(1, Number(form.daysRemaining) || 1),
+  };
+
   const result = calculateSimulatedMargin(params);
 
   const applyPreset = (presetId: string) => {
     const preset = SIMULATOR_PRESETS.find((p) => p.id === presetId);
     if (!preset) return;
     setActivePreset(preset.id);
-    setParams({
-      monthlyLimit: preset.monthlyLimit,
-      spentBeforeToday: preset.spentBeforeToday,
-      spentToday: preset.spentToday,
-      commitments: preset.commitments,
-      daysRemaining: preset.daysRemaining,
+    setForm({
+      monthlyLimit: formatAmountInput(preset.monthlyLimit),
+      commitments: formatAmountInput(preset.commitments),
+      spentBeforeToday: formatAmountInput(preset.spentBeforeToday),
+      spentToday: formatAmountInput(preset.spentToday),
+      daysRemaining: String(preset.daysRemaining),
     });
   };
 
-  const updateParam = (field: keyof MarginSimulatorInput, value: number) => {
+  const updateAmount = (field: keyof Omit<SimulatorForm, 'daysRemaining'>, val: string) => {
     setActivePreset('');
-    setParams((prev) => ({ ...prev, [field]: value }));
+    setForm((prev) => ({ ...prev, [field]: formatAmountInput(val) }));
   };
 
-  const color = result.status === 'EXCEEDED'
-    ? '#ef4444'
-    : result.status === 'ADJUSTING'
-      ? '#f59e0b'
-      : '#10b981';
+  const updateDays = (val: string) => {
+    setActivePreset('');
+    setForm((prev) => ({ ...prev, daysRemaining: val.replace(/\D/g, '').slice(0, 2) }));
+  };
 
+  const color = result.status === 'EXCEEDED' ? '#ef4444' : result.status === 'ADJUSTING' ? '#f59e0b' : '#10b981';
   const percentage = result.initialDailyAllowance > 0
     ? Math.min(100, Math.round((result.todayAvailable / result.initialDailyAllowance) * 100))
     : 0;
@@ -64,11 +112,12 @@ export function InteractiveMarginCalculator() {
               key={preset.id}
               type="button"
               onClick={() => applyPreset(preset.id)}
-              className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
+              className={cn(
+                'rounded-lg px-2.5 py-1 text-xs font-semibold transition-all',
                 activePreset === preset.id
                   ? 'bg-emerald-500 text-white shadow-xs'
                   : 'bg-slate-800/90 text-slate-300 hover:bg-slate-700 hover:text-white'
-              }`}
+              )}
             >
               {preset.label}
             </button>
@@ -81,84 +130,43 @@ export function InteractiveMarginCalculator() {
         {/* Left Inputs (7 cols) */}
         <div className="space-y-4 lg:col-span-7">
           <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <label className="text-xs font-semibold text-slate-300">Límite mensual previsto</label>
-              <div className="mt-1 relative">
-                <span className="absolute left-3 top-2.5 text-xs text-slate-500 font-medium">RD$</span>
-                <input
-                  type="number"
-                  min="0"
-                  step="1000"
-                  value={params.monthlyLimit}
-                  onChange={(e) => updateParam('monthlyLimit', Number(e.target.value) || 0)}
-                  aria-label="Límite mensual previsto"
-                  className="w-full rounded-xl border border-slate-700/80 bg-slate-900/90 py-2 pl-10 pr-3 text-sm font-semibold text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="text-xs font-semibold text-slate-300">Cobros fijos reservados</label>
-              <div className="mt-1 relative">
-                <span className="absolute left-3 top-2.5 text-xs text-slate-500 font-medium">RD$</span>
-                <input
-                  type="number"
-                  min="0"
-                  step="500"
-                  value={params.commitments}
-                  onChange={(e) => updateParam('commitments', Number(e.target.value) || 0)}
-                  aria-label="Cobros fijos reservados"
-                  className="w-full rounded-xl border border-slate-700/80 bg-slate-900/90 py-2 pl-10 pr-3 text-sm font-semibold text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
-                />
-              </div>
-            </div>
+            <AmountField
+              label="Límite mensual previsto"
+              value={form.monthlyLimit}
+              onChange={(val) => updateAmount('monthlyLimit', val)}
+              isBold
+            />
+            <AmountField
+              label="Cobros fijos reservados"
+              value={form.commitments}
+              onChange={(val) => updateAmount('commitments', val)}
+              isBold
+            />
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3">
-            <div>
-              <label className="text-xs font-semibold text-slate-300">Gastado antes de hoy</label>
-              <div className="mt-1 relative">
-                <span className="absolute left-3 top-2.5 text-xs text-slate-500 font-medium">RD$</span>
-                <input
-                  type="number"
-                  min="0"
-                  step="500"
-                  value={params.spentBeforeToday}
-                  onChange={(e) => updateParam('spentBeforeToday', Number(e.target.value) || 0)}
-                  aria-label="Gastado antes de hoy"
-                  className="w-full rounded-xl border border-slate-700/80 bg-slate-900/90 py-2 pl-10 pr-3 text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="text-xs font-semibold text-slate-300">Gastado hoy</label>
-              <div className="mt-1 relative">
-                <span className="absolute left-3 top-2.5 text-xs text-slate-500 font-medium">RD$</span>
-                <input
-                  type="number"
-                  min="0"
-                  step="100"
-                  value={params.spentToday}
-                  onChange={(e) => updateParam('spentToday', Number(e.target.value) || 0)}
-                  aria-label="Gastado hoy"
-                  className="w-full rounded-xl border border-slate-700/80 bg-slate-900/90 py-2 pl-10 pr-3 text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
-                />
-              </div>
-            </div>
+            <AmountField
+              label="Gastado antes de hoy"
+              value={form.spentBeforeToday}
+              onChange={(val) => updateAmount('spentBeforeToday', val)}
+            />
+            <AmountField
+              label="Gastado hoy"
+              value={form.spentToday}
+              onChange={(val) => updateAmount('spentToday', val)}
+            />
 
             <div>
               <label className="text-xs font-semibold text-slate-300">Días para cobrar</label>
-              <div className="mt-1 relative">
-                <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
-                <input
-                  type="number"
-                  min="1"
-                  max="31"
-                  value={params.daysRemaining}
-                  onChange={(e) => updateParam('daysRemaining', Math.max(1, Number(e.target.value) || 1))}
+              <div className="relative mt-1">
+                <Calendar className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 z-10" />
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  value={form.daysRemaining}
+                  onChange={(e) => updateDays(e.target.value)}
                   aria-label="Días restantes para cobrar"
-                  className="w-full rounded-xl border border-slate-700/80 bg-slate-900/90 py-2 pl-9 pr-3 text-sm text-white placeholder-slate-500 focus:border-emerald-500 focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
+                  className="h-10 rounded-xl border-slate-700/80 bg-slate-900/90 pl-9 pr-3 text-white focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
                 />
               </div>
             </div>
@@ -166,7 +174,7 @@ export function InteractiveMarginCalculator() {
 
           <div className="rounded-xl bg-slate-900/40 border border-slate-800 p-3 text-[11px] text-slate-400 leading-relaxed">
             <span className="font-semibold text-slate-300">Resta aplicada en vivo: </span>
-            (RD$ {params.monthlyLimit.toLocaleString()} − RD$ {params.spentBeforeToday.toLocaleString()} acumulados − RD$ {params.commitments.toLocaleString()} compromisos) ÷ {params.daysRemaining} días = <strong className="text-emerald-400">RD$ {result.initialDailyAllowance.toLocaleString()}/día</strong>. Menos RD$ {params.spentToday.toLocaleString()} gastados hoy.
+            (RD$ {formatAmountInput(params.monthlyLimit)} − RD$ {formatAmountInput(params.spentBeforeToday)} acumulados − RD$ {formatAmountInput(params.commitments)} compromisos) ÷ {params.daysRemaining} días = <strong className="text-emerald-400">RD$ {formatAmountInput(result.initialDailyAllowance)}/día</strong>. Menos RD$ {formatAmountInput(params.spentToday)} gastados hoy.
           </div>
         </div>
 
@@ -196,7 +204,7 @@ export function InteractiveMarginCalculator() {
               <div>
                 <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Puedes gastar</p>
                 <p className="mt-0.5 text-2xl font-black tracking-tight text-white">
-                  RD$ {result.todayAvailable.toLocaleString('es-DO')}
+                  RD$ {formatAmountInput(result.todayAvailable)}
                 </p>
                 <p className="text-[10px] text-slate-400">hoy según tu plan</p>
               </div>
@@ -205,21 +213,9 @@ export function InteractiveMarginCalculator() {
 
           {/* Status badge & explanation */}
           <div className="mt-3 flex items-center gap-1.5 text-xs font-semibold">
-            {result.status === 'ON_TRACK' && (
-              <span className="inline-flex items-center gap-1 text-emerald-400">
-                <CheckCircle2 className="h-3.5 w-3.5" /> Ritmo saludable
-              </span>
-            )}
-            {result.status === 'ADJUSTING' && (
-              <span className="inline-flex items-center gap-1 text-amber-400">
-                <AlertTriangle className="h-3.5 w-3.5" /> Margen de hoy agotado (se ajusta mañana)
-              </span>
-            )}
-            {result.status === 'EXCEEDED' && (
-              <span className="inline-flex items-center gap-1 text-rose-400">
-                <AlertTriangle className="h-3.5 w-3.5" /> Presupuesto mensual agotado
-              </span>
-            )}
+            {result.status === 'ON_TRACK' && <span className="inline-flex items-center gap-1 text-emerald-400"><CheckCircle2 className="h-3.5 w-3.5" /> Ritmo saludable</span>}
+            {result.status === 'ADJUSTING' && <span className="inline-flex items-center gap-1 text-amber-400"><AlertTriangle className="h-3.5 w-3.5" /> Margen de hoy agotado (se ajusta mañana)</span>}
+            {result.status === 'EXCEEDED' && <span className="inline-flex items-center gap-1 text-rose-400"><AlertTriangle className="h-3.5 w-3.5" /> Presupuesto mensual agotado</span>}
           </div>
 
           <p className="mt-2 text-[11px] text-slate-400 leading-snug">
