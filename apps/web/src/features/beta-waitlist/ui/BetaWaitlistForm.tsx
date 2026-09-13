@@ -8,22 +8,46 @@ interface BetaWaitlistFormProps {
 }
 
 export function BetaWaitlistForm({ source = 'LANDING_HERO', className = '' }: BetaWaitlistFormProps) {
-  const { email, setEmail, emailHasValue, emailIsValid, status, message, loading, handleSubmit } = useBetaWaitlist({ source });
+  const {
+    email,
+    setEmail,
+    emailHasValue,
+    emailIsValid,
+    status,
+    message,
+    activationUrl,
+    inviteCode,
+    loading,
+    handleSubmit,
+  } = useBetaWaitlist({ source });
   const hasFormatError = emailHasValue && !emailIsValid;
   const isInvalid = status === 'error' || hasFormatError;
 
   if (status === 'success') {
+    const targetUrl = activationUrl || (inviteCode ? `/login?invite=${encodeURIComponent(inviteCode)}` : '/login');
+
     return (
       <div
-        className={`p-4 rounded-xl border border-emerald-500/30 bg-emerald-950/30 text-emerald-300 text-sm flex items-start gap-3 animate-in fade-in zoom-in-95 duration-300 ${className}`}
+        className={`p-4 sm:p-5 rounded-2xl border border-emerald-500/40 bg-emerald-950/50 backdrop-blur-md text-emerald-200 text-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-in fade-in zoom-in-95 duration-300 shadow-xl shadow-emerald-950/40 ${className}`}
         role="status"
         aria-live="polite"
       >
-        <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-        <div>
-          <p className="font-semibold text-emerald-200">¡Acceso reservado!</p>
-          <p className="mt-1 text-emerald-300/90 text-xs leading-relaxed">{message}</p>
+        <div className="flex items-start gap-3">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+          <div className="text-left">
+            <p className="font-bold text-emerald-100 text-sm sm:text-base">¡Tu acceso a la beta está listo!</p>
+            <p className="mt-0.5 text-emerald-300/90 text-xs leading-relaxed max-w-sm">
+              {message || 'Tienes 30 días de acceso completo sin costo. Entra ahora con Google.'}
+            </p>
+          </div>
         </div>
+        <a
+          href={targetUrl}
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-emerald-500/25 hover:from-emerald-600 hover:to-teal-700 transition-all active:scale-95 shrink-0 w-full sm:w-auto"
+        >
+          <span>Continuar con Google</span>
+          <ArrowRight className="h-4 w-4" />
+        </a>
       </div>
     );
   }

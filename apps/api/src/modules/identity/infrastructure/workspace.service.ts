@@ -146,13 +146,18 @@ export class WorkspaceService {
               data: { workspaceId: workspace.id },
             }),
           ]);
-        } else if (invite) {
-          const trialStartedAt = new Date();
-          const trialEndsAt = new Date(trialStartedAt.getTime() + invite.trialDays * 24 * 60 * 60 * 1000);
-          await tx.betaInvite.update({
-            where: { id: invite.id },
-            data: { usedAt: trialStartedAt, trialStartedAt, trialEndsAt },
-          });
+        } else {
+          if (!invite) {
+            invite = await tx.betaInvite.findUnique({ where: { email: normalizedEmail } });
+          }
+          if (invite && !invite.usedAt) {
+            const trialStartedAt = new Date();
+            const trialEndsAt = new Date(trialStartedAt.getTime() + invite.trialDays * 24 * 60 * 60 * 1000);
+            await tx.betaInvite.update({
+              where: { id: invite.id },
+              data: { usedAt: trialStartedAt, trialStartedAt, trialEndsAt },
+            });
+          }
         }
 
         return {

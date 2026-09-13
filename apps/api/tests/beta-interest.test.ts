@@ -51,4 +51,33 @@ describe('BetaInterestService', () => {
     const service = new BetaInterestService(mockRepo);
     await expect(service.register({ email: 'correo-invalido' })).rejects.toThrow();
   });
+
+  it('automatically triggers beta invitation and returns activation URL and invite code', async () => {
+    const mockRepo: BetaInterestRepository = {
+      findByEmail: vi.fn().mockResolvedValue(null),
+      create: vi.fn().mockResolvedValue({ id: 'test-id', email: 'auto@example.com' }),
+    };
+    const mockInviter = {
+      inviteUser: vi.fn().mockResolvedValue({
+        activationUrl: 'https://cuadre.com.do/login?invite=mock_invite_code_12345',
+        used: false,
+      }),
+    };
+
+    const service = new BetaInterestService(mockRepo, mockInviter);
+    const result = await service.register({
+      email: 'auto@example.com',
+      source: 'LANDING_HERO',
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.activationUrl).toBe('https://cuadre.com.do/login?invite=mock_invite_code_12345');
+    expect(result.inviteCode).toBe('mock_invite_code_12345');
+    expect(mockInviter.inviteUser).toHaveBeenCalledWith({
+      email: 'auto@example.com',
+      source: 'LANDING_HERO',
+      campaignCode: undefined,
+      sendEmail: true,
+    });
+  });
 });

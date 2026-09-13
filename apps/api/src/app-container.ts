@@ -240,6 +240,8 @@ export const appContainer = {
   }),
   bankConnectionController: new BankConnectionController(new FinancialInstitutionService()),
   incomeController,
-  incomeService,
-  betaInterestController: new BetaInterestController(new BetaInterestService(new PrismaBetaInterestRepository())),
+  betaInterestController: new BetaInterestController(
+    new BetaInterestService(new PrismaBetaInterestRepository(), betaInviteService),
+  ),
 };
+

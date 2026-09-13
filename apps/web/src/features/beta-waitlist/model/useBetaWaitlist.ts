@@ -1,11 +1,13 @@
 import { useState, useTransition } from 'react';
-import { isValidEmail } from '@/shared/lib';
+import { isValidEmail, saveInviteCode } from '@/shared/lib';
 import { betaWaitlistService } from '../api/beta-waitlist.service';
 
 export function useBetaWaitlist(options?: { source?: string; campaignCode?: string }) {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
+  const [activationUrl, setActivationUrl] = useState<string | null>(null);
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,8 +30,16 @@ export function useBetaWaitlist(options?: { source?: string; campaignCode?: stri
           campaignCode: options?.campaignCode,
         });
 
+        if (result.inviteCode) {
+          setInviteCode(result.inviteCode);
+          saveInviteCode(result.inviteCode);
+        }
+        if (result.activationUrl) {
+          setActivationUrl(result.activationUrl);
+        }
+
         setStatus('success');
-        setMessage(result.message || '¡Te has registrado con éxito!');
+        setMessage(result.message || '¡Tu acceso a la beta está listo!');
       } catch (err: unknown) {
         setStatus('error');
         const errMessage = err && typeof err === 'object' && 'message' in err
@@ -47,12 +57,16 @@ export function useBetaWaitlist(options?: { source?: string; campaignCode?: stri
     emailIsValid: isValidEmail(email),
     status,
     message,
+    activationUrl,
+    inviteCode,
     loading: status === 'loading' || isPending,
     handleSubmit,
     reset: () => {
       setEmail('');
       setStatus('idle');
       setMessage('');
+      setActivationUrl(null);
+      setInviteCode(null);
     },
   };
 }

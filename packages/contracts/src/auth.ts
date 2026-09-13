@@ -13,6 +13,8 @@ export const betaInterestResponseSchema = z.object({
   success: z.literal(true),
   message: z.string(),
   alreadyRegistered: z.boolean().optional(),
+  activationUrl: z.string().optional(),
+  inviteCode: z.string().optional(),
 });
 
 export type BetaInterestResponse = z.infer<typeof betaInterestResponseSchema>;
