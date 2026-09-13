@@ -59,8 +59,40 @@
     min-width: 320px;
     text-rendering: optimizeLegibility;
   }
-  button, a, input, select, textarea {
+button, a, input, select, textarea {
     -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@layer components {
+  .landing-range {
+    height: 0.4rem;
+    appearance: none;
+    border-radius: 9999px;
+    background: linear-gradient(
+      to right,
+      #10b981 0%,
+      #10b981 var(--range-progress),
+      #334155 var(--range-progress),
+      #334155 100%
+    );
+  }
+  .landing-range::-webkit-slider-thumb {
+    width: 1.1rem;
+    height: 1.1rem;
+    appearance: none;
+    border: 3px solid #d1fae5;
+    border-radius: 9999px;
+    background: #10b981;
+    box-shadow: 0 0 0 4px rgb(16 185 129 / 18%);
+  }
+  .landing-range::-moz-range-thumb {
+    width: 0.8rem;
+    height: 0.8rem;
+    border: 3px solid #d1fae5;
+    border-radius: 9999px;
+    background: #10b981;
+    box-shadow: 0 0 0 4px rgb(16 185 129 / 18%);
   }
 }
 

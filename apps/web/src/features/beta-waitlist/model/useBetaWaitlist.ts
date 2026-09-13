@@ -1,4 +1,5 @@
 import { useState, useTransition } from 'react';
+import { isValidEmail } from '@/shared/lib';
 import { betaWaitlistService } from '../api/beta-waitlist.service';
 
 export function useBetaWaitlist(options?: { source?: string; campaignCode?: string }) {
@@ -10,7 +11,7 @@ export function useBetaWaitlist(options?: { source?: string; campaignCode?: stri
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanEmail = email.trim().toLowerCase();
-    if (!cleanEmail || !cleanEmail.includes('@')) {
+    if (!isValidEmail(cleanEmail)) {
       setStatus('error');
       setMessage('Por favor, introduce un correo electrónico válido.');
       return;
@@ -42,6 +43,8 @@ export function useBetaWaitlist(options?: { source?: string; campaignCode?: stri
   return {
     email,
     setEmail,
+    emailHasValue: email.trim().length > 0,
+    emailIsValid: isValidEmail(email),
     status,
     message,
     loading: status === 'loading' || isPending,
