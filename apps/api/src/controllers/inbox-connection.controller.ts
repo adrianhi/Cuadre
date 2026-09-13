@@ -63,7 +63,7 @@ export class InboxConnectionController {
   };
 
   public googleCallback = async (req: Request, res: Response): Promise<void> => {
-    const fallbackReturnTo = '/onboarding';
+    const fallbackReturnTo = '/app';
     try {
       const code = typeof req.query.code === 'string' ? req.query.code : '';
       const state = typeof req.query.state === 'string' ? req.query.state : '';

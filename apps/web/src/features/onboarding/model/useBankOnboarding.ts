@@ -61,7 +61,7 @@ export function useBankOnboarding(authenticated: boolean, onComplete: () => void
   };
   const syncMutation = useMutation({ mutationFn: (connection: InboxConnection) => connectionService.sync(connection.id), onSuccess: async () => { setNotice('Sincronización en cola. Puedes seguir usando la aplicación.'); await invalidate(); } });
   const googleMutation = useMutation({
-    mutationFn: () => connectionService.startGoogle('/onboarding', selectedInstitutionCodes),
+    mutationFn: () => connectionService.startGoogle('/app', selectedInstitutionCodes),
     onSuccess: ({ authorizationUrl }) => window.location.assign(authorizationUrl),
     onError: (error) => { if (error instanceof ApiClientError && error.code === 'GOOGLE_OAUTH_NOT_CONFIGURED') setGoogleUnavailable(true); },
   });

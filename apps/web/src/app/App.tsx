@@ -85,6 +85,7 @@ export function App() {
       <Route path="/auth/callback" element={authToken
         ? <Navigate to="/app" replace />
         : <Navigate to="/login" replace />} />
+      <Route path="/onboarding" element={protectedContent} />
       <Route path="/app/*" element={protectedContent} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

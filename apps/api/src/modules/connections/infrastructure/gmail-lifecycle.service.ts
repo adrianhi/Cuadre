@@ -15,7 +15,7 @@ function hashState(value: string): string {
 }
 
 function safeReturnTo(value?: string): string {
-  return value && value.startsWith('/') && !value.startsWith('//') ? value : '/onboarding';
+  return value && value.startsWith('/') && !value.startsWith('//') ? value : '/app';
 }
 
 export class GmailLifecycleService implements GmailConnectionLifecycle {

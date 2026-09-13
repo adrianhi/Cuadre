@@ -19,7 +19,7 @@ export function BankOnboarding({ authToken, onComplete, onLogout }: BankOnboardi
 
   if (step === 'baseline') {
     return (
-      <div className="min-h-screen bg-background px-4 py-8 sm:py-12">
+      <div className="min-h-screen bg-background px-4 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-[calc(2rem+env(safe-area-inset-bottom))] sm:py-12">
         <div className="mx-auto w-full max-w-2xl space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -41,7 +41,7 @@ export function BankOnboarding({ authToken, onComplete, onLogout }: BankOnboardi
   }
 
   return (
-    <div className="min-h-screen bg-background px-4 py-8 sm:py-12">
+    <div className="min-h-screen bg-background px-4 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-[calc(2rem+env(safe-area-inset-bottom))] sm:py-12">
       <div className="mx-auto w-full max-w-2xl space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
