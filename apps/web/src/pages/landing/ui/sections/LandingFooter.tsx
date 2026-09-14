@@ -15,7 +15,7 @@ export function LandingFooter() {
               <span className="text-base font-bold text-white tracking-tight">Cuadre</span>
             </div>
             <p className="text-xs text-slate-400 max-w-sm">
-              Tu margen seguro diario para llegar bien a tu quincena. Cero digitación, cero estrés financiero.
+              Tu Margen Seguro Diario para tomar decisiones y llegar bien a tu quincena.
             </p>
           </div>
 
@@ -37,7 +37,7 @@ export function LandingFooter() {
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
           <p>© {currentYear} Cuadre. Desarrollado en República Dominicana 🇩🇴</p>
           <p className="text-[11px] text-slate-500 max-w-md">
-            Manejo de información diseñado en apego a los principios de la Ley No. 172-13 sobre Protección Integral de Datos Personales de la República Dominicana.
+            Consulta nuestra política de privacidad y la referencia informativa a la Ley No. 172-13 de la República Dominicana.
           </p>
         </div>
       </div>

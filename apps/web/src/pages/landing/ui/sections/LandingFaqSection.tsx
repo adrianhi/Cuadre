@@ -5,7 +5,7 @@ export function LandingFaqSection() {
     {
       question: '¿Cuadre me solicitará mi usuario o contraseña de mi banco?',
       answer:
-        'No, rotundamente no. Nunca te pediremos tu contraseña de internet banking, claves maestras, PIN de tarjeta ni códigos de coordenadas. Cuadre no tiene conexión directa de movimiento de fondos con tus bancos.',
+        'No. Cuadre no pide contraseñas de internet banking, claves maestras, PIN ni códigos de token. Tampoco tiene capacidad para mover fondos.',
     },
     {
       question: '¿Qué permiso exacto utiliza Cuadre en mi cuenta de Gmail?',
@@ -30,7 +30,7 @@ export function LandingFaqSection() {
     {
       question: '¿Qué costo tiene usar Cuadre durante la beta privada?',
       answer:
-        'Durante toda la fase de beta privada, el acceso es 100% gratuito por 30 días desde la activación. No solicitamos tarjetas ni realizamos cobros automáticos. Próximamente anunciaremos los planes comerciales una vez concluya el período de prueba privada.',
+        'Cuando recibas una invitación, tendrás 30 días de acceso completo desde la activación. No solicitamos tarjetas ni realizamos cobros automáticos.',
     },
   ];
 
@@ -46,7 +46,7 @@ export function LandingFaqSection() {
             Todo lo que necesitas saber antes de empezar
           </h2>
           <p className="mt-3 text-sm text-slate-400 leading-relaxed">
-            Claridad absoluta sobre la seguridad de tus cuentas, la mecánica de lectura y los términos de la beta.
+            Respuestas directas sobre la seguridad de tus cuentas, la lectura de Gmail y los términos de la beta.
           </p>
         </div>
 

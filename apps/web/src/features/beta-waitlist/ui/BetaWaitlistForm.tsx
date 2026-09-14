@@ -15,8 +15,6 @@ export function BetaWaitlistForm({ source = 'LANDING_HERO', className = '' }: Be
     emailIsValid,
     status,
     message,
-    activationUrl,
-    inviteCode,
     loading,
     handleSubmit,
   } = useBetaWaitlist({ source });
@@ -24,30 +22,21 @@ export function BetaWaitlistForm({ source = 'LANDING_HERO', className = '' }: Be
   const isInvalid = status === 'error' || hasFormatError;
 
   if (status === 'success') {
-    const targetUrl = activationUrl || (inviteCode ? `/login?invite=${encodeURIComponent(inviteCode)}` : '/login');
-
     return (
       <div
-        className={`p-4 sm:p-5 rounded-2xl border border-emerald-500/40 bg-emerald-950/50 backdrop-blur-md text-emerald-200 text-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-in fade-in zoom-in-95 duration-300 shadow-xl shadow-emerald-950/40 ${className}`}
+        className={`rounded-2xl border border-emerald-500/40 bg-emerald-950/50 p-4 text-emerald-200 shadow-xl shadow-emerald-950/40 backdrop-blur-md sm:p-5 ${className}`}
         role="status"
         aria-live="polite"
       >
         <div className="flex items-start gap-3">
           <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
           <div className="text-left">
-            <p className="font-bold text-emerald-100 text-sm sm:text-base">¡Tu acceso a la beta está listo!</p>
+            <p className="text-sm font-bold text-emerald-100 sm:text-base">Solicitud recibida</p>
             <p className="mt-0.5 text-emerald-300/90 text-xs leading-relaxed max-w-sm">
-              {message || 'Tienes 30 días de acceso completo sin costo. Entra ahora con Google.'}
+              {message}
             </p>
           </div>
         </div>
-        <a
-          href={targetUrl}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-emerald-500/25 hover:from-emerald-600 hover:to-teal-700 transition-all active:scale-95 shrink-0 w-full sm:w-auto"
-        >
-          <span>Continuar con Google</span>
-          <ArrowRight className="h-4 w-4" />
-        </a>
       </div>
     );
   }
@@ -84,7 +73,7 @@ export function BetaWaitlistForm({ source = 'LANDING_HERO', className = '' }: Be
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Reservando…</span>
+              <span>Enviando solicitud…</span>
             </>
           ) : (
             <>
@@ -109,7 +98,7 @@ export function BetaWaitlistForm({ source = 'LANDING_HERO', className = '' }: Be
 
       <div className="mt-3 flex items-center gap-2 text-xs text-slate-400 justify-center sm:justify-start">
         <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-        <span>Beta privada · Cohorte limitada a 100 fundadores · 30 días de acceso completo</span>
+        <span>Beta privada · Cohorte limitada a 100 fundadores · 30 días de acceso completo desde la activación</span>
       </div>
     </div>
   );

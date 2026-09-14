@@ -8,7 +8,7 @@ export function LandingHowItWorksSection() {
       title: 'Importa tus movimientos automáticamente',
       description:
         'Conecta tu cuenta de Gmail con acceso estricto de solo lectura. Cuadre identifica únicamente los avisos bancarios de tus entidades seleccionadas. Jamás solicitamos claves de internet banking ni podemos mover fondos.',
-      badge: 'Cero digitación',
+      badge: 'Menos trabajo manual',
     },
     {
       number: '02',

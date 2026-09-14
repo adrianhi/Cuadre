@@ -19,7 +19,7 @@ export function LandingSecuritySection() {
       icon: Lock,
       title: 'Cifrado robusto en reposo (AES-256-GCM)',
       description:
-        'Tus credenciales de autenticación, identificadores y tokens de sincronización se almacenan cifrados con el estándar militar AES-256-GCM y llaves rotables.',
+        'Los tokens de sincronización se almacenan cifrados con AES-256-GCM y llaves rotables.',
     },
     {
       icon: Database,
@@ -37,7 +37,7 @@ export function LandingSecuritySection() {
       icon: FileText,
       title: 'Marco legal dominicano y transparencia',
       description:
-        'Diseñado en estricto apego a la Ley 172-13 sobre Protección de Datos Personales de la República Dominicana. Todos los consentimientos son revocables en cualquier momento desde tu panel.',
+        'Publicamos cómo tratamos los datos y tomamos como referencia los principios de la Ley 172-13 de la República Dominicana. Puedes revocar la conexión desde tu panel.',
     },
   ];
 
@@ -53,7 +53,7 @@ export function LandingSecuritySection() {
             Tu tranquilidad financiera comienza con datos protegidos
           </h2>
           <p className="mt-3 text-sm text-slate-400 leading-relaxed">
-            Explicamos con total claridad técnica cómo cuidamos tu información y cuáles son los límites reales de la plataforma.
+            Explicamos cómo cuidamos tu información y cuáles son los límites reales de la plataforma.
           </p>
         </div>
 

@@ -29,13 +29,13 @@ export function LandingHeroSection() {
 
         {/* Subtitle */}
         <p className="mt-5 text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed animate-fade-in-up [animation-delay:300ms]">
-          Cuadre procesa las notificaciones de tus tarjetas y cuentas desde Gmail en modo de solo lectura. Sin claves bancarias ni digitación de vouchers: cada mañana tienes tu Margen Seguro Diario listo para decidir con tranquilidad.
+          Cuadre procesa notificaciones bancarias compatibles desde Gmail en modo de solo lectura. No accede a tu banca ni solicita claves: cada mañana tienes tu Margen Seguro Diario para decidir con tranquilidad.
         </p>
 
         {/* Trust bullet */}
         <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-400 animate-fade-in-up [animation-delay:380ms]">
           <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0" />
-          <span>Solo lectura vía Google API · Nunca pedimos contraseñas de bancos · Cero cargos sorpresa</span>
+          <span>Solo lectura vía Google API · Sin contraseñas bancarias · Sin tarjeta para solicitar acceso</span>
         </div>
 
         {/* Waitlist Form */}

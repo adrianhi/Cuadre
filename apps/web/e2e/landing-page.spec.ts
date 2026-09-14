@@ -39,11 +39,11 @@ test.describe('Landing Page E2E Suite', () => {
 
     // Click on 30k preset
     await page.getByRole('button', { name: 'RD$ 30,000' }).click();
-    await expect(page.getByLabel('Límite mensual previsto')).toHaveValue('30,000');
+    await expect(page.getByLabel('Límite mensual previsto')).toHaveValue('30,000.00');
 
     // Click on 80k preset
     await page.getByRole('button', { name: 'RD$ 80,000' }).click();
-    await expect(page.getByLabel('Límite mensual previsto')).toHaveValue('80,000');
+    await expect(page.getByLabel('Límite mensual previsto')).toHaveValue('80,000.00');
 
     // Input high spending today to trigger adjusting state
     const todayInput = page.getByLabel('Gastado hoy');
@@ -63,7 +63,7 @@ test.describe('Landing Page E2E Suite', () => {
     // Click summary to open
     await firstFaq.locator('summary').click();
     await expect(firstFaq).toHaveAttribute('open', '');
-    await expect(firstFaq.getByText(/No, rotundamente no/i)).toBeVisible();
+    await expect(firstFaq.getByText(/Cuadre no pide contraseñas/i)).toBeVisible();
 
     // Click again to close
     await firstFaq.locator('summary').click();
@@ -79,7 +79,7 @@ test.describe('Landing Page E2E Suite', () => {
         contentType: 'application/json',
         body: JSON.stringify({
           success: true,
-          message: 'Tu correo ha sido añadido a la lista de espera para la beta.',
+          message: 'Recibimos tu solicitud. Te avisaremos por correo cuando tu acceso esté disponible.',
         }),
       });
     });
@@ -91,8 +91,9 @@ test.describe('Landing Page E2E Suite', () => {
 
     await page.getByRole('button', { name: 'Solicitar acceso' }).click();
 
-    await expect(page.getByText('¡Acceso reservado!')).toBeVisible();
-    await expect(page.getByText(/Tu correo ha sido añadido a la lista de espera/i)).toBeVisible();
+    await expect(page.getByText('Solicitud recibida')).toBeVisible();
+    await expect(page.getByText(/Te avisaremos por correo/i)).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Continuar con Google' })).toHaveCount(0);
     expect(capturedBody).toMatchObject({
       email: 'tester.beta@gmail.com',
       source: 'LANDING_HERO',
