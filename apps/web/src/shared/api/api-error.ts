@@ -41,7 +41,7 @@ export function normalizeApiError(error: unknown): ApiClientError {
     }
     if (error.response?.status && [502, 503, 504].includes(error.response.status)) {
       return new ApiClientError(
-        'No pudimos conectar con el servidor backend (asegúrate de que la API esté corriendo en el puerto 3000).',
+        'Cuadre no está disponible en este momento. Espera un momento e inténtalo otra vez.',
         'SERVER_UNAVAILABLE',
         error.response.status,
       );

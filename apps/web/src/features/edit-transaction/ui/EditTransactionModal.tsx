@@ -108,7 +108,7 @@ export const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Editar Transacción</DialogTitle>
+          <DialogTitle>Editar movimiento</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSave} className="space-y-4 py-2">

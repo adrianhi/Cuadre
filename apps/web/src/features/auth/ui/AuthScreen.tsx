@@ -115,8 +115,7 @@ export function AuthScreen({
               <div className="flex gap-2 rounded-xl bg-amber-500/10 p-3 text-xs text-amber-700 dark:text-amber-300">
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 <span>
-                  Configura VITE_SUPABASE_URL y VITE_SUPABASE_PUBLISHABLE_KEY
-                  para habilitar el acceso.
+                  El acceso con Google no está disponible en este momento. Inténtalo nuevamente más tarde.
                 </span>
               </div>
             ) : (

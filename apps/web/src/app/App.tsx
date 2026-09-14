@@ -60,7 +60,7 @@ export function App() {
         fallback={
           <LoadingScreen
             message="Cargando Cuadre…"
-            description="Preparando tu dashboard y herramientas…"
+            description="Preparando tu panel y herramientas…"
           />
         }
       >

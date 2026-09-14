@@ -22,7 +22,7 @@ export function Navbar({ title, hideBalances, setHideBalances, onRefresh, onOpen
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" onClick={() => setHideBalances(!hideBalances)} className="h-11 w-11 rounded-xl" aria-label={hideBalances ? 'Mostrar balances' : 'Ocultar balances'}>
+          <Button variant="ghost" size="icon" onClick={() => setHideBalances(!hideBalances)} className="h-11 w-11 rounded-xl" aria-label={hideBalances ? 'Mostrar montos' : 'Ocultar montos'}>
             {hideBalances ? <EyeOff className="h-4 w-4 text-primary" /> : <Eye className="h-4 w-4" />}
           </Button>
           <Button variant="ghost" size="icon" onClick={onRefresh} disabled={refreshing} className="h-11 w-11 rounded-xl" aria-label="Actualizar datos">

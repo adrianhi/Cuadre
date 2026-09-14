@@ -18,7 +18,7 @@ interface OptionalFinancialDetailsProps {
 export function OptionalFinancialDetails(props: OptionalFinancialDetailsProps) {
   return (
     <details className="group rounded-2xl border border-border/60 bg-muted/20">
-      <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3">
+      <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 rounded-2xl px-4 py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset">
         <span className="flex items-center gap-2">
           <WalletCards className="h-4 w-4 text-primary" />
           <span>

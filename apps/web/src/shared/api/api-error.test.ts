@@ -20,7 +20,7 @@ describe('normalizeApiError', () => {
     expect(error).toMatchObject({
       code: 'SERVER_UNAVAILABLE',
       status: 502,
-      message: 'No pudimos conectar con el servidor backend (asegúrate de que la API esté corriendo en el puerto 3000).',
+      message: 'Cuadre no está disponible en este momento. Espera un momento e inténtalo otra vez.',
     });
   });
 });
