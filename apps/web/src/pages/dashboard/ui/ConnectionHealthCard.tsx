@@ -60,7 +60,7 @@ export function ConnectionHealthCard({
 
   const processing = connection.currentJob?.status === 'PENDING' || connection.currentJob?.status === 'PROCESSING';
   const needsAttention = connection.requiresBankSelection || connection.status === 'REAUTH_REQUIRED' || connection.status === 'ERROR';
-  const partial = (connection.failedEvents ?? 0) > 0 || connection.currentJob?.status === 'FAILED';
+  const partial = connection.currentJob?.status === 'FAILED';
 
   if (processing) {
     return (
@@ -81,8 +81,8 @@ export function ConnectionHealthCard({
         <CardContent className="flex items-center gap-3 p-4">
           <AlertTriangle className="h-5 w-5 shrink-0 text-amber-600" />
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-bold">{connection.requiresBankSelection ? 'Elige los bancos de esta conexión' : reauth ? 'Gmail necesita reconexión' : 'Sincronización parcial'}</p>
-            <p className="text-xs text-muted-foreground">{reauth ? 'Google puede pedir autorización periódica cada siete días. Tus datos importados no se pierden.' : 'Revisa la conexión para completar la importación.'}</p>
+            <p className="text-sm font-bold">{connection.requiresBankSelection ? 'Elige los bancos de esta conexión' : reauth ? 'Gmail necesita reconexión' : 'Revisión de sincronización'}</p>
+            <p className="text-xs text-muted-foreground">{reauth ? 'Google puede pedir autorización periódica cada siete días. Tus datos importados no se pierden.' : 'Revisa la conexión para reintentar la importación.'}</p>
           </div>
           <Button variant="outline" className="min-h-11 shrink-0" onClick={onOpenConnections}>{reauth ? 'Reconectar' : 'Revisar'}</Button>
         </CardContent>

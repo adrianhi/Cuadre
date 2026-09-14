@@ -149,7 +149,7 @@ export class GmailMessageProcessor {
         });
         return;
       }
-      if (result.status === 'ignored') {
+      if (result.status === 'ignored' || result.status === 'unsupported') {
         input.summary.ignored += 1;
         await prisma.ingestionEvent.update({
           where: { id: eventId },

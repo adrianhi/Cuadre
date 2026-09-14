@@ -76,10 +76,12 @@ export const config = {
     ? (process.env.PROCESS_ROLE as 'all' | 'web' | 'worker')
     : 'all',
   maintenanceSecret: process.env.MAINTENANCE_SECRET || '',
-  emailDeliveryMode: process.env.EMAIL_DELIVERY_MODE === 'LIVE' ? 'LIVE' as const : 'AUDIT' as const,
+  emailDeliveryMode: (process.env.EMAIL_DELIVERY_MODE === 'LIVE' || (!process.env.EMAIL_DELIVERY_MODE && Boolean(process.env.RESEND_API_KEY) && process.env.NODE_ENV === 'production'))
+    ? 'LIVE' as const
+    : 'AUDIT' as const,
   resendApiKey: process.env.RESEND_API_KEY || '',
   resendWebhookSecret: process.env.RESEND_WEBHOOK_SECRET || '',
-  emailFrom: process.env.EMAIL_FROM || '',
+  emailFrom: process.env.EMAIL_FROM || 'Cuadre <notificaciones@mail.cuadre.com.do>',
   emailUnsubscribeSecret: process.env.EMAIL_UNSUBSCRIBE_SECRET || '',
   emailWeeklyEnabled: process.env.EMAIL_WEEKLY_DIGEST_ENABLED === 'true',
   emailImminentBillEnabled: process.env.EMAIL_IMMINENT_BILL_ENABLED === 'true',

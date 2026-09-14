@@ -49,6 +49,7 @@ export function RecurringRadarCard(props: {
   if (!radar || radar.analysisStatus !== 'READY') return <Card data-product-tour="recurring-radar"><CardContent className="p-5 text-sm text-muted-foreground">Analizando tus movimientos para encontrar cobros recurrentes…</CardContent></Card>;
   const bills = [...radar.attention, ...radar.suggestions, ...radar.upcoming, ...radar.paused]
     .filter((bill, index, all) => all.findIndex((item) => item.id === bill.id) === index).slice(0, 5);
+  if (bills.length === 0) return null;
   return (
     <Card className="border-border/60 shadow-sm" data-product-tour="recurring-radar"><CardContent className="p-4 sm:p-5">
       <div className="flex items-start justify-between gap-3">
