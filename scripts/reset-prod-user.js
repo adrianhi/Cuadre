@@ -44,8 +44,11 @@ async function main() {
 
     for (const wsId of workspaceIds) {
       const txs = await prisma.$executeRawUnsafe(`DELETE FROM "transactions" WHERE "workspace_id" = $1::uuid;`, wsId);
+      const subs = await prisma.$executeRawUnsafe(
+        `DELETE FROM "inbox_institution_subscriptions" WHERE "inbox_connection_id" IN (SELECT "id" FROM "inbox_connections" WHERE "workspace_id" = $1::uuid);`,
+        wsId
+      );
       const conns = await prisma.$executeRawUnsafe(`DELETE FROM "inbox_connections" WHERE "workspace_id" = $1::uuid;`, wsId);
-      const subs = await prisma.$executeRawUnsafe(`DELETE FROM "inbox_institution_subscriptions" WHERE "workspace_id" = $1::uuid;`, wsId);
       const events = await prisma.$executeRawUnsafe(`DELETE FROM "ingestion_events" WHERE "workspace_id" = $1::uuid;`, wsId);
       const rules = await prisma.$executeRawUnsafe(`DELETE FROM "category_rules" WHERE "workspace_id" = $1::uuid;`, wsId);
       const recurring = await prisma.$executeRawUnsafe(`DELETE FROM "recurring_bills" WHERE "workspace_id" = $1::uuid;`, wsId);
