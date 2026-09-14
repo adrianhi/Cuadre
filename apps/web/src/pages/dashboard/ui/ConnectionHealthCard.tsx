@@ -91,10 +91,9 @@ export function ConnectionHealthCard({
   }
 
   return (
-    <Card className="border-emerald-500/20 bg-emerald-500/5" data-product-tour="connection-health">
-      <CardContent className="flex items-center gap-3 p-4">
-        <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
-        <div className="min-w-0 flex-1"><p className="text-sm font-bold">Gmail está conectado</p><p className="truncate text-xs text-muted-foreground">Actualizado {relativeTime(connection.lastSuccessfulSyncAt)} · {connection.selectedInstitutionCodes.join(', ')}</p></div>
+    <div className="flex min-h-14 items-center gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-2.5" data-product-tour="connection-health">
+        <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+        <div className="min-w-0 flex-1"><p className="text-xs font-bold">Gmail conectado</p><p className="truncate text-[11px] text-muted-foreground">Actualizado {relativeTime(connection.lastSuccessfulSyncAt)} · {connection.selectedInstitutionCodes.join(', ')}</p></div>
         {onSync ? (
           <Button
             variant="outline"
@@ -109,7 +108,6 @@ export function ConnectionHealthCard({
         ) : (
           <Clock3 className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
         )}
-      </CardContent>
-    </Card>
+    </div>
   );
 }

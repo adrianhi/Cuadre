@@ -1,7 +1,7 @@
 import React, { type ReactNode } from 'react';
 import type { StatsSummary } from '@/entities/stat';
 import { ComparisonDetails } from '@/widgets/spending-perspective';
-import { Button, Card, CardContent, LoadingScreen } from '@/shared/ui';
+import { AsyncErrorState, Card, CardContent, LoadingScreen } from '@/shared/ui';
 import type { PeriodSelection } from '@/entities/period';
 import { AnalyticsBudgetCard } from './AnalyticsBudgetCard';
 
@@ -64,11 +64,8 @@ export const AnalyticsSection: React.FC<AnalyticsSectionProps> = ({
 
       {statsError && !stats ? (
         <Card>
-          <CardContent className="p-6 text-center">
-            <p className="font-semibold">No pudimos preparar la analítica</p>
-            <Button onClick={onRefresh} className="mt-4">
-              Reintentar
-            </Button>
+          <CardContent className="p-0">
+            <AsyncErrorState title="No pudimos preparar la analítica" description="Tus movimientos siguen disponibles mientras vuelves a intentarlo." onRetry={onRefresh} error={statsError} area="analítica" />
           </CardContent>
         </Card>
       ) : (

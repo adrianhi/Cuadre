@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 
-const GUIDE_VERSION = '2026-09-13.1';
+const GUIDE_VERSION = '2026-09-14.1';
 
 export async function mockAuthenticatedDashboard(page: Page) {
   const productGuideUpdates: boolean[] = [];

@@ -3,17 +3,13 @@ import type { InboxConnection } from "@/entities/connection";
 import type { StatsSummary } from "@/entities/stat";
 import type { Transaction } from "@/entities/transaction";
 import { MetricCards } from "@/widgets/metric-summary";
-import { MonthPerspectiveCard } from "@/widgets/spending-perspective";
-import { Button, Card, CardContent, LoadingScreen } from "@/shared/ui";
+import { AsyncErrorState, Card, CardContent } from "@/shared/ui";
 import { ConnectionHealthCard } from "../ConnectionHealthCard";
 import { RecentTransactionsCard } from "./RecentTransactionsCard";
 import { CurrentBudgetCard } from "./CurrentBudgetCard";
 import { CashFlowCard } from "@/widgets/cash-flow";
 import { useSafeToSpend } from "@/entities/budget";
 import { SafeToSpendDial } from "@/widgets/safe-to-spend";
-import { useRecurringRadar, type RecurringBillDto } from "@/entities/recurring-bill";
-import { RecurringEditorDialog, useManageRecurring } from "@/features/manage-recurring";
-import { RecurringRadarCard } from "@/widgets/recurring-radar";
 import { usePaydayRitual } from "@/entities/payday-ritual";
 import { useCompletePaydayRitual } from "@/features/complete-payday-ritual";
 import { PaydayRitualCard } from "@/widgets/payday-ritual";
@@ -80,15 +76,12 @@ export const HomeSection: React.FC<HomeSectionProps> = ({
 }) => {
   const safeToSpend = useSafeToSpend(currency === 'USD' ? 'USD' : 'DOP');
   const activeCurrency = currency === 'USD' ? 'USD' : 'DOP';
-  const recurring = useRecurringRadar(activeCurrency);
-  const recurringActions = useManageRecurring(activeCurrency);
   const paydayRitual = usePaydayRitual(activeCurrency);
   const completePaydayRitual = useCompletePaydayRitual(activeCurrency);
   const proactiveFeed = useProactiveFeed(activeCurrency);
   const dismissProactiveAction = useDismissProactiveAction(activeCurrency);
   const weeklyCheckin = useWeeklyCheckin(activeCurrency);
   const completeWeeklyCheckin = useCompleteWeeklyCheckin(activeCurrency);
-  const [editingRecurring, setEditingRecurring] = React.useState<RecurringBillDto | null>(null);
   const [triageItems, setTriageItems] = React.useState<QuickTriageItem[]>([]);
   const [isTriageOpen, setIsTriageOpen] = React.useState(false);
   const [isWeeklyCheckinOpen, setIsWeeklyCheckinOpen] = React.useState(false);
@@ -98,18 +91,10 @@ export const HomeSection: React.FC<HomeSectionProps> = ({
     name: 'SAFE_TO_SPEND_VIEWED', contextKey: safeToSpend.data.date,
     properties: { currency: activeCurrency, status: safeToSpend.data.status },
   } : null);
-  useTrackProductView(recurring.data?.analysisStatus === 'READY' ? {
-    name: 'RECURRING_RADAR_VIEWED', contextKey: `${activeCurrency}:${recurring.data.generatedAt.slice(0, 10)}`,
-    properties: { currency: activeCurrency, status: recurring.data.analysisStatus },
-  } : null);
   useTrackProductView(paydayRitual.data?.status === 'OPEN' && paydayRitual.data.cycleKey ? {
     name: 'PAYDAY_RITUAL_VIEWED', contextKey: paydayRitual.data.cycleKey,
     properties: { currency: activeCurrency, status: paydayRitual.data.status },
   } : null);
-  if ((loadingTransactions && transactions.length === 0) || (loadingStats && !stats)) {
-    return <LoadingScreen message="Cargando tus finanzas..." description="Analizando tus movimientos más recientes" fullPage />;
-  }
-
   return (
     <>
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
@@ -136,13 +121,12 @@ export const HomeSection: React.FC<HomeSectionProps> = ({
         syncing={syncingConnection}
       />
 
-      <RecurringRadarCard
-        radar={recurring.data || null}
-        loading={recurring.isLoading}
+      <PaydayRitualCard
+        ritual={paydayRitual.data || null}
+        loading={paydayRitual.isLoading}
+        completing={completePaydayRitual.isPending}
         hideBalances={hideBalances}
-        onEdit={setEditingRecurring}
-        onStatus={(bill, status) => recurringActions.update.mutate({ id: bill.id, input: { status } })}
-        onAcknowledge={(alertId) => recurringActions.acknowledge.mutate(alertId)}
+        onComplete={(cycleKey) => completePaydayRitual.mutate(cycleKey)}
       />
 
       <ProactiveFeedCard
@@ -154,27 +138,6 @@ export const HomeSection: React.FC<HomeSectionProps> = ({
         onQuickCategorize={(items) => { setTriageItems(items); setIsTriageOpen(true); }}
         onOpenWeeklyCheckin={() => setIsWeeklyCheckinOpen(true)}
         onOpenSimulator={() => setIsSimulatorOpen(true)}
-      />
-
-      <PaydayRitualCard
-        ritual={paydayRitual.data || null}
-        loading={paydayRitual.isLoading}
-        completing={completePaydayRitual.isPending}
-        hideBalances={hideBalances}
-        onComplete={(cycleKey) => completePaydayRitual.mutate(cycleKey)}
-      />
-
-      <RecurringEditorDialog
-        key={editingRecurring?.id || 'closed-recurring-editor'}
-        bill={editingRecurring}
-        open={Boolean(editingRecurring)}
-        saving={recurringActions.update.isPending}
-        onOpenChange={(open) => { if (!open) setEditingRecurring(null); }}
-        onSave={async (input) => {
-          if (!editingRecurring) return;
-          await recurringActions.update.mutateAsync({ id: editingRecurring.id, input });
-          setEditingRecurring(null);
-        }}
       />
 
       <QuickTriageDialog open={isTriageOpen} onOpenChange={setIsTriageOpen} items={triageItems} currency={activeCurrency} />
@@ -204,26 +167,6 @@ export const HomeSection: React.FC<HomeSectionProps> = ({
         currency={activeCurrency}
       />
 
-      {statsError && !stats ? (
-        <Card>
-          <CardContent className="flex flex-col items-start gap-3 p-5">
-            <p className="font-semibold">No pudimos cargar el resumen</p>
-            <p className="text-sm text-muted-foreground">Los movimientos no se han perdido. Puedes volver a intentarlo.</p>
-            <Button onClick={onRefresh}>Reintentar</Button>
-          </CardContent>
-        </Card>
-      ) : loadingStats ? (
-        <LoadingSummaryCards />
-      ) : (
-        <MetricCards stats={stats} currency={currency} hideBalances={hideBalances} />
-      )}
-
-      {!loadingStats && (
-        <MonthPerspectiveCard stats={stats} currency={currency} hideBalances={hideBalances} />
-      )}
-
-      <CashFlowCard currency={currency} hideBalances={hideBalances} activeMonth={activeMonth} />
-      <CurrentBudgetCard currency={currency} hideBalances={hideBalances} />
       <RecentTransactionsCard
         transactions={transactions}
         loading={loadingTransactions}
@@ -233,6 +176,21 @@ export const HomeSection: React.FC<HomeSectionProps> = ({
         onOpenConnections={onOpenConnections}
         onAddManual={onAddManual}
       />
+
+      {statsError && !stats ? (
+        <Card>
+          <CardContent className="p-0">
+            <AsyncErrorState title="No pudimos cargar el resumen" description="Tus movimientos guardados siguen disponibles." onRetry={onRefresh} error={statsError} area="resumen" />
+          </CardContent>
+        </Card>
+      ) : loadingStats ? (
+        <LoadingSummaryCards />
+      ) : (
+        <MetricCards stats={stats} currency={currency} hideBalances={hideBalances} />
+      )}
+
+      <CurrentBudgetCard currency={currency} hideBalances={hideBalances} />
+      <CashFlowCard currency={currency} hideBalances={hideBalances} activeMonth={activeMonth} />
     </>
   );
 };

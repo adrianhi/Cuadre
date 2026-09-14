@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const GUIDE_VERSION = '2026-09-13.1';
+const GUIDE_VERSION = '2026-09-14.1';
 
 async function mockAuthenticatedDashboard(page: Page) {
   const productGuideUpdates: boolean[] = [];
@@ -108,7 +108,7 @@ async function expectSettledStep(page: Page, title: string) {
   await expect(page.locator('[data-product-tour-phase="settled"]')).toBeVisible();
   await expect(page.locator('[data-product-tour-card]')).toBeVisible();
   await expect(page.getByRole('heading', { name: title })).toBeVisible();
-  const primaryAction = title === 'Tus movimientos mantienen el cálculo actualizado' ? 'Terminar' : 'Siguiente';
+  const primaryAction = title === 'Revisa los movimientos que forman el cálculo' ? 'Terminar' : 'Siguiente';
   await expect(page.getByRole('button', { name: primaryAction })).toBeFocused();
 }
 
@@ -130,10 +130,10 @@ test('the tour settles every target before revealing its card', async ({ page })
   await page.getByRole('button', { name: 'Ver recorrido' }).click();
 
   await expectSettledStep(page, 'Tu Margen Seguro Diario');
-  await moveTour(page, 'Siguiente', 'Tus compromisos ya están considerados');
+  await moveTour(page, 'Siguiente', 'Tus movimientos mantienen el margen actualizado');
   await moveTour(page, 'Atrás', 'Tu Margen Seguro Diario');
-  await moveTour(page, 'Siguiente', 'Tus compromisos ya están considerados');
-  await moveTour(page, 'Siguiente', 'Tus movimientos mantienen el cálculo actualizado');
+  await moveTour(page, 'Siguiente', 'Tus movimientos mantienen el margen actualizado');
+  await moveTour(page, 'Siguiente', 'Revisa los movimientos que forman el cálculo');
 
   await page.getByRole('button', { name: 'Terminar' }).click();
   await expect(page.locator('[data-product-tour-phase]')).toHaveCount(0);

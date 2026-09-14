@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Layers, Lightbulb, RefreshCw, Repeat } from 'lucide-react';
+import { Layers, Lightbulb, Repeat } from 'lucide-react';
 import { currentBudgetMonth, useBudgetSummary } from '@/entities/budget';
 import { useRecurringRadar, type RecurringBillDto } from '@/entities/recurring-bill';
 import { BudgetManagerDialog } from '@/features/budget-manager';
@@ -9,7 +9,7 @@ import { IncomeStreamsSettingsModal } from '@/features/income-streams';
 import { BudgetOverviewCard, BudgetProgressList } from '@/widgets/budget-overview';
 import { RecurringExpensesHub } from '@/widgets/recurring-radar';
 import { formatCurrency } from '@/shared/lib';
-import { Button, Card, CardContent, LoadingScreen } from '@/shared/ui';
+import { AsyncErrorState, Card, CardContent, LoadingScreen } from '@/shared/ui';
 import type { PeriodSelection } from '@/entities/period';
 
 function getMonthFromSelection(selection?: PeriodSelection): string {
@@ -129,15 +129,8 @@ export function BudgetSection(props: {
         <>
           {query.isError ? (
             <Card>
-              <CardContent className="p-5">
-                <p className="font-semibold">No pudimos cargar tu presupuesto</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Tus límites guardados no se han perdido.
-                </p>
-                <Button onClick={() => void query.refetch()} className="mt-3 gap-2">
-                  <RefreshCw className="h-4 w-4" />
-                  Reintentar
-                </Button>
+              <CardContent className="p-0">
+                <AsyncErrorState title="No pudimos cargar tu presupuesto" description="Tus límites guardados siguen disponibles." onRetry={() => void query.refetch()} error={query.error} area="presupuesto" />
               </CardContent>
             </Card>
           ) : (

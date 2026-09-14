@@ -18,14 +18,14 @@ export const PRODUCT_TOUR_STEPS: readonly TourStep[] = [
   },
   {
     section: 'home',
-    target: 'recurring-radar',
-    title: 'Tus compromisos ya están considerados',
-    description: 'Los cobros que confirmes se reservan antes de calcular tu margen para que no gastes dinero que necesitarás después.',
+    target: 'connection-health',
+    title: 'Tus movimientos mantienen el margen actualizado',
+    description: 'Aquí puedes comprobar si Gmail está conectado, sincronizando o necesita tu atención. También puedes usar Cuadre manualmente.',
   },
   {
     section: 'transactions',
     target: 'transactions',
-    title: 'Tus movimientos mantienen el cálculo actualizado',
-    description: 'Cuadre importa tus avisos bancarios y aquí puedes revisar o corregir cualquier movimiento que afecte tu margen.',
+    title: 'Revisa los movimientos que forman el cálculo',
+    description: 'Aquí puedes verificar y corregir cualquier movimiento. Los cobros fijos confirmados ya se reservan dentro de tu Margen Seguro.',
   },
 ] as const;
