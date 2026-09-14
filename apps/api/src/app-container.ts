@@ -21,16 +21,12 @@ import { GmailTokenProvider } from './modules/connections/infrastructure/gmail-t
 import { GmailQueryService } from './modules/connections/infrastructure/gmail-query.service';
 import { PrismaGmailConnectionReader } from './modules/connections/infrastructure/prisma-gmail-connection.reader';
 import { GmailLifecycleService } from './modules/connections/infrastructure/gmail-lifecycle.service';
-import { GmailMessageProcessor } from './modules/ingestion/infrastructure/gmail/gmail-message.processor';
-import { GmailSyncService } from './modules/ingestion/infrastructure/gmail/gmail-sync.service';
-import { GmailJobHandlerRegistry } from './modules/ingestion/application/gmail-job-handler.registry';
-import { IngestionScheduler } from './modules/ingestion/infrastructure/ingestion-scheduler';
-import { IngestionJobService } from './modules/ingestion/infrastructure/ingestion-job.service';
-import { SyncCompletedNotifier } from './modules/ingestion/application/sync-completed-notifier';
+import {
+  GmailJobHandlerRegistry, GmailMessageProcessor, GmailSyncService, HandleGmailPush,
+  IngestionJobService, IngestionScheduler, PrismaInboxConnectionRepository,
+  PrismaSyncCompletedContextReader, SyncCompletedNotifier, GoogleOidcAdapter,
+} from './modules/ingestion';
 import { IngestionRunner } from './ingestion/ingestion-runner';
-import { HandleGmailPush } from './modules/ingestion/application/handle-gmail-push';
-import { GoogleOidcAdapter } from './modules/ingestion/providers/google/google-oidc.adapter';
-import { PrismaInboxConnectionRepository } from './modules/ingestion/infrastructure/prisma-inbox-connection.repository';
 import { GmailPubSubController } from './controllers/gmail-pubsub.controller';
 import { InboxConnectionController } from './controllers/inbox-connection.controller';
 import { InstitutionSelectionService } from './modules/connections/infrastructure/institution-selection.service';
@@ -146,7 +142,9 @@ const gmailSyncService = new GmailSyncService(
   gmailMessageProcessor
 );
 const emailTransport = new EmailTransportService();
-const syncCompletedNotifier = new SyncCompletedNotifier(emailTransport, config.appUrl);
+const syncCompletedNotifier = new SyncCompletedNotifier(
+  emailTransport, new PrismaSyncCompletedContextReader(), config.appUrl,
+);
 const gmailJobHandlers = new GmailJobHandlerRegistry(gmailSyncService);
 let ingestionJobService!: IngestionJobService;
 const ingestionScheduler = new IngestionScheduler((input) => ingestionJobService.enqueue(input));
@@ -243,7 +241,7 @@ export const appContainer = {
   bankConnectionController: new BankConnectionController(new FinancialInstitutionService()),
   incomeController,
   betaInterestController: new BetaInterestController(
-    new BetaInterestService(new PrismaBetaInterestRepository(), betaInviteService),
+    new BetaInterestService(new PrismaBetaInterestRepository()),
   ),
   syncCompletedNotifier,
 };

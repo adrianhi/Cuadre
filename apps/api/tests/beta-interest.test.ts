@@ -52,32 +52,22 @@ describe('BetaInterestService', () => {
     await expect(service.register({ email: 'correo-invalido' })).rejects.toThrow();
   });
 
-  it('automatically triggers beta invitation and returns activation URL and invite code', async () => {
+  it('does not create or expose an invitation from the public waitlist', async () => {
     const mockRepo: BetaInterestRepository = {
       findByEmail: vi.fn().mockResolvedValue(null),
       create: vi.fn().mockResolvedValue({ id: 'test-id', email: 'auto@example.com' }),
     };
-    const mockInviter = {
-      inviteUser: vi.fn().mockResolvedValue({
-        activationUrl: 'https://cuadre.com.do/login?invite=mock_invite_code_12345',
-        used: false,
-      }),
-    };
-
-    const service = new BetaInterestService(mockRepo, mockInviter);
+    const service = new BetaInterestService(mockRepo);
     const result = await service.register({
       email: 'auto@example.com',
       source: 'LANDING_HERO',
     });
 
     expect(result.success).toBe(true);
-    expect(result.activationUrl).toBe('https://cuadre.com.do/login?invite=mock_invite_code_12345');
-    expect(result.inviteCode).toBe('mock_invite_code_12345');
-    expect(mockInviter.inviteUser).toHaveBeenCalledWith({
-      email: 'auto@example.com',
-      source: 'LANDING_HERO',
-      campaignCode: undefined,
-      sendEmail: true,
+    expect(result).toEqual({
+      success: true,
+      message: 'Recibimos tu solicitud. Te avisaremos por correo cuando tu acceso esté disponible.',
+      alreadyRegistered: undefined,
     });
   });
 });

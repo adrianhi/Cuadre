@@ -1,4 +1,3 @@
-import { prisma } from '../../../config/database';
 import { logger } from '../../../shared/observability/logger';
 import { buildSyncCompletedEmail } from '../domain/sync-completed-email.template';
 
@@ -17,9 +16,20 @@ export interface SyncCompletedSummary {
   created: number;
 }
 
+export interface SyncCompletedContext {
+  recipient: string;
+  userDisplayName?: string | null;
+  institutions: string[];
+}
+
+export interface SyncCompletedContextReader {
+  find(workspaceId: string, inboxConnectionId: string): Promise<SyncCompletedContext | null>;
+}
+
 export class SyncCompletedNotifier {
   public constructor(
     private readonly emailTransport: EmailSenderPort,
+    private readonly contextReader: SyncCompletedContextReader,
     private readonly appUrl: string
   ) {}
 
@@ -30,38 +40,25 @@ export class SyncCompletedNotifier {
     jobId?: string
   ): Promise<void> {
     try {
-      const member = await prisma.workspaceMember.findFirst({
-        where: { workspaceId, role: 'OWNER' },
-        include: { profile: true },
-      });
-
-      if (!member?.profile?.email) {
+      const context = await this.contextReader.find(workspaceId, inboxConnectionId);
+      if (!context) {
         logger.warn('sync_completed_notifier_skipped_no_email', { workspaceId, inboxConnectionId });
         return;
       }
 
-      const subscriptions = await prisma.inboxInstitutionSubscription.findMany({
-        where: { inboxConnectionId, enabled: true },
-        include: { institution: true },
-      });
-
-      const institutions = subscriptions
-        .map((sub) => sub.institution?.displayName || sub.institutionCode)
-        .filter(Boolean);
-
       const emailContent = buildSyncCompletedEmail({
-        recipient: member.profile.email,
-        userDisplayName: member.profile.displayName,
+        recipient: context.recipient,
+        userDisplayName: context.userDisplayName,
         scanned: summary.scanned,
         created: summary.created,
-        institutions,
+        institutions: context.institutions,
         appUrl: this.appUrl,
       });
 
       const idempotencyKey = `cuadre/sync-completed/${inboxConnectionId}/${jobId || Date.now()}`;
 
       await this.emailTransport.sendEmail({
-        recipient: member.profile.email,
+        recipient: context.recipient,
         subject: emailContent.subject,
         html: emailContent.html,
         text: emailContent.text,
@@ -71,7 +68,6 @@ export class SyncCompletedNotifier {
       logger.info('sync_completed_email_sent', {
         workspaceId,
         inboxConnectionId,
-        recipient: member.profile.email,
         created: summary.created,
         scanned: summary.scanned,
       });
