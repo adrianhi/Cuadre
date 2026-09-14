@@ -1,10 +1,12 @@
+const path = require('path');
 const { PrismaClient } = require('@prisma/client');
+try {
+  require('dotenv').config({ path: path.resolve(__dirname, '../.env.production') });
+} catch {}
 
 // Explicit Production URL (bills-prod - fxijnufrdixjvizeynir)
 const PROD_URL =
   process.env.PROD_DATABASE_URL ||
-  process.env.DIRECT_URL ||
-  process.env.DATABASE_URL ||
   'postgresql://postgres.fxijnufrdixjvizeynir:billsPasswordSecur@aws-0-us-west-2.pooler.supabase.com:5432/postgres';
 
 const prisma = new PrismaClient({
