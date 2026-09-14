@@ -1,5 +1,6 @@
 import { LandingHeader } from './sections/LandingHeader';
 import { LandingHeroSection } from './sections/LandingHeroSection';
+import { LandingAppPurposeSection } from './sections/LandingAppPurposeSection';
 import { LandingHowItWorksSection } from './sections/LandingHowItWorksSection';
 import { LandingComparisonSection } from './sections/LandingComparisonSection';
 import { LandingBankCoverageSection } from './sections/LandingBankCoverageSection';
@@ -17,6 +18,7 @@ export function LandingPage({ hasSession = false }: LandingPageProps) {
       <LandingHeader hasSession={hasSession} />
       <main>
         <LandingHeroSection />
+        <LandingAppPurposeSection />
         <LandingHowItWorksSection />
         <LandingComparisonSection />
         <LandingBankCoverageSection />

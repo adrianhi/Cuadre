@@ -8,6 +8,12 @@ interface LandingHeaderProps {
 
 const NAV_ITEMS = [
   {
+    href: '#proposito',
+    label: 'Propósito',
+    description: 'Qué es Cuadre y uso de Google OAuth',
+    icon: Sparkles,
+  },
+  {
     href: '#como-funciona',
     label: 'Cómo funciona',
     description: 'Tu margen diario a partir de bancos',
@@ -55,6 +61,9 @@ export function LandingHeader({ hasSession }: LandingHeaderProps) {
 
         {/* Desktop Anchor Navigation */}
         <nav className="hidden md:flex items-center gap-6 text-xs font-medium text-slate-400">
+          <a href="#proposito" className="hover:text-white transition-colors">
+            Propósito
+          </a>
           <a href="#como-funciona" className="hover:text-white transition-colors">
             Cómo funciona
           </a>

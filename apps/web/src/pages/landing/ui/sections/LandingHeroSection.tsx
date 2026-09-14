@@ -21,6 +21,9 @@ export function LandingHeroSection() {
 
         {/* Core Headline */}
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-white max-w-4xl mx-auto leading-[1.12] animate-fade-in-up [animation-delay:200ms]">
+          <span className="block text-emerald-400 text-xl sm:text-2xl md:text-3xl font-extrabold uppercase tracking-wider mb-2">
+            Cuadre
+          </span>
           ¿Cuánto puedes gastar hoy{' '}
           <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-200 bg-clip-text text-transparent">
             sin descuadrar tu quincena?

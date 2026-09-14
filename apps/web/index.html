@@ -29,7 +29,89 @@
     <meta name="apple-mobile-web-app-title" content="Cuadre" />
   </head>
   <body class="bg-background text-foreground antialiased min-h-screen">
-    <div id="root"></div>
+    <div id="root">
+      <!-- Contenido semántico pre-renderizado para rastreadores de Google OAuth Verification, bots y SEO -->
+      <header style="padding: 1rem 1.5rem; border-bottom: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center; max-width: 1152px; margin: 0 auto;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <span style="background: linear-gradient(135deg, #10b981, #14b8a6); color: white; padding: 0.35rem 0.65rem; border-radius: 0.75rem; font-weight: 900; font-size: 1.1rem;">C.</span>
+          <span style="font-size: 1.25rem; font-weight: 800; color: #ffffff; letter-spacing: -0.025em;">Cuadre</span>
+        </div>
+        <nav style="display: flex; gap: 1rem; font-size: 0.85rem; align-items: center;">
+          <a href="#proposito" style="color: #94a3b8; text-decoration: none;">Propósito</a>
+          <a href="#como-funciona" style="color: #94a3b8; text-decoration: none;">Cómo funciona</a>
+          <a href="#seguridad" style="color: #94a3b8; text-decoration: none;">Seguridad</a>
+          <a href="/privacy" style="color: #34d399; text-decoration: none;">Privacidad</a>
+          <a href="/terms" style="color: #34d399; text-decoration: none;">Términos</a>
+        </nav>
+      </header>
+      <main style="max-width: 1000px; margin: 0 auto; padding: 3rem 1.5rem; font-family: system-ui, -apple-system, sans-serif; color: #f8fafc;">
+        <div style="text-align: center; margin-bottom: 3rem;">
+          <p style="color: #34d399; font-weight: 700; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.05em; margin-bottom: 0.5rem;">
+            Aplicación de Finanzas Personales · República Dominicana
+          </p>
+          <h1 style="font-size: 2.75rem; font-weight: 900; line-height: 1.15; margin: 0 0 1rem 0; color: #ffffff;">
+            Cuadre: ¿Cuánto puedes gastar hoy sin descuadrar tu quincena?
+          </h1>
+          <p style="font-size: 1.125rem; color: #94a3b8; max-width: 720px; margin: 0 auto; line-height: 1.6;">
+            <strong>Cuadre</strong> (también identificada como <em>cuadre</em>) es una aplicación web de control financiero que calcula cada mañana tu Margen Seguro Diario a partir de los avisos de tus bancos dominicanos vía Gmail en modo de solo lectura.
+          </p>
+        </div>
+
+        <section id="proposito" style="background: rgba(15, 23, 42, 0.7); border: 1px solid #334155; border-radius: 1.25rem; padding: 2rem; margin-bottom: 2.5rem;">
+          <h2 style="font-size: 1.5rem; font-weight: 800; color: #ffffff; margin-top: 0; margin-bottom: 1rem;">
+            Propósito de la aplicación
+          </h2>
+          <p style="line-height: 1.6; color: #cbd5e1; margin-bottom: 1rem; font-size: 0.95rem;">
+            El propósito principal de <strong>Cuadre</strong> es brindar a los usuarios en la República Dominicana una solución clara y automatizada para controlar sus gastos personales y familiares. En lugar de registrar gastos de forma retroactiva y manual, Cuadre aparta de antemano los compromisos fijos de la quincena (renta, servicios, préstamos y ahorros) y distribuye el saldo restante en los días hábiles del período, informando diariamente al usuario cuánto dinero puede gastar con seguridad.
+          </p>
+          <h3 style="font-size: 1.15rem; font-weight: 700; color: #34d399; margin-top: 1.5rem; margin-bottom: 0.75rem;">
+            Uso de la integración con Google y alcance de Gmail (gmail.readonly)
+          </h3>
+          <p style="line-height: 1.6; color: #cbd5e1; margin-bottom: 1rem; font-size: 0.95rem;">
+            Para sincronizar transacciones sin necesidad de que el usuario anote comprobantes ni ingrese contraseñas bancarias, Cuadre permite conectar voluntariamente su cuenta de Google mediante el permiso oficial de solo lectura (<code>https://www.googleapis.com/auth/gmail.readonly</code>).
+          </p>
+          <p style="line-height: 1.6; color: #cbd5e1; margin-bottom: 1rem; font-size: 0.95rem;">
+            Cuadre utiliza este permiso exclusivamente para buscar e interpretar las notificaciones electrónicas automáticas emitidas por las entidades bancarias dominicanas soportadas (Banco BHD, Banco Popular Dominicano, Banreservas y Qik Banco Digital). De cada correo se extraen únicamente los datos transaccionales mínimos (fecha, monto y comercio o descripción del cargo).
+          </p>
+          <ul style="line-height: 1.6; color: #cbd5e1; padding-left: 1.5rem; margin-bottom: 1rem; font-size: 0.9rem;">
+            <li><strong>Acceso de solo lectura:</strong> Cuadre no tiene autorización para enviar correos, redactar mensajes, modificar etiquetas ni borrar información de la bandeja de entrada.</li>
+            <li><strong>Sin claves bancarias:</strong> Jamás solicitamos contraseñas de internet banking, PIN de tarjetas ni códigos de token.</li>
+            <li><strong>Sin movimientos de fondos:</strong> La plataforma no posee capacidades transaccionales ni puede debitar o transferir dinero de las cuentas del usuario.</li>
+            <li><strong>Protección de privacidad:</strong> No se accede a correos personales y la información financiera no se vende ni se comparte con redes publicitarias.</li>
+          </ul>
+        </section>
+
+        <section id="seguridad-legal" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+          <div style="background: rgba(15, 23, 42, 0.5); border: 1px solid #1e293b; border-radius: 1rem; padding: 1.5rem;">
+            <h3 style="color: #ffffff; margin-top: 0; font-size: 1.1rem; font-weight: 700;">Bancos dominicanos compatibles</h3>
+            <p style="color: #94a3b8; font-size: 0.875rem; line-height: 1.5;">Procesamiento de notificaciones de Banco BHD, Banco Popular Dominicano, Banreservas y Qik Banco Digital.</p>
+          </div>
+          <div style="background: rgba(15, 23, 42, 0.5); border: 1px solid #1e293b; border-radius: 1rem; padding: 1.5rem;">
+            <h3 style="color: #ffffff; margin-top: 0; font-size: 1.1rem; font-weight: 700;">Seguridad y Cifrado AES-256</h3>
+            <p style="color: #94a3b8; font-size: 0.875rem; line-height: 1.5;">Los tokens de acceso y datos normalizados se almacenan con cifrado AES-256-GCM en reposo y tránsito seguro HTTPS.</p>
+          </div>
+          <div style="background: rgba(15, 23, 42, 0.5); border: 1px solid #1e293b; border-radius: 1rem; padding: 1.5rem;">
+            <h3 style="color: #ffffff; margin-top: 0; font-size: 1.1rem; font-weight: 700;">Cumplimiento Legal</h3>
+            <p style="color: #94a3b8; font-size: 0.875rem; line-height: 1.5;">Tratamiento de datos conforme a la Ley No. 172-13 de la República Dominicana sobre protección de datos de carácter personal.</p>
+          </div>
+        </section>
+      </main>
+      <footer style="border-top: 1px solid #1e293b; padding: 2rem 1.5rem; text-align: center; font-size: 0.85rem; color: #64748b; max-width: 1000px; margin: 0 auto;">
+        <p style="margin-bottom: 0.75rem;">© 2026 Cuadre. Todos los derechos reservados. Desarrollado en República Dominicana 🇩🇴</p>
+        <div style="display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap;">
+          <a href="/privacy" style="color: #94a3b8; text-decoration: underline;">Política de Privacidad</a>
+          <a href="/terms" style="color: #94a3b8; text-decoration: underline;">Términos de Servicio</a>
+          <a href="/legal/google-api-disclosure" style="color: #94a3b8; text-decoration: underline;">Divulgación de Google API</a>
+        </div>
+      </footer>
+    </div>
+    <noscript>
+      <div style="background: #090d16; color: #f8fafc; padding: 2rem; font-family: system-ui, sans-serif; text-align: center;">
+        <h2>Cuadre — Aplicación de finanzas personales</h2>
+        <p>Para utilizar la aplicación interactiva de Cuadre, por favor activa JavaScript en tu navegador.</p>
+        <p>Consulta nuestra <a href="/privacy" style="color: #34d399;">Política de Privacidad</a> y <a href="/terms" style="color: #34d399;">Términos de Servicio</a>.</p>
+      </div>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
