@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { RecurringBillDto, UpdateRecurringBillInput } from '@/entities/recurring-bill';
-import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Input } from '@/shared/ui';
+import { formatAmountInputOnBlur, parseAmountInput } from '@/shared/lib';
+import { Button, CurrencyAmountInput, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Input } from '@/shared/ui';
 
 export function RecurringEditorDialog(props: {
   bill: RecurringBillDto | null;
@@ -10,7 +11,7 @@ export function RecurringEditorDialog(props: {
   onSave: (input: UpdateRecurringBillInput) => Promise<void>;
 }) {
   const [name, setName] = useState(props.bill?.displayName || '');
-  const [amount, setAmount] = useState(String(props.bill?.expectedAmount || ''));
+  const [amount, setAmount] = useState(formatAmountInputOnBlur(props.bill?.expectedAmount));
   const [date, setDate] = useState(props.bill?.nextExpectedDate || '');
   const [cadence, setCadence] = useState<RecurringBillDto['cadence']>(props.bill?.cadence || 'MONTHLY');
   return (
@@ -21,7 +22,7 @@ export function RecurringEditorDialog(props: {
           <DialogDescription>Corrige la predicción para que tus reservas sean confiables.</DialogDescription>
         </DialogHeader>
         <label className="grid gap-1 text-sm font-medium">Nombre<Input value={name} onChange={(event) => setName(event.target.value)} /></label>
-        <label className="grid gap-1 text-sm font-medium">Importe esperado<Input type="number" min="0.01" step="0.01" value={amount} onChange={(event) => setAmount(event.target.value)} /></label>
+        <label className="grid gap-1 text-sm font-medium">Monto esperado<CurrencyAmountInput value={amount} onValueChange={setAmount} placeholder="0.00" /></label>
         <label className="grid gap-1 text-sm font-medium">Próxima fecha<Input type="date" value={date} onChange={(event) => setDate(event.target.value)} /></label>
         <label className="grid gap-1 text-sm font-medium">Frecuencia
           <select className="h-9 rounded-md border bg-background px-3 text-sm" value={cadence} onChange={(event) => setCadence(event.target.value as RecurringBillDto['cadence'])}>
@@ -30,8 +31,8 @@ export function RecurringEditorDialog(props: {
         </label>
         <DialogFooter>
           <Button variant="outline" onClick={() => props.onOpenChange(false)}>Cancelar</Button>
-          <Button disabled={props.saving || !name.trim() || Number(amount) <= 0 || !date} onClick={() => void props.onSave({
-            displayName: name.trim(), expectedAmount: Number(amount), nextExpectedDate: date, cadence,
+          <Button disabled={props.saving || !name.trim() || Number(parseAmountInput(amount)) <= 0 || !date} onClick={() => void props.onSave({
+            displayName: name.trim(), expectedAmount: Number(parseAmountInput(amount)), nextExpectedDate: date, cadence,
           })}>{props.saving ? 'Guardando…' : 'Guardar'}</Button>
         </DialogFooter>
       </DialogContent>

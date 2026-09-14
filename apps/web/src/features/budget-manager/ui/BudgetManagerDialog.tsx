@@ -1,7 +1,7 @@
 import { Lightbulb, Loader2, Target } from 'lucide-react';
 import type { BudgetSummaryDto } from '@/entities/budget';
-import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, Input } from '@/shared/ui';
-import { formatAmountInput, formatCurrency, formatMonthLabel, parseAmountInput } from '@/shared/lib';
+import { Button, CurrencyAmountInput, Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/ui';
+import { formatCurrency, formatMonthLabel, parseAmountInput } from '@/shared/lib';
 import { useBudgetManager } from '../model/useBudgetManager';
 import { BudgetLimitRows } from './BudgetLimitRows';
 
@@ -40,12 +40,10 @@ export function BudgetManagerDialog(props: {
             <p className="mb-2 text-xs text-muted-foreground">
               Incluye todos tus gastos visibles y aprobados.
             </p>
-            <Input
+            <CurrencyAmountInput
               id="global-budget"
-              type="text"
-              inputMode="decimal"
               value={model.globalLimit}
-              onChange={(event) => model.setGlobalLimit(formatAmountInput(event.target.value))}
+              onValueChange={model.setGlobalLimit}
               placeholder="Ej. 50,000"
               className="h-11 font-mono text-base font-bold"
             />

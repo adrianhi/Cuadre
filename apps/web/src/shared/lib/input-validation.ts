@@ -1,9 +1,11 @@
+import { parseAmountInput } from './formatters';
+
 export function parseNumericInput(value: string | number | null | undefined): number | null {
   if (value === null || value === undefined) return null;
   if (typeof value === 'number') return Number.isFinite(value) ? value : null;
-  const normalized = value.trim().replace(/\s+/g, '').replace(/,/g, '.');
+  const normalized = parseAmountInput(value);
   if (!normalized) return null;
-  const parsed = Number.parseFloat(normalized);
+  const parsed = Number(normalized);
   return Number.isFinite(parsed) ? parsed : null;
 }
 

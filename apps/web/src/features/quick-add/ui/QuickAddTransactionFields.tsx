@@ -1,7 +1,7 @@
 import { ArrowUpRight, Check, CreditCard, Landmark, Receipt } from 'lucide-react';
 import { COMMON_CATEGORIES, FINANCIAL_INSTITUTIONS } from '@/shared/config/financial-options';
-import { formatCurrency, toDateValue } from '@/shared/lib';
-import { Button, DateTimePickerField, DialogFooter, Input } from '@/shared/ui';
+import { formatCurrency, parseAmountInput, toDateValue } from '@/shared/lib';
+import { Button, CurrencyAmountInput, DateTimePickerField, DialogFooter, Input } from '@/shared/ui';
 import type { QuickAddTransactionModel } from '../model/useQuickAddTransaction';
 
 const MOVEMENT_TYPES = [
@@ -42,18 +42,18 @@ export function QuickAddTransactionFields({ model, onCancel }: QuickAddTransacti
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <label className="text-xs font-semibold text-foreground">Monto</label>
-          {amount && !Number.isNaN(Number(amount)) && Number(amount) > 0 && <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(Number(amount), currency)}</span>}
+          {Number(parseAmountInput(amount)) > 0 && <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(Number(parseAmountInput(amount)), currency)}</span>}
         </div>
         <div className="flex gap-2">
           <div className="relative flex-1">
             <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm font-bold text-muted-foreground">{currency === 'DOP' ? 'RD$' : '$'}</span>
-            <Input type="number" step="0.01" min="0.01" placeholder="0.00" value={amount} onChange={(event) => setAmount(event.target.value)} className={`h-11 pl-11 text-base font-bold ${fieldErrors.amount ? 'border-destructive focus-visible:ring-destructive' : ''}`} autoFocus />
+            <CurrencyAmountInput placeholder="0.00" value={amount} onValueChange={setAmount} aria-invalid={Boolean(fieldErrors.amount)} aria-describedby={fieldErrors.amount ? 'quick-add-amount-error' : undefined} className={`h-11 pl-11 text-base font-bold ${fieldErrors.amount ? 'border-destructive focus-visible:ring-destructive' : ''}`} autoFocus />
           </div>
           <div className="flex rounded-xl border bg-muted p-1 text-xs font-semibold">
             {['DOP', 'USD'].map((code) => <button key={code} type="button" onClick={() => setCurrency(code)} className={`rounded-lg px-3 py-1 transition-all ${currency === code ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'}`}>{code}</button>)}
           </div>
         </div>
-        {fieldErrors.amount && <p className="text-[11px] font-medium text-destructive">{fieldErrors.amount}</p>}
+        {fieldErrors.amount && <p id="quick-add-amount-error" className="text-[11px] font-medium text-destructive">{fieldErrors.amount}</p>}
       </div>
       <div className="space-y-1.5">
         <label className="text-xs font-semibold text-foreground">Entidad / Banco</label>

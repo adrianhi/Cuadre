@@ -123,7 +123,16 @@ export function BankOnboarding({ authToken, onComplete, onLogout }: BankOnboardi
 
             {!activeInbox && googleUnavailable && <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-amber-700 dark:text-amber-300">Gmail OAuth no está disponible en este entorno. Puedes continuar con movimientos manuales.</div>}
 
-            {!activeInbox && <button className="w-full text-center text-xs text-muted-foreground underline-offset-4 hover:underline" disabled={busy === 'complete'} onClick={() => goToBaseline()}>Continuar con movimientos manuales por ahora</button>}
+            {!activeInbox && (
+              <div className="space-y-2 text-center">
+                <p className="text-[11px] text-muted-foreground">
+                  En modo manual, tu Margen Seguro solo reflejará los movimientos que registres en Cuadre.
+                </p>
+                <button className="w-full text-xs text-muted-foreground underline-offset-4 hover:underline" disabled={busy === 'complete'} onClick={() => goToBaseline()}>
+                  Continuar con movimientos manuales por ahora
+                </button>
+              </div>
+            )}
           </CardContent>
         </Card>
 

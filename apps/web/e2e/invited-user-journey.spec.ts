@@ -3,7 +3,7 @@ import { mockAuthenticatedDashboard } from './helpers/mock-dashboard';
 
 const INVITE_CODE = 'a'.repeat(43);
 const STORAGE_KEY = 'cuadre.betaInviteCode';
-const GUIDE_VERSION = '2026-09-13.1';
+const GUIDE_VERSION = '2026-09-14.1';
 
 async function storeInvite(page: Page) {
   await page.addInitScript(({ key, code }) => {
@@ -208,9 +208,10 @@ test('activates the monthly margin through the legal to onboarding to dashboard 
   await expect(page.getByRole('heading', { name: 'Calcula tu Margen Seguro' })).toBeVisible();
   const finish = page.getByRole('button', { name: 'Guardar y ver mi Margen Seguro' });
   await expect(finish).toBeDisabled();
+  await page.getByText('Ingresos y cobros fijos', { exact: true }).click();
   await expect(page.getByRole('button', { name: /Internet \/ Telecom/ })).toHaveAttribute('aria-pressed', 'false');
   await page.getByLabel('Límite mensual (DOP)').fill('45000');
-  await page.getByLabel('Monto (DOP)').fill('30000');
+  await page.getByLabel('Monto por pago (DOP)').fill('30000');
   await page.getByRole('button', { name: /Internet \/ Telecom/ }).click();
   await page.getByLabel('Monto mensual estimado (DOP)').fill('2500');
   await expect(page.getByText(/Estimación inicial de tu Margen Seguro/)).toBeVisible();

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { CreateRecurringBillInput } from '@bills/contracts';
-import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Input } from '@/shared/ui';
+import { parseAmountInput } from '@/shared/lib';
+import { Button, CurrencyAmountInput, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Input } from '@/shared/ui';
 
 export function RecurringCreatorDialog(props: {
   open: boolean;
@@ -28,10 +29,11 @@ export function RecurringCreatorDialog(props: {
   };
 
   const handleSubmit = async () => {
-    if (!name.trim() || Number(amount) <= 0 || !date) return;
+    const expectedAmount = Number(parseAmountInput(amount));
+    if (!name.trim() || expectedAmount <= 0 || !date) return;
     await props.onSave({
       displayName: name.trim(),
-      expectedAmount: Number(amount),
+      expectedAmount,
       currency: (props.currency === 'USD' ? 'USD' : 'DOP'),
       cadence,
       nextExpectedDate: date,
@@ -60,13 +62,10 @@ export function RecurringCreatorDialog(props: {
           <div className="grid grid-cols-2 gap-3">
             <label className="grid gap-1.5 text-sm font-medium">
               Monto estimado ({props.currency})
-              <Input
-                type="number"
-                min="0.01"
-                step="0.01"
+              <CurrencyAmountInput
                 placeholder="0.00"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onValueChange={setAmount}
               />
             </label>
             <label className="grid gap-1.5 text-sm font-medium">
@@ -96,7 +95,7 @@ export function RecurringCreatorDialog(props: {
             Cancelar
           </Button>
           <Button
-            disabled={props.saving || !name.trim() || Number(amount) <= 0 || !date}
+            disabled={props.saving || !name.trim() || Number(parseAmountInput(amount)) <= 0 || !date}
             onClick={() => void handleSubmit()}
           >
             {props.saving ? 'Guardando…' : 'Crear gasto fijo'}

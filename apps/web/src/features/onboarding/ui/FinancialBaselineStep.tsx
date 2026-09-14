@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { AlertCircle, ArrowRight, Loader2, Sparkles, Wallet } from 'lucide-react';
 import type { IncomeFrequency } from '@bills/contracts';
-import { formatAmountInput, formatCurrency, parseAmountInput } from '@/shared/lib';
-import { Button, Card, CardContent, Input } from '@/shared/ui';
+import { formatAmountInputOnBlur, formatCurrency, parseAmountInput } from '@/shared/lib';
+import { Button, Card, CardContent, CurrencyAmountInput } from '@/shared/ui';
 import { COMMON_RD_SERVICES } from '../model/common-recurring-services';
-import { RecurringServiceSelector } from './RecurringServiceSelector';
+import { OptionalFinancialDetails } from './OptionalFinancialDetails';
 
 interface FinancialBaselineStepProps {
   busy: boolean;
@@ -28,7 +28,7 @@ export function FinancialBaselineStep({
   const [frequency, setFrequency] = useState<IncomeFrequency>('BIWEEKLY_15_30');
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [serviceAmounts, setServiceAmounts] = useState<Record<string, string>>(
-    Object.fromEntries(COMMON_RD_SERVICES.map((service) => [service.id, formatAmountInput(service.defaultAmount)])),
+    Object.fromEntries(COMMON_RD_SERVICES.map((service) => [service.id, formatAmountInputOnBlur(service.defaultAmount)])),
   );
 
   const parsedLimit = Number(parseAmountInput(monthlySpendingLimit)) || 0;
@@ -102,12 +102,10 @@ export function FinancialBaselineStep({
           </p>
           <label className="grid gap-1 text-xs font-medium text-muted-foreground">
             Límite mensual (DOP)
-            <Input
-              type="text"
-              inputMode="decimal"
+            <CurrencyAmountInput
               placeholder="Ej. 45,000"
               value={monthlySpendingLimit}
-              onChange={(event) => setMonthlySpendingLimit(formatAmountInput(event.target.value))}
+              onValueChange={setMonthlySpendingLimit}
               aria-invalid={monthlySpendingLimit.length > 0 && !validLimit}
               className="font-mono text-base font-semibold"
             />
@@ -117,47 +115,16 @@ export function FinancialBaselineStep({
           )}
         </div>
 
-        {/* Income Input */}
-        <div className="space-y-3 rounded-2xl border border-border/60 bg-muted/20 p-4">
-          <div className="flex items-center gap-2">
-            <Wallet className="h-4 w-4 text-primary" />
-            <h3 className="text-sm font-bold text-foreground">
-              ¿Cuánto estimas que ingresas (neto)? <span className="font-normal text-muted-foreground">Opcional</span>
-            </h3>
-          </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-              Monto (DOP)
-              <Input
-                type="text"
-                inputMode="decimal"
-                placeholder="Ej. 35,000"
-                value={incomeAmount}
-                onChange={(e) => setIncomeAmount(formatAmountInput(e.target.value))}
-                className="font-mono text-base font-semibold"
-              />
-            </label>
-            <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-              Frecuencia de pago
-              <select
-                className="h-9 rounded-md border border-input bg-background px-3 text-sm shadow-xs"
-                value={frequency}
-                onChange={(e) => setFrequency(e.target.value as IncomeFrequency)}
-              >
-                <option value="BIWEEKLY_15_30">Quincenal (15 y 30)</option>
-                <option value="MONTHLY">Mensual (1 cobro/mes)</option>
-                <option value="WEEKLY">Semanal</option>
-              </select>
-            </label>
-          </div>
-        </div>
-
-        <RecurringServiceSelector
+        <OptionalFinancialDetails
+          incomeAmount={incomeAmount}
+          frequency={frequency}
           selectedServices={selectedServices}
           serviceAmounts={serviceAmounts}
-          valid={validServices}
-          onToggle={toggleService}
-          onAmountChange={(id, amount) => setServiceAmounts((current) => ({
+          validServices={validServices}
+          onIncomeChange={setIncomeAmount}
+          onFrequencyChange={setFrequency}
+          onToggleService={toggleService}
+          onServiceAmountChange={(id, amount) => setServiceAmounts((current) => ({
             ...current,
             [id]: amount,
           }))}
@@ -201,7 +168,7 @@ export function FinancialBaselineStep({
             {busy ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Preparando tu dashboard…</span>
+                <span>Preparando tu panel…</span>
               </>
             ) : (
               <>
@@ -217,7 +184,7 @@ export function FinancialBaselineStep({
             disabled={busy}
             onClick={onSkip}
           >
-            Omitir por ahora y configurar más tarde
+            Entrar sin calcular mi margen todavía
           </button>
         </div>
       </CardContent>

@@ -3,8 +3,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus, Trash2, Wallet } from 'lucide-react';
 import type { CreateIncomeStreamInput, IncomeFrequency } from '@bills/contracts';
 import { incomeKeys, incomeService } from '@/entities/income';
-import { formatAmountInput, formatCurrency, parseAmountInput } from '@/shared/lib';
-import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Input } from '@/shared/ui';
+import { formatCurrency, parseAmountInput } from '@/shared/lib';
+import { Button, CurrencyAmountInput, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Input } from '@/shared/ui';
 
 interface IncomeStreamsSettingsModalProps {
   open: boolean;
@@ -93,12 +93,10 @@ export function IncomeStreamsSettingsModal({ open, onOpenChange, currency }: Inc
               />
               <div className="relative">
                 <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-xs font-bold text-muted-foreground">{currency === 'DOP' ? 'RD$' : '$'}</span>
-                <Input
-                  type="text"
-                  inputMode="decimal"
+                <CurrencyAmountInput
                   placeholder="Monto por pago (ej. 45,000)"
                   value={amount}
-                  onChange={(e) => setAmount(formatAmountInput(e.target.value))}
+                  onValueChange={setAmount}
                   className="h-9 pl-10 text-xs font-semibold"
                 />
               </div>

@@ -1,6 +1,6 @@
 import { Check } from 'lucide-react';
-import { formatAmountInput, formatCurrency, parseAmountInput } from '@/shared/lib';
-import { Input } from '@/shared/ui';
+import { formatCurrency, parseAmountInput } from '@/shared/lib';
+import { CurrencyAmountInput } from '@/shared/ui';
 import { COMMON_RD_SERVICES } from '../model/common-recurring-services';
 
 interface RecurringServiceSelectorProps {
@@ -62,12 +62,10 @@ export function RecurringServiceSelector({
               {selected && (
                 <label className="grid gap-1 border-t border-border/50 px-3 pb-3 pt-2 text-[11px] font-medium text-muted-foreground">
                   Monto mensual estimado (DOP)
-                  <Input
-                    type="text"
-                    inputMode="decimal"
+                  <CurrencyAmountInput
                     placeholder="Ej. 2,500"
                     value={serviceAmounts[service.id]}
-                    onChange={(event) => onAmountChange(service.id, formatAmountInput(event.target.value))}
+                    onValueChange={(amount) => onAmountChange(service.id, amount)}
                     aria-invalid={Number(parseAmountInput(serviceAmounts[service.id])) <= 0}
                     className="font-mono text-xs font-semibold"
                   />

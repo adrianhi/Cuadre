@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Calculator, Calendar, Gauge, AlertTriangle, CheckCircle2 } from 'lucide-react';
-import { Input } from '@/shared/ui';
-import { cn, formatAmountInput, parseAmountInput } from '@/shared/lib';
+import { CurrencyAmountInput, Input } from '@/shared/ui';
+import { cn, formatAmountInput, formatAmountInputOnBlur, parseAmountInput } from '@/shared/lib';
 import { calculateSimulatedMargin, SIMULATOR_PRESETS, type MarginSimulatorInput } from '../model/margin-simulator';
 
 interface SimulatorForm {
@@ -25,11 +25,9 @@ function AmountField({ label, value, onChange, isBold }: AmountFieldProps) {
       <label className="text-xs font-semibold text-slate-300">{label}</label>
       <div className="relative mt-1">
         <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-500 z-10">RD$</span>
-        <Input
-          type="text"
-          inputMode="numeric"
+        <CurrencyAmountInput
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onValueChange={onChange}
           aria-label={label}
           className={cn(
             'h-10 rounded-xl border-slate-700/80 bg-slate-900/90 pl-10 pr-3 text-white focus-visible:border-emerald-500 focus-visible:ring-emerald-500',
@@ -43,10 +41,10 @@ function AmountField({ label, value, onChange, isBold }: AmountFieldProps) {
 
 export function InteractiveMarginCalculator() {
   const [form, setForm] = useState<SimulatorForm>({
-    monthlyLimit: formatAmountInput(50000),
-    commitments: formatAmountInput(18000),
-    spentBeforeToday: formatAmountInput(14000),
-    spentToday: formatAmountInput(850),
+    monthlyLimit: formatAmountInputOnBlur(50000),
+    commitments: formatAmountInputOnBlur(18000),
+    spentBeforeToday: formatAmountInputOnBlur(14000),
+    spentToday: formatAmountInputOnBlur(850),
     daysRemaining: '12',
   });
 
@@ -67,10 +65,10 @@ export function InteractiveMarginCalculator() {
     if (!preset) return;
     setActivePreset(preset.id);
     setForm({
-      monthlyLimit: formatAmountInput(preset.monthlyLimit),
-      commitments: formatAmountInput(preset.commitments),
-      spentBeforeToday: formatAmountInput(preset.spentBeforeToday),
-      spentToday: formatAmountInput(preset.spentToday),
+      monthlyLimit: formatAmountInputOnBlur(preset.monthlyLimit),
+      commitments: formatAmountInputOnBlur(preset.commitments),
+      spentBeforeToday: formatAmountInputOnBlur(preset.spentBeforeToday),
+      spentToday: formatAmountInputOnBlur(preset.spentToday),
       daysRemaining: String(preset.daysRemaining),
     });
   };
@@ -220,7 +218,7 @@ export function InteractiveMarginCalculator() {
 
           <p className="mt-2 text-[11px] text-slate-400 leading-snug">
             {result.status === 'ON_TRACK'
-              ? 'Vas al ritmo previsto para llegar sin estrés a cobrar.'
+              ? 'Vas al ritmo previsto para llegar con margen a tu próximo cobro.'
               : result.status === 'ADJUSTING'
                 ? 'Consumiste tu margen de hoy. Tu cuota diaria se recalcula mañana sin regaños.'
                 : 'Se ha alcanzado el límite mensual programado.'}

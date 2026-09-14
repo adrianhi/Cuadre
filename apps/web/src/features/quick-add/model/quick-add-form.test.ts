@@ -13,6 +13,7 @@ const validValues = {
 describe('quick add form rules', () => {
   it('accepts a complete movement', () => {
     expect(validateQuickAddForm(validValues)).toEqual({});
+    expect(validateQuickAddForm({ ...validValues, amount: '1,500.50' })).toEqual({});
   });
 
   it('rejects invalid and excessive amounts', () => {

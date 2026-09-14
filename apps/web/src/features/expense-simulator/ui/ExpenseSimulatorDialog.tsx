@@ -7,10 +7,10 @@ import { useSimulateExpense } from '@/entities/proactive';
 import { currentBudgetMonth, useBudgetSummary } from '@/entities/budget';
 import {
   Button, Dialog, DialogContent, DialogDescription, DialogFooter,
-  DialogHeader, DialogTitle, Input, Select, SelectContent, SelectItem,
+  CurrencyAmountInput, DialogHeader, DialogTitle, Select, SelectContent, SelectItem,
   SelectTrigger, SelectValue,
 } from '@/shared/ui';
-import { formatCurrency } from '@/shared/lib';
+import { formatAmountInputOnBlur, formatCurrency, parseAmountInput } from '@/shared/lib';
 
 export interface ExpenseSimulatorCategory { key: string; label: string; }
 
@@ -31,7 +31,7 @@ export function ExpenseSimulatorDialog({
   categories = [],
   onProceedToRecord,
 }: ExpenseSimulatorDialogProps) {
-  const [amountStr, setAmountStr] = useState('1500');
+  const [amountStr, setAmountStr] = useState(() => formatAmountInputOnBlur(1500));
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const activeCurrency = currency === 'USD' ? 'USD' : 'DOP';
 
@@ -43,7 +43,7 @@ export function ExpenseSimulatorDialog({
         label: c.categoryLabel || c.categoryKey || 'Categoría',
       }));
 
-  const numericAmount = parseFloat(amountStr) || 0;
+  const numericAmount = Number(parseAmountInput(amountStr)) || 0;
   const [debouncedAmount, setDebouncedAmount] = useState(numericAmount);
 
   useEffect(() => {
@@ -63,8 +63,8 @@ export function ExpenseSimulatorDialog({
   const displayedResult = debouncedAmount > 0 ? simulation.data : null;
 
   const handleQuickAddAmount = (add: number) => {
-    const next = (parseFloat(amountStr) || 0) + add;
-    setAmountStr(String(next));
+    const next = (Number(parseAmountInput(amountStr)) || 0) + add;
+    setAmountStr(formatAmountInputOnBlur(next));
     setDebouncedAmount(next);
   };
 
@@ -102,12 +102,9 @@ export function ExpenseSimulatorDialog({
               <span className="absolute left-3 top-2.5 text-sm font-bold text-muted-foreground">
                 {activeCurrency}
               </span>
-              <Input
-                type="number"
-                min="1"
-                step="50"
+              <CurrencyAmountInput
                 value={amountStr}
-                onChange={(e) => setAmountStr(e.target.value)}
+                onValueChange={setAmountStr}
                 placeholder="0.00"
                 className="pl-14 text-lg font-bold"
               />

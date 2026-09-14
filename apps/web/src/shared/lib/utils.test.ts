@@ -3,6 +3,9 @@ import {
   formatCurrency,
   formatDate,
   formatRelativeDate,
+  formatAmountInput,
+  formatAmountInputOnBlur,
+  parseAmountInput,
   parseNumericInput,
   isValidEmail,
   getOrganizationMeta,
@@ -65,6 +68,8 @@ describe('parseNumericInput', () => {
   it('parses numbers with comma decimals and thousands spaces', () => {
     expect(parseNumericInput('1500,50')).toBe(1500.5);
     expect(parseNumericInput('1 500.50')).toBe(1500.5);
+    expect(parseNumericInput('1,500.50')).toBe(1500.5);
+    expect(parseNumericInput('1.500,50')).toBe(1500.5);
   });
 
   it('returns null for invalid strings or negative/empty input', () => {
@@ -72,6 +77,21 @@ describe('parseNumericInput', () => {
     expect(parseNumericInput('abc')).toBeNull();
     expect(parseNumericInput(null)).toBeNull();
     expect(parseNumericInput(undefined)).toBeNull();
+  });
+});
+
+describe('editable amount formatting', () => {
+  it('supports Dominican and pasted international formats', () => {
+    expect(formatAmountInput('45000')).toBe('45,000');
+    expect(formatAmountInput('45000,5')).toBe('45,000.5');
+    expect(formatAmountInput('45.000,50')).toBe('45,000.50');
+    expect(parseAmountInput('45,000.50')).toBe('45000.5');
+  });
+
+  it('formats two decimals when editing finishes', () => {
+    expect(formatAmountInputOnBlur('800')).toBe('800.00');
+    expect(formatAmountInputOnBlur('45,000.5')).toBe('45,000.50');
+    expect(formatAmountInputOnBlur('')).toBe('');
   });
 });
 

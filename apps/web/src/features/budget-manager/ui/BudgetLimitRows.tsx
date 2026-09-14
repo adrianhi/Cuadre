@@ -1,8 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { ChevronDown, Check, Plus, Trash2 } from 'lucide-react';
 import type { BudgetCategoryDto } from '@/entities/budget';
-import { Button, Input } from '@/shared/ui';
-import { formatAmountInput } from '@/shared/lib';
+import { Button, CurrencyAmountInput } from '@/shared/ui';
 
 function CategorySelect(props: {
   selectedKey: string;
@@ -126,17 +125,12 @@ export function BudgetLimitRows(props: {
             }}
           />
           <div className="w-32 shrink-0 sm:w-36">
-            <Input
+            <CurrencyAmountInput
               ref={(el) => {
                 inputRefs.current[key] = el;
               }}
-              type="text"
-              inputMode="decimal"
               value={value}
-              onChange={(event) => {
-                const formatted = formatAmountInput(event.target.value);
-                props.setLimit(key, formatted);
-              }}
+              onValueChange={(formatted) => props.setLimit(key, formatted)}
               onKeyDown={(event) => {
                 if (event.key === 'Enter') {
                   event.preventDefault();
