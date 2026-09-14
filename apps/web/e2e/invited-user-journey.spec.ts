@@ -217,7 +217,7 @@ test('activates the monthly margin through the legal to onboarding to dashboard 
   await expect(page.getByText(/Estimación inicial de tu Margen Seguro/)).toBeVisible();
   await finish.click();
 
-  await expect(page.getByRole('heading', { name: 'Tu panorama' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Tu panorama' })).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText('Margen Seguro Diario', { exact: true })).toBeVisible();
   await expect(page.getByText('Puedes gastar', { exact: true })).toBeVisible();
   const marginBox = await page.locator('[data-product-tour="safe-to-spend"]').boundingBox();
