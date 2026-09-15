@@ -36,9 +36,14 @@ export function LandingFooter() {
 
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
           <p>© {currentYear} Cuadre. Desarrollado en República Dominicana 🇩🇴</p>
-          <p className="text-[11px] text-slate-500 max-w-md">
-            Consulta nuestra política de privacidad y la referencia informativa a la Ley No. 172-13 de la República Dominicana.
-          </p>
+          <div className="space-y-1 text-[11px] text-slate-500 max-w-lg">
+            <p>
+              El uso y transferencia de datos de Google Workspace cumple con la Política de Datos de Usuario de Google, incluidos los requisitos de Limited Use.
+            </p>
+            <p>
+              Consulta nuestra política de privacidad y la referencia informativa a la Ley No. 172-13 de la República Dominicana.
+            </p>
+          </div>
         </div>
       </div>
     </footer>

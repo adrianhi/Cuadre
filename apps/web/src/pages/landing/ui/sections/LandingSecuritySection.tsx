@@ -29,9 +29,9 @@ export function LandingSecuritySection() {
     },
     {
       icon: ShieldCheck,
-      title: 'Tus finanzas no se comercializan',
+      title: 'Cumplimiento Limited Use y cero entrenamiento de IA',
       description:
-        'No vendemos datos a intermediarios, burós ni redes publicitarias. Tampoco utilizamos tus movimientos para entrenar modelos públicos de inteligencia artificial.',
+        'Cumplimos con la política de Limited Use de Google: los datos de Workspace/Gmail nunca se usan, transfieren ni venden para entrenar modelos de IA/ML ni para publicidad.',
     },
     {
       icon: FileText,
