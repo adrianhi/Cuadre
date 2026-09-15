@@ -172,14 +172,16 @@ export class GmailMessageProcessor {
         },
       });
     } catch (error) {
+      console.error(`[GmailMessageProcessor] Error processing message ${input.messageId}:`, error);
       input.summary.failed += 1;
       const code = error instanceof AppError ? error.code : 'GMAIL_MESSAGE_PROCESSING_FAILED';
+      const message = error instanceof Error ? error.message : code;
       const parser = normalized ? ParserRegistry.detect(normalized) : null;
       await prisma.ingestionEvent.update({
         where: { id: eventId },
         data: {
           status: 'FAILED', parserCode: parser?.institutionCode || existing?.parserCode,
-          parserVersion: parser?.version || existing?.parserVersion, errorCode: code, errorMessage: code,
+          parserVersion: parser?.version || existing?.parserVersion, errorCode: code, errorMessage: message,
           rawContent: normalized ? retainEmail(normalized) : existing?.rawContent,
           rawContentExpiresAt: existing?.rawContentExpiresAt
             ?? (normalized || existing?.rawContent ? new Date(Date.now() + FAILED_CONTENT_TTL_MS) : null),
