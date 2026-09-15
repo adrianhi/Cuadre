@@ -2,7 +2,7 @@ import React from 'react';
 import { Calendar, Edit3, Trash2 } from 'lucide-react';
 import type { Transaction } from '@/entities/transaction';
 import type { groupTransactionsByDate } from '@/entities/transaction';
-import { isSentTransfer, statusCode } from '@/entities/transaction';
+import { isInternalTransfer, isSentTransfer, statusCode } from '@/entities/transaction';
 import { formatCurrency, formatDate, getOrganizationMeta } from '@/shared/lib';
 import { Button } from '@/shared/ui';
 import { TransactionIcon, TransactionStatus, TransactionTypeBadge } from './transaction-presenters';
@@ -37,12 +37,13 @@ const TransactionRow = ({ transaction, hideBalances, onEdit, onDelete }: {
 }) => {
   const inactive = statusCode(transaction) !== 'APPROVED';
   const sent = isSentTransfer(transaction);
+  const internal = isInternalTransfer(transaction);
   const institution = getOrganizationMeta(transaction.source, transaction.merchant);
   return (
     <tr className="group transition-colors hover:bg-muted/30">
       <td className="px-4 py-3.5 sm:px-6">
         <div className="flex items-center gap-3">
-          <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl ${sent ? 'bg-sky-500/15' : 'bg-muted/60'}`}><TransactionIcon transaction={transaction} /></div>
+          <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl ${internal ? 'bg-violet-500/15' : sent ? 'bg-sky-500/15' : 'bg-muted/60'}`}><TransactionIcon transaction={transaction} /></div>
           <div>
             <div className="max-w-[240px] truncate font-semibold" title={transaction.merchant}>{transaction.merchant}</div>
             <div className="mt-0.5 flex items-center gap-1.5">

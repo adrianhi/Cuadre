@@ -91,6 +91,20 @@ enum TransactionStatusResolution {
   AMBIGUOUS
 }
 
+enum TransactionFinancialRole {
+  EXPENSE
+  INCOME
+  INTERNAL_TRANSFER
+}
+
+enum TransactionFinancialRoleOrigin {
+  SYSTEM
+  BANK_SIGNAL
+  USER_RULE
+  MANUAL
+  MIGRATION
+}
+
 enum BudgetScope {
   GLOBAL
   CATEGORY
@@ -755,6 +769,9 @@ model Transaction {
   statusCode            TransactionStatusCode    @default(APPROVED) @map("status_code")
   statusUpdatedAt       DateTime?                @map("status_updated_at")
   transactionType       String                   @default("Compra") @map("transaction_type")
+  financialRole         TransactionFinancialRole @default(EXPENSE) @map("financial_role")
+  financialRoleOrigin   TransactionFinancialRoleOrigin @default(SYSTEM) @map("financial_role_origin")
+  suggestedFinancialRole TransactionFinancialRole? @map("suggested_financial_role")
   transactionDate       DateTime                 @map("transaction_date")
   source                String                   @default("BHD_EMAIL")
   notes                 String?
@@ -770,6 +787,7 @@ model Transaction {
   @@index([workspaceId, transactionDate])
   @@index([workspaceId, institutionCode])
   @@index([workspaceId, deletedAt])
+  @@index([workspaceId, financialRole, transactionDate])
   @@index([transactionDate])
   @@index([category])
   @@index([currency])

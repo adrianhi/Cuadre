@@ -29,12 +29,14 @@ export function movements(
   doc.x = PAGE.left;
   doc.y = 52;
 
-  const totalSum = rows.reduce((acc, r) => acc + (Number(r.Monto) || 0), 0);
+  const totalSum = rows
+    .filter((row) => row.Impacto === 'Gasto')
+    .reduce((sum, row) => sum + (Number(row.Monto) || 0), 0);
 
   doc.fillColor(THEME.forest).font('Helvetica-Bold').fontSize(14)
     .text('Detalle de movimientos', PAGE.left, 52);
   doc.fillColor(THEME.slate).font('Helvetica').fontSize(8)
-    .text(`${rows.length.toLocaleString('es-DO')} movimientos incluidos   •   Suma total: ${currencyValue(totalSum, currency)}`, PAGE.left, 70);
+    .text(`${rows.length.toLocaleString('es-DO')} movimientos incluidos   •   Gastos: ${currencyValue(totalSum, currency)}`, PAGE.left, 70);
 
   movementTableHeader(doc, 86);
 
@@ -71,7 +73,7 @@ export function movements(
     }
 
     doc.fillColor(THEME.slate).font('Helvetica').fontSize(7.2)
-      .text(String(row.Categoría || ''), PAGE.left + 200, rowY + 6, { width: 88, ellipsis: true });
+      .text(`${String(row.Categoría || '')} · ${row.Impacto}`, PAGE.left + 200, rowY + 6, { width: 88, ellipsis: true });
 
     const bankStr = [row.Banco, row.Cuenta].filter(Boolean).join(' • ');
     doc.fillColor(THEME.slate).font('Helvetica').fontSize(7.2)
@@ -119,7 +121,7 @@ export function movements(
     .text(`${rows.length.toLocaleString('es-DO')} operaciones contabilizadas`, PAGE.left + 16, cardY + 22);
 
   doc.fillColor(THEME.slate).font('Helvetica-Bold').fontSize(6.8)
-    .text('SUMA TOTAL FACTURADA', PAGE.right - 180, cardY + 9, { width: 164, align: 'right' });
+    .text('TOTAL DE GASTOS', PAGE.right - 180, cardY + 9, { width: 164, align: 'right' });
   doc.fillColor(THEME.forest).font('Helvetica-Bold').fontSize(12)
     .text(currencyValue(totalSum, currency), PAGE.right - 180, cardY + 20, { width: 164, align: 'right' });
 

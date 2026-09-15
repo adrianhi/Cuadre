@@ -3,6 +3,7 @@ import { prisma } from '../../../config/database';
 import { visibleTransactionWhere } from './income-visibility.where';
 import type { ClassificationCandidates, ClassificationChange, ClassificationWriter } from '../application/classification.port';
 import { writeClassificationPage } from './classification-bulk-write';
+import { INTERNAL_TRANSFER_CATEGORY } from '@bills/contracts';
 
 export class PrismaClassificationCandidates implements ClassificationCandidates {
   page(input: Parameters<ClassificationCandidates['page']>[0]) {
@@ -30,6 +31,12 @@ export class PrismaClassificationWriter implements ClassificationWriter {
         ...(change.changeMerchant ? { merchantOrigin: { notIn: protectedOrigins } } : {}),
       }, data: {
         ...(change.changeCategory ? { category: change.category, categoryOrigin: 'RULE', categoryRuleId: ruleId } : {}),
+        ...(change.changeCategory && change.category === INTERNAL_TRANSFER_CATEGORY ? {
+          financialRole: 'INTERNAL_TRANSFER' as const,
+          financialRoleOrigin: 'USER_RULE' as const,
+          suggestedFinancialRole: null,
+          transactionType: 'Transferencia entre Cuentas',
+        } : {}),
         ...(change.changeMerchant ? { merchant: change.merchant, merchantOrigin: 'RULE', merchantRuleId: ruleId } : {}),
         merchantKey: change.merchantKey, merchantIdentityLabel: change.merchantIdentityLabel,
         classificationVersion: { increment: 1 },

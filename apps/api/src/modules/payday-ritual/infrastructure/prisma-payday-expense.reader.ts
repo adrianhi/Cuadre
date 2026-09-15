@@ -1,5 +1,5 @@
 import { prisma } from '../../../config/database';
-import { visibleTransactionWhere } from '../../transactions';
+import { expenseTransactionWhere } from '../../transactions';
 import type { PaydayExpenseReader } from '../application/payday-ritual.ports';
 
 const startBoundary = (date: string) => new Date(`${date}T00:00:00.000-04:00`);
@@ -9,7 +9,7 @@ export class PrismaPaydayExpenseReader implements PaydayExpenseReader {
   async summarizeCycle(workspaceId: string, currency: string, start: string, through: string) {
     const transactions = await prisma.transaction.findMany({
       where: {
-        workspaceId, currency, statusCode: 'APPROVED', ...visibleTransactionWhere(),
+        workspaceId, currency, statusCode: 'APPROVED', ...expenseTransactionWhere(),
         transactionDate: { gte: startBoundary(start), lte: endBoundary(through) },
       },
       select: {

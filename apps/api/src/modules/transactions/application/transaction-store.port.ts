@@ -22,11 +22,18 @@ export interface StoredTransaction {
   statusCode: string;
   statusUpdatedAt: Date | null;
   transactionType: string;
+  financialRole: 'EXPENSE' | 'INCOME' | 'INTERNAL_TRANSFER';
+  financialRoleOrigin: 'SYSTEM' | 'BANK_SIGNAL' | 'USER_RULE' | 'MANUAL' | 'MIGRATION';
+  suggestedFinancialRole: 'EXPENSE' | 'INCOME' | 'INTERNAL_TRANSFER' | null;
   transactionDate: Date;
   source: string;
   notes: string | null;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface WorkspaceHolderNameReader {
+  listOwnerDisplayNames(workspaceId: string): Promise<string[]>;
 }
 
 export interface TransactionWriteResult {

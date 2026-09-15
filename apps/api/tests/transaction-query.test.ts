@@ -15,11 +15,7 @@ describe('transaction query adapter', () => {
       currency: 'DOP', transactionType: 'servicio', search: 'Claro',
     });
     expect(where.OR).toBeUndefined();
-    expect(where.NOT).toEqual({ OR: [
-      { transactionType: { contains: 'Recibida', mode: 'insensitive' } },
-      { category: { contains: 'Ingresos', mode: 'insensitive' } },
-      { source: { contains: 'TRANSFER_INCOME', mode: 'insensitive' } },
-    ] });
+    expect(where.NOT).toEqual({ financialRole: 'INCOME', suggestedFinancialRole: null });
     expect(where.AND).toEqual([
       { OR: [
         { transactionType: { contains: 'Servicio' } },

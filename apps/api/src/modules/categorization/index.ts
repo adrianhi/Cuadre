@@ -2,6 +2,7 @@ export type { CategoryRuleRepository, ExpenseCategoryCatalog } from './applicati
 export { CategoryRuleApplicationService } from './application/category-rule.service';
 export { SaveCategoryRule } from './application/save-category-rule';
 export { ListExpenseCategories } from './application/expense-category-catalog';
+export { ListTransactionCategories } from './application/transaction-category-catalog';
 export { CategorizeTransaction } from './application/categorize-transaction';
 export { ProcessRuleApplication } from './application/process-rule-application';
 export { PrismaCategoryRuleRepository } from './infrastructure/prisma-category-rule.repository';

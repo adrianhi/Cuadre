@@ -1,5 +1,5 @@
 import { prisma } from '../../../config/database';
-import { visibleTransactionWhere } from '../../transactions';
+import { expenseTransactionWhere } from '../../transactions';
 import type { SafeToSpendExpenseReader } from '../application/safe-to-spend.ports';
 
 function boundary(date: string) {
@@ -11,7 +11,7 @@ export class PrismaSafeToSpendExpenseReader implements SafeToSpendExpenseReader 
     const todayStart = boundary(today);
     const tomorrow = new Date(todayStart.getTime() + 86_400_000);
     const monthStart = boundary(`${today.slice(0, 7)}-01`);
-    const where = { workspaceId, currency, statusCode: 'APPROVED' as const, ...visibleTransactionWhere() };
+    const where = { workspaceId, currency, statusCode: 'APPROVED' as const, ...expenseTransactionWhere() };
     const [before, current] = await Promise.all([
       prisma.transaction.aggregate({
         where: { ...where, transactionDate: { gte: monthStart, lt: todayStart } }, _sum: { amount: true },

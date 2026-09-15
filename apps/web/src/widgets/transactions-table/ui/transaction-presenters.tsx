@@ -1,5 +1,6 @@
 import {
   ArrowUpRight,
+  ArrowLeftRight,
   Car,
   CheckCircle2,
   Clock3,
@@ -18,6 +19,7 @@ import {
 } from 'lucide-react';
 import type { Transaction } from '@/entities/transaction';
 import {
+  isInternalTransfer,
   isAtmWithdrawal,
   isSentTransfer,
   isServicePayment,
@@ -38,6 +40,7 @@ export const TransactionStatus = ({ transaction }: { transaction: Transaction })
 };
 
 export const TransactionIcon = ({ transaction }: { transaction: Transaction }) => {
+  if (isInternalTransfer(transaction)) return <ArrowLeftRight className="h-4 w-4 text-violet-500" />;
   if (isSentTransfer(transaction)) return <ArrowUpRight className="h-4 w-4 text-sky-500" />;
   if (isServicePayment(transaction)) return <Zap className="h-4 w-4 text-amber-500" />;
   if (isAtmWithdrawal(transaction)) return <Landmark className="h-4 w-4 text-blue-500" />;
@@ -53,6 +56,7 @@ export const TransactionIcon = ({ transaction }: { transaction: Transaction }) =
 };
 
 export const TransactionTypeBadge = ({ transaction }: { transaction: Transaction }) => {
+  if (isInternalTransfer(transaction)) return <span className="inline-flex items-center gap-1 rounded-md border border-violet-500/20 bg-violet-500/15 px-2 py-0.5 text-xs font-semibold text-violet-600 dark:text-violet-400"><ArrowLeftRight className="h-3 w-3" />Entre cuentas</span>;
   if (isSentTransfer(transaction)) return <span className="inline-flex items-center gap-1 rounded-md border border-sky-500/20 bg-sky-500/15 px-2 py-0.5 text-xs font-semibold text-sky-600 dark:text-sky-400"><ArrowUpRight className="h-3 w-3" />Enviada</span>;
   if (isServicePayment(transaction)) return <span className="inline-flex items-center gap-1 rounded-md border border-amber-500/20 bg-amber-500/15 px-2 py-0.5 text-xs font-semibold text-amber-600 dark:text-amber-400"><Receipt className="h-3 w-3" />Servicio</span>;
   if (isAtmWithdrawal(transaction)) return <span className="inline-flex items-center gap-1 rounded-md border border-blue-500/20 bg-blue-500/15 px-2 py-0.5 text-xs font-semibold text-blue-600 dark:text-blue-400"><Landmark className="h-3 w-3" />Retiro</span>;

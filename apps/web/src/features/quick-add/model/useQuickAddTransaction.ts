@@ -87,6 +87,7 @@ export function useQuickAddTransaction(onSuccess: () => void, onClose: () => voi
       category,
       status: 'Aprobada',
       transactionType: transactionTypes[movementType] ?? 'Compra',
+      financialRole: movementType === 'propia' ? 'INTERNAL_TRANSFER' : 'EXPENSE',
       transactionDate: new Date(dateTime).toISOString(),
       source: institution?.source ?? 'MANUAL',
       institutionCode: institution?.id === 'MANUAL' ? 'CASH' : institution?.id ?? 'CASH',

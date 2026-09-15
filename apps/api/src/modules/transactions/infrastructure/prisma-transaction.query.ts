@@ -3,7 +3,7 @@ import { prisma } from '../../../config/database';
 import { normalizeTransactionStatus } from '../../../domain/transaction-status';
 import type { ExportQueryInput, TransactionQueryInput } from '../../../schemas/transaction.schema';
 import type { TransactionReader } from '../application/transaction-store.port';
-import { isIncomeMovement, resolveDateRange } from '../domain/transaction-policy';
+import { isExpenseMovement, resolveDateRange } from '../domain/transaction-policy';
 import { visibleTransactionWhere } from './income-visibility.where';
 
 type Query = TransactionQueryInput | ExportQueryInput;
@@ -20,6 +20,7 @@ function movementTypeFilter(value: string): Prisma.TransactionWhereInput {
   if (type === 'enviada' || type.includes('enviada')) {
     return { transactionType: { contains: 'Transferencia' } };
   }
+  if (type === 'propia' || type.includes('entre cuentas')) return { financialRole: 'INTERNAL_TRANSFER' };
   if (type === 'compra') return { transactionType: { contains: 'Compra' } };
   if (type === 'servicio') {
     return {
@@ -82,7 +83,7 @@ export class PrismaTransactionQuery implements TransactionReader {
         where,
         select: {
           amount: true, currency: true, category: true,
-          statusCode: true, transactionType: true, source: true,
+          statusCode: true, transactionType: true, source: true, financialRole: true,
         },
       }),
     ]);
@@ -90,7 +91,7 @@ export class PrismaTransactionQuery implements TransactionReader {
     let totalUSD = 0;
     const byCategory: Record<string, { dop: number; usd: number; count: number }> = {};
     for (const item of matching) {
-      if (item.statusCode !== 'APPROVED' || isIncomeMovement(item)) continue;
+      if (item.statusCode !== 'APPROVED' || !isExpenseMovement(item)) continue;
       const amount = Number(item.amount);
       if (item.currency === 'USD') totalUSD += amount;
       else totalDOP += amount;

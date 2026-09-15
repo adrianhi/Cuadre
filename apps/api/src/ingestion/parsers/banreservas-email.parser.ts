@@ -1,4 +1,5 @@
 import { normalizeTransactionStatus, transactionStatusLabel } from '../../domain/transaction-status';
+import { hasExplicitInternalTransferSignal } from '../internal-transfer-signal';
 import type { BankEmailParser, NormalizedEmail, NormalizedTransaction, ParseResult, ParserContext } from '../types';
 
 const PURCHASE_SENDER = 'notificaciones@banreservas.com';
@@ -110,6 +111,7 @@ export class BanreservasEmailParser implements BankEmailParser {
     const transactionDate = santoDomingoDate(content);
     if (!transactionDate) return { status: 'unsupported', reason: 'TRANSACTION_DATE_NOT_FOUND' };
 
+    const internalTransfer = hasExplicitInternalTransferSignal(email.subject, content);
     let transaction: NormalizedTransaction;
     if (isPurchase) {
       const merchant = extractField(content, 'Comercio', ['Fecha de transacci[oó]n', 'N[uú]mero de aprobaci[oó]n']);
@@ -148,13 +150,14 @@ export class BanreservasEmailParser implements BankEmailParser {
         cardLast4: originLast4,
         cardType: origin?.match(/Cuenta de ([^,*]+)/i)?.[1]?.trim() || null,
         rawMerchant: beneficiary,
-        category: 'Transferencias',
+        category: internalTransfer ? 'Transferencias Propias' : 'Transferencias',
         amount: money.amount,
         currency: money.currency,
         status: transactionStatusLabel('APPROVED'),
         statusCode: 'APPROVED',
         bankReference: reference,
-        transactionType: 'Transferencia Enviada',
+        transactionType: internalTransfer ? 'Transferencia entre Cuentas' : 'Transferencia Enviada',
+        financialRole: internalTransfer ? 'INTERNAL_TRANSFER' : undefined,
         transactionDate,
         source: 'BANRESERVAS_TRANSFER_SENT',
         institutionCode: this.institutionCode,

@@ -23,6 +23,7 @@
     "gmail:process-jobs": "tsx src/scripts/process-ingestion-jobs.ts",
     "gmail:verify-recovery": "tsx src/scripts/verify-gmail-recovery.ts",
     "product:metrics": "tsx src/scripts/product-metrics.ts",
+    "transactions:review-internal": "tsx src/scripts/review-internal-transfers.ts",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest"

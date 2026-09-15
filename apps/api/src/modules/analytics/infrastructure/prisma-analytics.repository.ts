@@ -10,6 +10,7 @@ interface AnalyticsFilters {
 const selection = {
   amount: true, currency: true, category: true, merchant: true, statusCode: true,
   transactionType: true, source: true, institutionCode: true, transactionDate: true,
+  financialRole: true,
 } as const;
 
 export class PrismaAnalyticsRepository {

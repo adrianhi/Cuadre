@@ -90,6 +90,23 @@ describe('Banreservas email ingestion adapter', () => {
     expect(result.transactions[0].transactionDate.toISOString()).toBe('2026-07-23T22:34:00.000Z');
   });
 
+  it('marks an explicit own-account transfer as financially neutral', async () => {
+    const result = await parser.parse(email({
+      from: 'NotificacionesTuBancoApp@banreservas.com', subject: 'Recibo de la transacción entre mis cuentas',
+      text: [
+        '¡Transacción realizada!', 'Monto: DOP 5,000.00', 'Transacción: Transferencia entre mis cuentas',
+        'Origen: PERSONA DE PRUEBA, Cuenta de ahorro DOP ** - 8893',
+        'Destino: PERSONA DE PRUEBA, Cuenta de ahorro DOP ** - 2695',
+        'Fecha de transacción: 23 de Julio 2026 - 06:34 PM', 'Número de transacción: 242536619360',
+      ].join(' '),
+    }), { ingestionChannel: 'GMAIL_OAUTH' });
+    expect(result.status).toBe('parsed');
+    if (result.status !== 'parsed') return;
+    expect(result.transactions[0]).toMatchObject({
+      financialRole: 'INTERNAL_TRANSFER', category: 'Transferencias Propias', transactionType: 'Transferencia entre Cuentas',
+    });
+  });
+
   it('ignores unsupported Banreservas templates and rejects incomplete known templates', async () => {
     await expect(parser.parse(email({ subject: 'Beneficios Banreservas', text: 'Conoce nuestras ofertas.' })))
       .resolves.toEqual({ status: 'ignored', reason: 'NON_TRANSACTIONAL_EMAIL' });

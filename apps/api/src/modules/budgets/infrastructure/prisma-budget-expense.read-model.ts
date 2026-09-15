@@ -1,5 +1,5 @@
 import { prisma } from '../../../config/database';
-import { resolveDateRange, visibleTransactionWhere } from '../../transactions';
+import { expenseTransactionWhere, resolveDateRange } from '../../transactions';
 import type { BudgetExpenseReadModel } from '../application/budget.ports';
 import { normalizeCategoryKey } from '../domain/category-key';
 import { santoDomingoMonth } from '../domain/budget-month';
@@ -9,7 +9,7 @@ export class PrismaBudgetExpenseReadModel implements BudgetExpenseReadModel {
     const rows = await prisma.transaction.groupBy({
       by: ['category', 'statusCode'],
       where: {
-        workspaceId, currency, ...visibleTransactionWhere(),
+        workspaceId, currency, ...expenseTransactionWhere(),
         transactionDate: resolveDateRange(month), statusCode: { in: ['APPROVED', 'PENDING'] },
       },
       _sum: { amount: true }, _count: { _all: true },
@@ -35,7 +35,7 @@ export class PrismaBudgetExpenseReadModel implements BudgetExpenseReadModel {
 
   async firstExpenseMonth(workspaceId: string, currency: string) {
     const transaction = await prisma.transaction.findFirst({
-      where: { workspaceId, currency, statusCode: 'APPROVED', ...visibleTransactionWhere() },
+      where: { workspaceId, currency, statusCode: 'APPROVED', ...expenseTransactionWhere() },
       select: { transactionDate: true }, orderBy: { transactionDate: 'asc' },
     });
     return transaction ? santoDomingoMonth(transaction.transactionDate) : null;
@@ -43,7 +43,7 @@ export class PrismaBudgetExpenseReadModel implements BudgetExpenseReadModel {
 
   async listCategoryLabels(workspaceId: string) {
     const transactions = await prisma.transaction.groupBy({
-        by: ['category'], where: { workspaceId, ...visibleTransactionWhere() }, _count: { _all: true },
+        by: ['category'], where: { workspaceId, ...expenseTransactionWhere() }, _count: { _all: true },
       });
     return transactions.map((item) => item.category);
   }

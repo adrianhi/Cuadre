@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { TransactionFinancialRole } from '@bills/contracts';
 import { useStatsSummary } from '@/entities/stat';
 import { useTransactions } from '@/entities/transaction';
 import { usePeriodFilter } from '@/features/period-filter';
@@ -22,8 +23,8 @@ export function useDashboardController(authToken: string, onLock: () => void, se
     if (transactionsEnabled) void transactions.fetchTransactions();
     if (statsEnabled) void statsQuery.fetchStats();
   };
-  const saveTransaction = async (id: string, merchant: string, category: string, notes: string) => {
-    await transactions.handleSaveTransaction(id, merchant, category, notes);
+  const saveTransaction = async (id: string, merchant: string, category: string, notes: string, financialRole?: TransactionFinancialRole) => {
+    await transactions.handleSaveTransaction(id, merchant, category, notes, financialRole);
   };
   const deleteTransaction = async (id: string) => {
     await transactions.handleDeleteTransaction(id);

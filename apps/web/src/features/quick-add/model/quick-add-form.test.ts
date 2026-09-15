@@ -35,8 +35,10 @@ describe('quick add form rules', () => {
   it('maps movement types and fallback categories', () => {
     expect(transactionTypes.retiro).toBe('Retiro');
     expect(transactionTypes.compra).toBe('Compra');
+    expect(transactionTypes.propia).toBe('Transferencia entre Cuentas');
     expect(defaultCategoryFor('servicio')).toBe('Servicios');
     expect(defaultCategoryFor('compra')).toBe('Supermercado');
+    expect(defaultCategoryFor('propia')).toBe('Transferencias Propias');
     expect(defaultCategoryFor('unknown')).toBe('Otros');
   });
 });

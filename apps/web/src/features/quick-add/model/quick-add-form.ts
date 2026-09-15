@@ -13,6 +13,7 @@ export type QuickAddFieldErrors = Partial<Record<keyof QuickAddFormValues, strin
 export const transactionTypes: Record<string, string> = {
   compra: 'Compra',
   enviada: 'Transferencia',
+  propia: 'Transferencia entre Cuentas',
   servicio: 'Pago de Servicio',
   retiro: 'Retiro',
 };
@@ -20,6 +21,7 @@ export const transactionTypes: Record<string, string> = {
 const defaultCategories: Record<string, string> = {
   compra: 'Supermercado',
   enviada: 'Transferencias',
+  propia: 'Transferencias Propias',
   servicio: 'Servicios',
   retiro: 'Servicios Financieros',
 };

@@ -7,7 +7,7 @@ test('editing suggests an exact rule, previews protected records and recovers ba
   await page.locator('button[title="Editar clasificación"]:visible').or(page.getByRole('button', { name: /Uber.*Transporte/ })).first().click();
   const edit = page.getByRole('dialog');
   await edit.locator('select').selectOption('Servicios');
-  await edit.getByRole('checkbox').check();
+  await edit.getByRole('checkbox', { name: 'Crear una regla para futuros' }).check();
   await edit.getByRole('button', { name: 'Guardar Cambios' }).click();
   await expect(page.getByRole('heading', { name: 'Reglas de categorización' })).toBeVisible();
   await expect(page.getByLabel('Coincidencia', { exact: true })).toHaveValue('MERCHANT');

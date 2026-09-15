@@ -1,7 +1,7 @@
 import type { RecurringAlert, RecurringBill } from '@prisma/client';
 import type { CreateRecurringBillInput, RecurringBillDto, RecurringMonthStatus, RecurringRadarDto, UpdateRecurringBillInput } from '@bills/contracts';
 import { prisma } from '../../../config/database';
-import { visibleTransactionWhere } from '../../transactions';
+import { expenseTransactionWhere } from '../../transactions';
 import { projectTotalMonthlyIncome } from '../../incomes';
 import { daysFrom, monthlyBurden, parseDateOnly, projectedDates, toDateOnly } from '../domain/recurring-projection';
 
@@ -86,7 +86,7 @@ export class PrismaRecurringQuery {
       prisma.incomeStream.findMany({ where: { workspaceId, currency, isActive: true } }),
       prisma.transaction.findMany({
         where: {
-          workspaceId, currency, statusCode: 'APPROVED', ...visibleTransactionWhere(),
+          workspaceId, currency, statusCode: 'APPROVED', ...expenseTransactionWhere(),
           transactionDate: { gte: startOfMonth, lte: endOfMonth },
         },
         select: { id: true, merchant: true, merchantKey: true, amount: true, transactionDate: true },
@@ -190,7 +190,7 @@ export class PrismaRecurringQuery {
       if (!includesToday) return dates.length * Number(bill.expectedAmount);
       const materialized = await prisma.transaction.findFirst({
         where: {
-          workspaceId, currency, statusCode: 'APPROVED', ...visibleTransactionWhere(),
+          workspaceId, currency, statusCode: 'APPROVED', ...expenseTransactionWhere(),
           transactionDate: {
             gte: new Date(`${after}T00:00:00.000-04:00`),
             lte: new Date(`${after}T23:59:59.999-04:00`),

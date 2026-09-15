@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { ProductGuideState } from '@bills/contracts';
+import type { ProductGuideState, TransactionFinancialRole } from '@bills/contracts';
 import type { Transaction } from '@/entities/transaction';
 import type { PeriodSelection } from '@/entities/period';
 import type { AppSection } from '@/widgets/bottom-nav';
@@ -23,7 +23,7 @@ interface DashboardModalsProps {
   setEditingTransaction: (transaction: Transaction | null) => void;
   deletingTransaction?: Transaction | null;
   setDeletingTransaction?: (transaction: Transaction | null) => void;
-  onSaveTransaction: (id: string, merchant: string, category: string, notes: string) => Promise<void>;
+  onSaveTransaction: (id: string, merchant: string, category: string, notes: string, financialRole?: TransactionFinancialRole) => Promise<void>;
   onDeleteTransaction?: (id: string) => Promise<void>;
   // Rules Manager
   isRulesModalOpen: boolean;

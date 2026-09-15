@@ -11,6 +11,8 @@ export const statusCode = (transaction: Transaction): TransactionStatusCode => t
   /reversad|anulad/i.test(transaction.status) ? 'REVERSED' : /rechazad|declinad|denegad/i.test(transaction.status) ? 'DECLINED' :
     /pendiente|procesando/i.test(transaction.status) ? 'PENDING' : 'APPROVED'
 );
+export const isInternalTransfer = (transaction: Transaction) => transaction.financialRole === 'INTERNAL_TRANSFER';
+export const isExpenseTransaction = (transaction: Transaction) => transaction.financialRole === 'EXPENSE';
 export const isSentTransfer = (transaction: Transaction) => transaction.source === 'BHD_TRANSFER_SENT' ||
   /enviada/i.test(transaction.transactionType) || /beneficiario/i.test(transaction.notes || '') ||
   /transferencia/i.test(transaction.transactionType);
@@ -38,7 +40,7 @@ export function groupTransactionsByDate(transactions: Transaction[]): Transactio
     }
     const group = groups.get(dateKey)!;
     group.transactions.push(transaction);
-    if (statusCode(transaction) !== 'APPROVED') continue;
+    if (statusCode(transaction) !== 'APPROVED' || !isExpenseTransaction(transaction)) continue;
     const amount = Number(transaction.amount) || 0;
     if (transaction.currency === 'USD') group.totalExpenseUSD += amount;
     else group.totalExpenseDOP += amount;

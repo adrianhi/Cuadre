@@ -71,6 +71,20 @@ describe('Popular email ingestion adapter', () => {
     expect(result.transactions[0].transactionDate.toISOString()).toBe('2026-08-16T04:00:00.000Z');
   });
 
+  it('marks an explicit own-account transfer as financially neutral', async () => {
+    const result = await parser.parse(email({
+      messageId: '<popular-own-001@gmail.test>', subject: 'Transferencia recibida entre mis cuentas',
+      html: layout(`<p>Detalles de la transferencia recibida entre mis cuentas en su cuenta terminada en 2048:</p>
+        <table><tr><th>Monto</th><th>Fecha</th><th>Canal</th></tr>
+        <tr><td>RD 1,500.00</td><td>16/8/2026</td><td>APP POPULAR</td></tr></table>`),
+    }));
+    expect(result.status).toBe('parsed');
+    if (result.status !== 'parsed') return;
+    expect(result.transactions[0]).toMatchObject({
+      financialRole: 'INTERNAL_TRANSFER', category: 'Transferencias Propias', transactionType: 'Transferencia entre Cuentas',
+    });
+  });
+
   it('ignores promotions and reports incomplete recognized templates', async () => {
     await expect(parser.parse(email({ subject: 'Beneficios Popular', text: 'Conoce esta promoción y oferta.' })))
       .resolves.toEqual({ status: 'ignored', reason: 'NON_TRANSACTIONAL_EMAIL' });

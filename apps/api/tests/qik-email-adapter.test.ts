@@ -58,6 +58,18 @@ describe('Qik email adapter contract', () => {
     });
   });
 
+  it('marks an explicit same-holder transfer as financially neutral', async () => {
+    const result = await parser.parse(email({
+      subject: 'Recibiste una transferencia del mismo titular',
+      text: 'Remitente: ADRIAN HIDALGO Monto: DOP 5,000.00 Referencia: QK654322 mismo titular',
+    }), { ingestionChannel: 'GMAIL_OAUTH' });
+    expect(result.status).toBe('parsed');
+    if (result.status !== 'parsed') return;
+    expect(result.transactions[0]).toMatchObject({
+      financialRole: 'INTERNAL_TRANSFER', category: 'Transferencias Propias', transactionType: 'Transferencia entre Cuentas',
+    });
+  });
+
   it('normalizes a purchase with Localidad and masked card format', async () => {
     const result = await parser.parse(
       email({

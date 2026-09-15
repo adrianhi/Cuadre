@@ -2,12 +2,15 @@ import { prisma } from '../../../config/database';
 import type { CreateTransactionInput, UpdateTransactionInput } from '../../../schemas/transaction.schema';
 import { normalizeTransactionStatus, transactionStatusLabel } from '../../../domain/transaction-status';
 import type { TransactionWriter } from '../application/transaction-store.port';
-import { resolveInstitutionCode } from '../domain/transaction-policy';
+import type { WorkspaceHolderNameReader } from '../application/transaction-store.port';
+import { isTransferMovement, resolveInstitutionCode } from '../domain/transaction-policy';
+import { isPotentialSelfTransfer } from '../domain/self-transfer-matcher';
 import { isFuzzyTransferMatch, mostCompleteMerchant } from '../domain/transaction-deduplication';
 import { PrismaReversalService } from './prisma-reversal.service';
 import { visibleTransactionWhere } from './income-visibility.where';
 import { isIncomeMovement } from '../domain/transaction-policy';
 import { AppError } from '../../../errors/app-error';
+import { INTERNAL_TRANSFER_CATEGORY, type TransactionFinancialRole } from '@bills/contracts';
 
 interface Categorizer {
   categorize(
@@ -22,7 +25,8 @@ interface Categorizer {
 export class PrismaTransactionWriter implements TransactionWriter {
   public constructor(
     private readonly categorizer: Categorizer,
-    private readonly reversals: PrismaReversalService
+    private readonly reversals: PrismaReversalService,
+    private readonly holderNames: WorkspaceHolderNameReader,
   ) {}
 
   public async create(workspaceId: string, data: CreateTransactionInput) {
@@ -44,6 +48,8 @@ export class PrismaTransactionWriter implements TransactionWriter {
         return { isDuplicate: true, transaction: existing };
       }
       const effectiveStatus = existing.statusCode === 'REVERSED' && statusCode === 'APPROVED' ? 'REVERSED' : statusCode;
+      const incomingRole = data.financialRole;
+      const preserveManualRole = existing.financialRoleOrigin === 'MANUAL';
       const transaction = await prisma.transaction.update({
         where: { id: existing.id },
         data: {
@@ -54,6 +60,11 @@ export class PrismaTransactionWriter implements TransactionWriter {
           cardLast4: data.cardLast4 || existing.cardLast4,
           cardType: data.cardType || existing.cardType,
           transactionType: data.transactionType || existing.transactionType,
+          ...(!preserveManualRole && incomingRole ? {
+            financialRole: incomingRole,
+            financialRoleOrigin: 'BANK_SIGNAL' as const,
+            suggestedFinancialRole: null,
+          } : {}),
           notes: data.notes !== undefined ? data.notes : existing.notes,
           statusCode: effectiveStatus,
           status: transactionStatusLabel(effectiveStatus),
@@ -82,6 +93,7 @@ export class PrismaTransactionWriter implements TransactionWriter {
     for (const candidate of candidates) {
       if (!isFuzzyTransferMatch(candidate, data)) continue;
       const effectiveStatus = candidate.statusCode === 'REVERSED' && statusCode === 'APPROVED' ? 'REVERSED' : statusCode;
+      const preserveManualRole = candidate.financialRoleOrigin === 'MANUAL';
       const transaction = await prisma.transaction.update({
         where: { id: candidate.id },
         data: {
@@ -91,6 +103,11 @@ export class PrismaTransactionWriter implements TransactionWriter {
           notes: data.notes || candidate.notes,
           cardLast4: data.cardLast4 || candidate.cardLast4,
           transactionType: data.transactionType || candidate.transactionType,
+          ...(!preserveManualRole && data.financialRole ? {
+            financialRole: data.financialRole,
+            financialRoleOrigin: 'BANK_SIGNAL' as const,
+            suggestedFinancialRole: null,
+          } : {}),
           statusCode: effectiveStatus,
           status: transactionStatusLabel(effectiveStatus),
         },
@@ -104,6 +121,25 @@ export class PrismaTransactionWriter implements TransactionWriter {
     const normalized: Awaited<ReturnType<Categorizer['categorize']>> = isIncomeMovement(data) ? { merchant: data.merchant || data.rawMerchant, category: data.category || 'Ingresos / Transferencias' } : await this.categorizer.categorize(
       data.rawMerchant, data.merchant, data.category, workspaceId
     );
+    const financialRole: TransactionFinancialRole = data.financialRole || (
+      normalized.category === INTERNAL_TRANSFER_CATEGORY ? 'INTERNAL_TRANSFER' :
+        isIncomeMovement(data) ? 'INCOME' : 'EXPENSE'
+    );
+    if ((ingestionChannel === 'MANUAL' || ingestionChannel === 'CSV_IMPORT') && financialRole === 'INCOME') {
+      throw new AppError(400, 'INCOME_MANUAL_ENTRY_DISABLED', 'Los ingresos se registran desde la sección de ingresos.');
+    }
+    const financialRoleOrigin = ingestionChannel === 'MANUAL' || ingestionChannel === 'CSV_IMPORT'
+      ? 'MANUAL'
+      : data.financialRole ? 'BANK_SIGNAL'
+        : normalized.categoryOrigin === 'RULE' && financialRole === 'INTERNAL_TRANSFER' ? 'USER_RULE' : 'SYSTEM';
+    const canSuggest = financialRole !== 'INTERNAL_TRANSFER' && isTransferMovement({ ...data, category: normalized.category });
+    const ownerNames = canSuggest ? await this.holderNames.listOwnerDisplayNames(workspaceId) : [];
+    const suggestedFinancialRole = financialRole !== 'INTERNAL_TRANSFER' && isPotentialSelfTransfer({
+      ...data,
+      merchant: normalized.merchant,
+      category: normalized.category,
+      financialRole,
+    }, ownerNames) ? 'INTERNAL_TRANSFER' as const : null;
     const transaction = await prisma.transaction.create({
       data: {
         workspaceId,
@@ -127,6 +163,9 @@ export class PrismaTransactionWriter implements TransactionWriter {
         statusCode,
         statusUpdatedAt: txDate,
         transactionType: data.transactionType,
+        financialRole,
+        financialRoleOrigin,
+        suggestedFinancialRole,
         transactionDate: txDate,
         source: data.source,
         notes: data.notes || null,
@@ -143,16 +182,32 @@ export class PrismaTransactionWriter implements TransactionWriter {
     const requestedStatus = data.statusCode || (data.status ? normalizeTransactionStatus(data.status) : undefined);
     const current = await prisma.transaction.findFirst({ where: { id, workspaceId, ...visibleTransactionWhere() } });
     if (!current) return null;
+    const requestedRole = data.financialRole || (data.category === INTERNAL_TRANSFER_CATEGORY ? 'INTERNAL_TRANSFER' : undefined);
+    if (requestedRole === 'INCOME' && current.financialRole !== 'INCOME') {
+      throw new AppError(400, 'INCOME_MANUAL_ENTRY_DISABLED', 'Income categories are not available.');
+    }
     const categoryChanged = Boolean(data.category && data.category !== current.category);
     const merchantChanged = Boolean(data.merchant && data.merchant !== current.merchant);
     const result = await prisma.transaction.updateMany({
       where: { id, workspaceId, classificationVersion: current.classificationVersion, ...visibleTransactionWhere() },
       data: {
         ...(data.merchant && { merchant: data.merchant }),
-        ...(data.category && { category: data.category }),
+        ...(data.category ? { category: data.category } : requestedRole === 'INTERNAL_TRANSFER'
+          ? { category: INTERNAL_TRANSFER_CATEGORY }
+          : requestedRole === 'EXPENSE' && current.category === INTERNAL_TRANSFER_CATEGORY
+            ? { category: 'Transferencias' }
+            : {}),
         ...(categoryChanged ? { categoryOrigin: 'MANUAL', categoryRuleId: null } : {}),
         ...(merchantChanged ? { merchantOrigin: 'MANUAL', merchantRuleId: null } : {}),
         classificationVersion: { increment: 1 },
+        ...(requestedRole ? {
+          financialRole: requestedRole,
+          financialRoleOrigin: 'MANUAL' as const,
+          suggestedFinancialRole: null,
+          transactionType: requestedRole === 'INTERNAL_TRANSFER'
+            ? 'Transferencia entre Cuentas'
+            : current.transactionType === 'Transferencia entre Cuentas' ? 'Transferencia Enviada' : current.transactionType,
+        } : {}),
         ...(data.notes !== undefined && { notes: data.notes }),
         ...(requestedStatus && {
           statusCode: requestedStatus,

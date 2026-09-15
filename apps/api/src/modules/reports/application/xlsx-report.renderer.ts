@@ -95,7 +95,7 @@ function addBreakdown(workbook: ExcelJS.Workbook, name: string, items: Breakdown
 function addMovements(workbook: ExcelJS.Workbook, rows: FinancialRow[], presentation: ReportPresentation) {
   const columns = rows[0]
     ? Object.keys(rows[0])
-    : ['Fecha', 'Comercio', 'Categoría', 'Tipo', 'Banco', 'Cuenta', 'Monto', 'Moneda', 'Estado'];
+    : ['Fecha', 'Comercio', 'Categoría', 'Tipo', 'Banco', 'Cuenta', 'Monto', 'Moneda', 'Estado', 'Impacto'];
   const sheet = workbook.addWorksheet('Movimientos', { views: [{ state: 'frozen', ySplit: 6, showGridLines: false }] });
   titleRows(sheet, presentation, columns.length);
 
@@ -108,6 +108,7 @@ function addMovements(workbook: ExcelJS.Workbook, rows: FinancialRow[], presenta
   const amountColIndex = columns.indexOf('Monto') + 1;
   const dateColIndex = columns.indexOf('Fecha') + 1;
   const statusColIndex = columns.indexOf('Estado') + 1;
+  const impactColIndex = columns.indexOf('Impacto') + 1;
 
   rows.forEach((row, idx) => {
     const values = columns.map((column) => {
@@ -139,7 +140,9 @@ function addMovements(workbook: ExcelJS.Workbook, rows: FinancialRow[], presenta
 
   const lastDataRow = 6 + rows.length;
   const totalRowIndex = lastDataRow + 1;
-  const amountSum = rows.reduce((s, r) => s + (Number(r.Monto) || 0), 0);
+  const amountSum = rows
+    .filter((row) => row.Impacto === 'Gasto')
+    .reduce((sum, row) => sum + (Number(row.Monto) || 0), 0);
 
   const totalValues: unknown[] = new Array(columns.length).fill('');
   if (dateColIndex > 0) totalValues[dateColIndex - 1] = 'Total';
@@ -148,8 +151,9 @@ function addMovements(workbook: ExcelJS.Workbook, rows: FinancialRow[], presenta
 
   if (amountColIndex > 0) {
     const colLetter = getColumnLetter(amountColIndex);
-    totalRow.getCell(amountColIndex).value = rows.length
-      ? { formula: `SUBTOTAL(109, ${colLetter}7:${colLetter}${lastDataRow})`, result: amountSum }
+    const impactLetter = getColumnLetter(impactColIndex);
+    totalRow.getCell(amountColIndex).value = rows.length && impactColIndex > 0
+      ? { formula: `SUMIF(${impactLetter}7:${impactLetter}${lastDataRow},"Gasto",${colLetter}7:${colLetter}${lastDataRow})`, result: amountSum }
       : 0;
     totalRow.getCell(amountColIndex).numFmt = '#,##0.00';
   }

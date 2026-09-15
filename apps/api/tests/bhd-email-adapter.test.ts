@@ -90,6 +90,18 @@ describe('BHD email ingestion adapter', () => {
     });
   });
 
+  it('marks an explicit own-account transfer as financially neutral', async () => {
+    const result = await parser.parse(email({
+      subject: 'Has recibido una transferencia entre mis cuentas',
+      text: 'Has recibido una transferencia entre mis cuentas. Ordenante: ADRIAN JOEL HIDALGO Monto: RD$200.00 Fecha: 19/08/2026 01:26 PM',
+    }));
+    expect(result.status).toBe('parsed');
+    if (result.status !== 'parsed') return;
+    expect(result.transactions[0]).toMatchObject({
+      financialRole: 'INTERNAL_TRANSFER', category: 'Transferencias Propias', transactionType: 'Transferencia entre Cuentas',
+    });
+  });
+
   it('parses the current BHD transaction table layout', async () => {
     const result = await parser.parse(
       email({

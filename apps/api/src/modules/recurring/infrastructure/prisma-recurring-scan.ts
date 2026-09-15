@@ -1,5 +1,5 @@
 import { prisma } from '../../../config/database';
-import { visibleTransactionWhere } from '../../transactions';
+import { expenseTransactionWhere } from '../../transactions';
 import type { RecurringCandidate } from '../application/recurring.ports';
 import type { RecurringDetection } from '../domain/recurring-detection';
 import { nextCadenceDate } from '../domain/recurring-detection';
@@ -10,7 +10,7 @@ export class PrismaRecurringScan {
   async candidates(workspaceId: string): Promise<RecurringCandidate[]> {
     const rows = await prisma.transaction.findMany({
       where: {
-        workspaceId, statusCode: 'APPROVED', ...visibleTransactionWhere(),
+        workspaceId, statusCode: 'APPROVED', ...expenseTransactionWhere(),
         transactionDate: { gte: new Date(Date.now() - TWO_YEARS_MS) },
       },
       select: { merchantKey: true, merchant: true, currency: true },
@@ -31,7 +31,7 @@ export class PrismaRecurringScan {
   async observations(workspaceId: string, candidate: RecurringCandidate) {
     const rows = await prisma.transaction.findMany({
       where: {
-        workspaceId, currency: candidate.currency, statusCode: 'APPROVED', ...visibleTransactionWhere(),
+        workspaceId, currency: candidate.currency, statusCode: 'APPROVED', ...expenseTransactionWhere(),
         ...(candidate.merchantKey
           ? { merchantKey: candidate.merchantKey }
           : { merchantKey: null, merchant: candidate.displayName }),

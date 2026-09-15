@@ -11,6 +11,7 @@ export interface NormalizedEmail {
 }
 
 import type { TransactionStatusCodeName } from '../domain/transaction-status';
+import type { TransactionFinancialRole } from '@bills/contracts';
 
 export interface NormalizedTransaction {
   externalId: string;
@@ -25,6 +26,7 @@ export interface NormalizedTransaction {
   statusCode: TransactionStatusCodeName;
   bankReference?: string | null;
   transactionType: string;
+  financialRole?: TransactionFinancialRole;
   transactionDate: Date;
   source: string;
   institutionCode: string;

@@ -82,4 +82,14 @@ describe('analytics accuracy regressions', () => {
     expect(result.comparison?.expenseChangeAmount).toBe(50);
     expect(result.comparison?.merchantDeltas[0]).toMatchObject({ currentTotal: 100, previousTotal: 50 });
   });
+
+  it('keeps internal transfers in movement counts but out of financial metrics', async () => {
+    const expense = transaction('Supermercado', 'Bravo', 100);
+    const transfer = { ...transaction('Transferencias Propias', 'Adrian Hidalgo', 5000), financialRole: 'INTERNAL_TRANSFER' as const };
+    const result = await compare([expense, transfer], []);
+    expect(result.totalTransactions).toBe(2);
+    expect(result.totalAmount).toBe(100);
+    expect(result.byCategory).toEqual([expect.objectContaining({ category: 'Supermercado', total: 100 })]);
+    expect(result.byMerchant).toEqual([expect.objectContaining({ merchant: 'Bravo', total: 100 })]);
+  });
 });

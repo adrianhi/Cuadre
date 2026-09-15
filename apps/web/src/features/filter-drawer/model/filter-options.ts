@@ -1,4 +1,4 @@
-import { ArrowUpRight, Car, Fuel, HeartPulse, Landmark, ShoppingBag, ShoppingCart, Tv, Utensils, Zap } from 'lucide-react';
+import { ArrowLeftRight, ArrowUpRight, Car, Fuel, HeartPulse, Landmark, ShoppingBag, ShoppingCart, Tv, Utensils, Zap } from 'lucide-react';
 
 export const organizationOptions = [
   { id: '', label: 'Todos los Bancos', icon: Landmark }, { id: 'BHD', label: 'Banco BHD', dot: 'bg-emerald-500' },
@@ -9,12 +9,14 @@ export const organizationOptions = [
 export const movementTypeOptions = [
   { id: '', label: 'Todos los Tipos' }, { id: 'compra', label: '💳 Compras con Tarjeta' },
   { id: 'enviada', label: '↗️ Transf. Enviadas' },
+  { id: 'propia', label: '↔️ Entre mis cuentas' },
   { id: 'servicio', label: '🧾 Pagos de Servicios' }, { id: 'retiro', label: '🏧 Retiros de Cajero' },
 ];
 export const categoryOptions = [
   { id: '', label: 'Todas las Categorías', icon: ShoppingBag }, { id: 'Supermercado', label: 'Supermercado', icon: ShoppingCart },
   { id: 'Restaurantes & Delivery', label: 'Restaurantes & Delivery', icon: Utensils }, { id: 'Servicios Financieros', label: 'Servicios Financieros', icon: Landmark },
   { id: 'Transferencias', label: 'Transferencias', icon: ArrowUpRight }, { id: 'Transporte', label: 'Transporte', icon: Car },
+  { id: 'Transferencias Propias', label: 'Entre cuentas', icon: ArrowLeftRight },
   { id: 'Combustible', label: 'Combustible', icon: Fuel }, { id: 'Servicios', label: 'Servicios', icon: Zap },
   { id: 'Suscripciones', label: 'Suscripciones', icon: Tv }, { id: 'Salud & Farmacia', label: 'Salud & Farmacia', icon: HeartPulse },
   { id: 'Compras Online', label: 'Compras Online', icon: ShoppingBag }, { id: 'Otros', label: 'Otros', icon: ShoppingBag },

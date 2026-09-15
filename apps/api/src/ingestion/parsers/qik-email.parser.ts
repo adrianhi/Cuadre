@@ -6,6 +6,7 @@ import type {
   ParserContext,
 } from '../types';
 import { normalizeTransactionStatus, transactionStatusLabel } from '../../domain/transaction-status';
+import { hasExplicitInternalTransferSignal } from '../internal-transfer-signal';
 
 function toText(value: string) {
   return value
@@ -111,16 +112,18 @@ export class QikEmailParser implements BankEmailParser {
       || null;
     const statusCode = normalizeTransactionStatus(content);
     const parsedDate = dateFrom(content);
+    const internalTransfer = hasExplicitInternalTransferSignal(email.subject, content);
     const transaction: NormalizedTransaction = {
       externalId: `qik_${safeId(reference || email.messageId || email.id)}`,
       cardLast4,
       rawMerchant: merchant,
-      category: received ? 'Ingresos / Transferencias' : sent ? 'Transferencias' : null,
+      category: internalTransfer ? 'Transferencias Propias' : received ? 'Ingresos / Transferencias' : sent ? 'Transferencias' : null,
       amount: amount.amount,
       currency: amount.currency,
       status: transactionStatusLabel(statusCode),
       statusCode,
-      transactionType,
+      transactionType: internalTransfer ? 'Transferencia entre Cuentas' : transactionType,
+      financialRole: internalTransfer ? 'INTERNAL_TRANSFER' : received ? 'INCOME' : undefined,
       transactionDate: parsedDate || email.receivedAt,
       source: received ? 'QIK_TRANSFER_INCOME' : sent ? 'QIK_TRANSFER_EMAIL' : 'QIK_EMAIL',
       institutionCode: this.institutionCode,

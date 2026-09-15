@@ -1,4 +1,5 @@
 import { normalizeTransactionStatus, transactionStatusLabel } from '../../domain/transaction-status';
+import { hasExplicitInternalTransferSignal } from '../internal-transfer-signal';
 import type { BankEmailParser, NormalizedEmail, NormalizedTransaction, ParseResult, ParserContext } from '../types';
 
 const POPULAR_SENDER = 'notificaciones@popularenlinea.com';
@@ -130,6 +131,7 @@ export class PopularEmailParser implements BankEmailParser {
     const card = content.match(/Tarjeta\s+(.{2,80}?),?\s+terminada\s+en\s+(\d{4})\b/i);
     const account = content.match(/cuenta\s+terminada\s+en\s+(\d{4})\b/i);
     const statusCode = received ? 'APPROVED' : normalizeTransactionStatus(table.estatus || content);
+    const internalTransfer = hasExplicitInternalTransferSignal(email.subject, content);
     let transaction: NormalizedTransaction;
 
     if (received) {
@@ -138,11 +140,12 @@ export class PopularEmailParser implements BankEmailParser {
         cardLast4: account?.[1] || null,
         cardType: 'Cuenta Bancaria',
         rawMerchant: 'Transferencia recibida',
-        category: 'Ingresos / Transferencias',
+        category: internalTransfer ? 'Transferencias Propias' : 'Ingresos / Transferencias',
         amount,
         currency: /US|USD|d[oó]lar/i.test(`${table.monto} ${table.moneda || ''}`) ? 'USD' : 'DOP',
         status: transactionStatusLabel(statusCode), statusCode,
-        transactionType: 'Transferencia Recibida', transactionDate,
+        transactionType: internalTransfer ? 'Transferencia entre Cuentas' : 'Transferencia Recibida', transactionDate,
+        financialRole: internalTransfer ? 'INTERNAL_TRANSFER' : 'INCOME',
         source: 'POPULAR_TRANSFER_INCOME', institutionCode: this.institutionCode,
         ingestionChannel: context?.ingestionChannel || 'GMAIL_OAUTH',
         notes: table.canal ? `Canal: ${table.canal}` : null,

@@ -197,6 +197,7 @@ export function ExportScopeFields(props: ExportScopeFieldsProps) {
             <option value="">Todos</option>
             <option value="compra">Compras</option>
             <option value="enviada">Transferencias enviadas</option>
+            <option value="propia">Entre cuentas</option>
             <option value="servicio">Pagos de servicios</option>
             <option value="retiro">Retiros</option>
           </select>

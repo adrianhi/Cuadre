@@ -325,7 +325,7 @@ describe('FinancialReportService', () => {
     expect(movements.rowCount).toBe(8);
     expect(movements.getRow(7).values).toContain('Bravo');
     expect(movements.getRow(8).values).toContain('Total');
-    expect(movements.getCell('G8').value).toMatchObject({ formula: 'SUBTOTAL(109, G7:G7)' });
+    expect(movements.getCell('G8').value).toMatchObject({ formula: 'SUMIF(J7:J7,"Gasto",G7:G7)' });
     expect(workbook.getWorksheet('Comparativa Mensual')!.getColumn(2).values).toContain('2026-07-01 al 2026-07-31');
     expect(movements.views[0]).toMatchObject({ state: 'frozen', showGridLines: false });
     expect(movements.autoFilter).toBeTruthy();
@@ -333,7 +333,7 @@ describe('FinancialReportService', () => {
     // Check Resumen Executive Dashboard (KPI cards + Top 5)
     const resumen = workbook.getWorksheet('Resumen')!;
     expect(resumen.getCell('A6').value).toBe('GASTO TOTAL');
-    expect(resumen.getCell('A7').value).toMatchObject({ formula: 'SUM(Movimientos!G7:G7)', result: 1500 });
+    expect(resumen.getCell('A7').value).toMatchObject({ formula: 'SUMIF(Movimientos!J7:J7,"Gasto",Movimientos!G7:G7)', result: 1500 });
     expect(resumen.getColumn(1).values).toContain('Top 5 Categorías de Mayor Gasto');
     expect(resumen.getColumn(1).values).toContain('Supermercado');
 
@@ -368,7 +368,8 @@ describe('FinancialReportService', () => {
     expect(workbook.getWorksheet('Movimientos')!.getCell('A7').value).toBeInstanceOf(Date);
     expect(workbook.getWorksheet('Movimientos')!.getCell('A7').numFmt).toBe('dd/mm/yyyy');
     expect(workbook.getWorksheet('Movimientos')!.getCell('B7').value).toBe("'=HYPERLINK(\"http://evil\")");
-    expect(workbook.getWorksheet('Movimientos')!.getCell('J7').value).toBe('compra semanal');
+    expect(workbook.getWorksheet('Movimientos')!.getCell('J7').value).toBe('Gasto');
+    expect(workbook.getWorksheet('Movimientos')!.getCell('K7').value).toBe('compra semanal');
   });
 
   it('includes resolved budget performance as an optional XLSX sheet with traffic light styling and formulas', async () => {
@@ -492,7 +493,7 @@ describe('FinancialReportService', () => {
     // Movimientos has Excel Table with 4 rows + totals row
     const movements = workbook.getWorksheet('Movimientos')!;
     expect(movements.rowCount).toBe(11); // 4 metadata + 1 empty + 1 header + 4 data + 1 total = 11
-    expect(movements.getCell('G11').value).toMatchObject({ formula: 'SUBTOTAL(109, G7:G10)' });
+    expect(movements.getCell('G11').value).toMatchObject({ formula: 'SUMIF(J7:J10,"Gasto",G7:G10)' });
   });
 
 

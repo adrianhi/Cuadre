@@ -1,5 +1,6 @@
 import type { BankEmailParser, NormalizedEmail, NormalizedTransaction, ParseResult, ParserContext } from '../types';
 import { normalizeTransactionStatus, transactionStatusLabel } from '../../domain/transaction-status';
+import { hasExplicitInternalTransferSignal } from '../internal-transfer-signal';
 
 function htmlToText(value: string) {
   return value
@@ -217,18 +218,20 @@ export class BhdEmailParser implements BankEmailParser {
       /(?:N[uú]mero\s+de\s+Confirmaci[oó]n|Confirmaci[oó]n|Referencia)\s*:\s*([A-Z0-9-]{5,})/i
     )?.[1];
     const cardMatch = content.match(/(?:terminada en|tarjeta|producto)\D{0,30}(\d{4})\b/i);
+    const internalTransfer = hasExplicitInternalTransferSignal(email.subject, content);
     const transaction: NormalizedTransaction = {
       externalId: `${prefix}_${safeId(confirmation || email.messageId || email.id)}`,
       cardLast4: cardMatch?.[1] || null,
       cardType: extractField(content, ['Tipo de Tarjeta', 'Producto']),
       rawMerchant,
-      category,
+      category: internalTransfer ? 'Transferencias Propias' : category,
       amount: amountValue.amount,
       currency: amountValue.currency,
       status: transactionStatusLabel(statusCode),
       statusCode,
       bankReference: confirmation || null,
-      transactionType: table?.tipo?.trim() || transactionType,
+      transactionType: internalTransfer ? 'Transferencia entre Cuentas' : table?.tipo?.trim() || transactionType,
+      financialRole: internalTransfer ? 'INTERNAL_TRANSFER' : undefined,
       transactionDate: parseBhdDate(table?.fecha || content, email.receivedAt),
       source,
       institutionCode: this.institutionCode,

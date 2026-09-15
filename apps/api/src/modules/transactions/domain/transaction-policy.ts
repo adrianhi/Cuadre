@@ -4,11 +4,29 @@ export interface MovementClassification {
   transactionType?: string | null;
   category?: string | null;
   source?: string | null;
+  financialRole?: 'EXPENSE' | 'INCOME' | 'INTERNAL_TRANSFER' | null;
 }
 
 export function isIncomeMovement(transaction: MovementClassification): boolean {
+  if (transaction.financialRole) return transaction.financialRole === 'INCOME';
   return /recibida/i.test(transaction.transactionType || '') ||
     /ingreso/i.test(transaction.category || '') || /transfer_income/i.test(transaction.source || '');
+}
+
+export function isInternalTransferMovement(transaction: MovementClassification): boolean {
+  if (transaction.financialRole) return transaction.financialRole === 'INTERNAL_TRANSFER';
+  return /transferencias? propias?/i.test(transaction.category || '') ||
+    /entre cuentas|transferencia propia/i.test(transaction.transactionType || '') ||
+    /internal_transfer/i.test(transaction.source || '');
+}
+
+export function isExpenseMovement(transaction: MovementClassification): boolean {
+  if (transaction.financialRole) return transaction.financialRole === 'EXPENSE';
+  return !isIncomeMovement(transaction) && !isInternalTransferMovement(transaction);
+}
+
+export function isTransferMovement(transaction: MovementClassification): boolean {
+  return /transfer/i.test(`${transaction.transactionType || ''} ${transaction.category || ''} ${transaction.source || ''}`);
 }
 
 export function contributesToFinancialMetrics(status: TransactionStatusCodeName): boolean {

@@ -41,7 +41,7 @@ export function addDashboardSheet(
   const c1Val = sheet.getCell(7, 1);
   const hasMovements = presentation.sections?.includes('movements') && rows.length > 0;
   c1Val.value = hasMovements
-    ? { formula: `SUM(Movimientos!G7:G${6 + rows.length})`, result: summary.totalAmount }
+    ? { formula: `SUMIF(Movimientos!J7:J${6 + rows.length},"Gasto",Movimientos!G7:G${6 + rows.length})`, result: summary.totalAmount }
     : summary.totalAmount;
   c1Val.font = { size: 16, bold: true, color: { argb: DARK } };
   c1Val.numFmt = '#,##0.00';

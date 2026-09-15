@@ -1,9 +1,6 @@
-export const COMMON_CATEGORIES = [
-  'Supermercado', 'Restaurantes & Delivery', 'Servicios Financieros',
-  'Transferencias', 'Transporte', 'Combustible',
-  'Servicios', 'Suscripciones', 'Salud & Farmacia', 'Compras Online',
-  'Hogar', 'Ropa & Moda', 'Entretenimiento', 'Tecnología', 'Otros',
-] as const;
+import { COMMON_TRANSACTION_CATEGORIES } from '@bills/contracts';
+
+export const COMMON_CATEGORIES = COMMON_TRANSACTION_CATEGORIES;
 
 export const COMMON_INCOME_CATEGORIES = [
   'Nómina / Salario',

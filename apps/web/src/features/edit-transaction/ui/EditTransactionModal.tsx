@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Trash2 } from 'lucide-react';
+import type { TransactionFinancialRole } from '@bills/contracts';
 import { 
   Dialog, 
   DialogContent, 
@@ -10,23 +11,19 @@ import {
   Input
 } from '@/shared/ui';
 import type { Transaction } from '@/entities/transaction';
-import { formatCurrency, formatDate, getOrganizationMeta } from '@/shared/lib';
+import { COMMON_CATEGORIES } from '@/shared/config/financial-options';
+import { InternalTransferControl } from './InternalTransferControl';
+import { TransactionEditSummary } from './TransactionEditSummary';
 
 interface EditTransactionModalProps {
   transaction: Transaction | null;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (id: string, merchant: string, category: string, notes: string) => Promise<void>;
+  onSave: (id: string, merchant: string, category: string, notes: string, financialRole?: TransactionFinancialRole) => Promise<void>;
   onDelete?: (id: string) => Promise<void>;
   onRequestDelete?: (transaction: Transaction) => void;
   onSuggestRule?: (transactionId: string, category: string) => void;
 }
-
-const COMMON_CATEGORIES = [
-  'Supermercado', 'Restaurantes & Delivery', 'Servicios Financieros', 'Transferencias',
-  'Transporte', 'Combustible', 'Servicios', 'Suscripciones', 'Salud & Farmacia',
-  'Compras Online', 'Hogar', 'Ropa & Moda', 'Entretenimiento', 'Tecnología', 'Otros',
-];
 
 export const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
   transaction,
@@ -46,10 +43,10 @@ export const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [suggestRule, setSuggestRule] = useState(false);
+  const [financialRole, setFinancialRole] = useState<TransactionFinancialRole>(transaction?.financialRole || 'EXPENSE');
+  const [roleReviewed, setRoleReviewed] = useState(false);
 
   if (!transaction) return null;
-
-  const orgMeta = getOrganizationMeta(transaction.source, transaction.merchant);
 
   const validate = (): boolean => {
     const errors: Record<string, string> = {};
@@ -71,7 +68,7 @@ export const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
     setGeneralError('');
     setSaving(true);
     try {
-      await onSave(transaction.id, merchant.trim(), category, notes.trim());
+      await onSave(transaction.id, merchant.trim(), category, notes.trim(), roleReviewed ? financialRole : undefined);
       onClose();
       if (suggestRule && category !== transaction.category) onSuggestRule?.(transaction.id, category);
     } catch (err) {
@@ -118,31 +115,7 @@ export const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
             </div>
           )}
 
-          {/* Summary Box */}
-          <div className="rounded-xl border bg-muted/40 p-3.5 text-xs space-y-1.5">
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Entidad / Banco:</span>
-              <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold border ${orgMeta.badgeClass}`}>
-                {orgMeta.name}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Monto:</span>
-              <span className="font-bold text-foreground text-sm">
-                {formatCurrency(transaction.amount, transaction.currency)}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Fecha:</span>
-              <span>{formatDate(transaction.transactionDate)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Original:</span>
-              <span className="font-mono text-muted-foreground truncate max-w-[200px]" title={transaction.rawMerchant}>
-                {transaction.rawMerchant}
-              </span>
-            </div>
-          </div>
+          <TransactionEditSummary transaction={transaction} />
 
           {/* Merchant Name */}
           <div className="space-y-1.5">
@@ -180,6 +153,21 @@ export const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
               ))}
             </select>
           </div>
+
+          <InternalTransferControl
+            checked={financialRole === 'INTERNAL_TRANSFER'}
+            suggestionPending={transaction.suggestedFinancialRole === 'INTERNAL_TRANSFER' && !roleReviewed}
+            onConfirmSuggestion={() => {
+              setFinancialRole('INTERNAL_TRANSFER'); setCategory('Transferencias Propias'); setRoleReviewed(true);
+            }}
+            onDismissSuggestion={() => { setFinancialRole(transaction.financialRole); setRoleReviewed(true); }}
+            onCheckedChange={(checked) => {
+              setFinancialRole(checked ? 'INTERNAL_TRANSFER' : transaction.financialRole === 'INCOME' ? 'INCOME' : 'EXPENSE');
+              if (checked) setCategory('Transferencias Propias');
+              else if (category === 'Transferencias Propias') setCategory('Transferencias');
+              setRoleReviewed(true);
+            }}
+          />
 
           {/* Notes */}
           {onSuggestRule && category !== transaction.category && <label className="flex items-start gap-2 text-xs">

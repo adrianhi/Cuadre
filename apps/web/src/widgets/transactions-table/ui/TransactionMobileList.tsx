@@ -1,7 +1,7 @@
 import { Calendar } from 'lucide-react';
 import type { Transaction } from '@/entities/transaction';
 import type { groupTransactionsByDate } from '@/entities/transaction';
-import { isSentTransfer, statusCode } from '@/entities/transaction';
+import { isInternalTransfer, isSentTransfer, statusCode } from '@/entities/transaction';
 import { formatCurrency, formatDate, getOrganizationMeta } from '@/shared/lib';
 import { TransactionIcon, TransactionStatus } from './transaction-presenters';
 
@@ -32,11 +32,12 @@ export const TransactionMobileList = ({ groups, hideBalances, onEdit }: {
           {group.transactions.map((transaction) => {
             const inactive = statusCode(transaction) !== 'APPROVED';
             const sent = isSentTransfer(transaction);
+            const internal = isInternalTransfer(transaction);
             const institution = getOrganizationMeta(transaction.source, transaction.merchant);
             return (
               <button key={transaction.id} type="button" onClick={() => onEdit(transaction)} className="flex w-full cursor-pointer items-center justify-between gap-3 p-3.5 text-left transition-colors hover:bg-muted/30 active:bg-muted/50 sm:p-4">
                 <div className="flex min-w-0 items-center gap-3">
-                  <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl ${sent ? 'bg-sky-500/15' : 'bg-muted/70'}`}><TransactionIcon transaction={transaction} /></div>
+                  <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl ${internal ? 'bg-violet-500/15' : sent ? 'bg-sky-500/15' : 'bg-muted/70'}`}><TransactionIcon transaction={transaction} /></div>
                   <div className="min-w-0">
                     <div className="truncate text-sm font-bold text-foreground">{transaction.merchant}</div>
                     <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">

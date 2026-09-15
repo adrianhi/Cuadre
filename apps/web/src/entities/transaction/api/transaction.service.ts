@@ -2,6 +2,7 @@ import {
   transactionListResponseSchema,
   transactionSchema,
   type TransactionFilters,
+  type TransactionFinancialRole,
 } from '@bills/contracts';
 import { httpClient, parseResponse } from '@/shared/api';
 
@@ -14,7 +15,7 @@ export const transactionService = {
     const response = await httpClient.get('/transactions', { params: compactParams(filters), signal });
     return parseResponse(transactionListResponseSchema, response.data);
   },
-  async update(input: { id: string; merchant: string; category: string; notes: string }) {
+  async update(input: { id: string; merchant: string; category: string; notes: string; financialRole?: TransactionFinancialRole }) {
     const response = await httpClient.patch(`/transactions/${input.id}`, input);
     return parseResponse(transactionSchema, response.data?.data);
   },

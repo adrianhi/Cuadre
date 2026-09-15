@@ -1,4 +1,4 @@
-import { ArrowUpRight, Check, CreditCard, Landmark, Receipt } from 'lucide-react';
+import { ArrowLeftRight, ArrowUpRight, Check, CreditCard, Landmark, Receipt } from 'lucide-react';
 import { COMMON_CATEGORIES, FINANCIAL_INSTITUTIONS } from '@/shared/config/financial-options';
 import { formatCurrency, parseAmountInput, toDateValue } from '@/shared/lib';
 import { Button, CurrencyAmountInput, DateTimePickerField, DialogFooter, Input } from '@/shared/ui';
@@ -7,6 +7,7 @@ import type { QuickAddTransactionModel } from '../model/useQuickAddTransaction';
 const MOVEMENT_TYPES = [
   { id: 'compra', label: 'Compra', icon: CreditCard },
   { id: 'enviada', label: 'Transf. Enviada', icon: ArrowUpRight },
+  { id: 'propia', label: 'Entre cuentas', icon: ArrowLeftRight },
   { id: 'servicio', label: 'Servicio', icon: Receipt },
   { id: 'retiro', label: 'Retiro', icon: Landmark },
 ];

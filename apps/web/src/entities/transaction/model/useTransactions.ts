@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { TransactionFilters } from '@bills/contracts';
+import type { TransactionFilters, TransactionFinancialRole } from '@bills/contracts';
 import type { PeriodSelection } from '@/entities/period';
 import { downloadBlob } from '@/shared/lib';
 import { transactionService } from '../api/transaction.service';
@@ -88,9 +88,10 @@ export function useTransactions({ authToken, periodSelection, enabled = true }: 
     merchant: string,
     category: string,
     notes: string,
+    financialRole?: TransactionFinancialRole,
     onSaved?: () => void,
   ) => {
-    await updateMutation.mutateAsync({ id, merchant, category, notes });
+    await updateMutation.mutateAsync({ id, merchant, category, notes, financialRole });
     onSaved?.();
   }, [updateMutation]);
 

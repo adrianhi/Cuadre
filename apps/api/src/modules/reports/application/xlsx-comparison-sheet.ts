@@ -1,6 +1,7 @@
 ﻿import type ExcelJS from 'exceljs';
 import type { FinancialRow, ReportPresentation, ReportSummary } from './financial-report-data';
-import { buildMonthlyCategoryMatrix, safeSpreadsheetText } from './financial-report-data';
+import { safeSpreadsheetText } from './financial-report-data';
+import { buildMonthlyCategoryMatrix } from './monthly-category-matrix';
 import {
   BORDER,
   DARK,

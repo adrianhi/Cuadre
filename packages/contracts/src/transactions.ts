@@ -1,12 +1,22 @@
 import { z } from 'zod';
+import { COMMON_EXPENSE_CATEGORIES } from './budgets';
 
 export const transactionStatusSchema = z.enum(['PENDING', 'APPROVED', 'DECLINED', 'REVERSED']);
 export type TransactionStatusCode = z.infer<typeof transactionStatusSchema>;
+export const transactionFinancialRoleSchema = z.enum(['EXPENSE', 'INCOME', 'INTERNAL_TRANSFER']);
+export type TransactionFinancialRole = z.infer<typeof transactionFinancialRoleSchema>;
+export const transactionFinancialRoleOriginSchema = z.enum(['SYSTEM', 'BANK_SIGNAL', 'USER_RULE', 'MANUAL', 'MIGRATION']);
+export type TransactionFinancialRoleOrigin = z.infer<typeof transactionFinancialRoleOriginSchema>;
+export const INTERNAL_TRANSFER_CATEGORY = 'Transferencias Propias' as const;
+export const COMMON_TRANSACTION_CATEGORIES = [...COMMON_EXPENSE_CATEGORIES, INTERNAL_TRANSFER_CATEGORY] as const;
 
 export const transactionSchema = z.object({
   id: z.string(), externalId: z.string(), cardLast4: z.string().nullable(), cardType: z.string().nullable(),
   rawMerchant: z.string(), merchant: z.string(), amount: z.coerce.number(), currency: z.string(),
   status: z.string(), statusCode: transactionStatusSchema, transactionType: z.string(), category: z.string(),
+  financialRole: transactionFinancialRoleSchema.default('EXPENSE'),
+  financialRoleOrigin: transactionFinancialRoleOriginSchema.default('SYSTEM'),
+  suggestedFinancialRole: transactionFinancialRoleSchema.nullable().optional().default(null),
   notes: z.string().nullable().optional(), source: z.string().optional(), institutionCode: z.string().optional(),
   ingestionChannel: z.string().optional(), transactionDate: z.string(), createdAt: z.string(),
   merchantKey: z.string().nullable().optional(), merchantIdentityLabel: z.string().nullable().optional(),
@@ -41,6 +51,7 @@ export const createTransactionInputSchema = z.object({
   currency: z.string().trim().min(3).max(3).default('DOP').transform((value) => value.toUpperCase()),
   status: z.string().trim().default('Aprobada'), statusCode: transactionStatusSchema.optional(),
   bankReference: z.string().trim().max(180).optional().nullable(), transactionType: z.string().trim().default('Compra'),
+  financialRole: transactionFinancialRoleSchema.optional(),
   transactionDate: z.coerce.date({ invalid_type_error: 'Fecha de transacción inválida' }),
   source: z.string().trim().default('MANUAL'),
   institutionCode: z.string().trim().min(2).max(32).optional().transform((value) => value?.toUpperCase()),
@@ -59,5 +70,6 @@ export const updateTransactionInputSchema = z.object({
   category: z.string().trim().min(1, 'La categoría no puede estar vacía').max(100).optional(),
   notes: z.string().trim().max(500, 'Las notas no pueden superar 500 caracteres').optional().nullable(),
   status: z.string().trim().max(50).optional(), statusCode: transactionStatusSchema.optional(),
+  financialRole: transactionFinancialRoleSchema.optional(),
 });
 export type UpdateTransactionInput = z.infer<typeof updateTransactionInputSchema>;

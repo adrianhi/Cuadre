@@ -1,9 +1,10 @@
-import { contributesToFinancialMetrics, institutionDisplayName, isIncomeMovement } from '../../transactions/domain';
+import { contributesToFinancialMetrics, institutionDisplayName, isIncomeMovement, isInternalTransferMovement } from '../../transactions/domain';
 import type { TransactionStatusCodeName } from '../../../domain/transaction-status';
 
 export interface AnalyticsTransaction {
   amount: unknown; currency: string; category: string; merchant: string; statusCode: TransactionStatusCodeName;
   transactionType: string; source: string; institutionCode: string; transactionDate: Date;
+  financialRole?: 'EXPENSE' | 'INCOME' | 'INTERNAL_TRANSFER';
 }
 
 const round = (value: number) => Math.round(value * 100) / 100;
@@ -18,6 +19,17 @@ export function summarizeTransactions(transactions: AnalyticsTransaction[], requ
 
   for (const transaction of transactions) {
     const amount = Number(transaction.amount);
+    const internalTransfer = isInternalTransferMovement(transaction);
+    if (internalTransfer) {
+      if (transaction.currency.toUpperCase() === requestedCurrency) {
+        totalTransactions += 1;
+        if (transaction.statusCode === 'DECLINED') rejectedCount += 1;
+        else if (transaction.statusCode === 'REVERSED') reversedCount += 1;
+        else if (transaction.statusCode === 'PENDING') pendingCount += 1;
+        else approvedCount += 1;
+      }
+      continue;
+    }
     const income = isIncomeMovement(transaction);
     if (income) {
       if (contributesToFinancialMetrics(transaction.statusCode)) {

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { ArrowUpRight, CreditCard, FileDown, Search, ShoppingCart, SlidersHorizontal, Utensils, X } from 'lucide-react';
+import { ArrowLeftRight, ArrowUpRight, CreditCard, FileDown, Search, ShoppingCart, SlidersHorizontal, Utensils, X } from 'lucide-react';
 import { Badge, Button, CardHeader, CardTitle, Input } from '@/shared/ui';
 
 export interface TransactionFilterState {
@@ -63,6 +63,7 @@ export const TransactionTableHeader = ({ total, filters, onFilterChange, onReset
         <QuickChip active={filters.organization === 'BANRESERVAS'} icon={<span className="h-2 w-2 rounded-full bg-sky-600" />} label="Banreservas" onClick={() => toggle('organization', 'BANRESERVAS')} />
         <QuickChip active={filters.type === 'compra'} icon={<CreditCard className="h-3 w-3" />} label="Compras" onClick={() => toggle('type', 'compra')} />
         <QuickChip active={filters.type === 'enviada'} icon={<ArrowUpRight className="h-3 w-3" />} label="Transf. Enviadas" onClick={() => toggle('type', 'enviada')} />
+        <QuickChip active={filters.type === 'propia'} icon={<ArrowLeftRight className="h-3 w-3" />} label="Entre cuentas" onClick={() => toggle('type', 'propia')} />
         <QuickChip active={filters.category === 'Supermercado'} icon={<ShoppingCart className="h-3 w-3" />} label="Supermercado" onClick={() => toggle('category', 'Supermercado')} />
         <QuickChip active={filters.category === 'Restaurantes & Delivery'} icon={<Utensils className="h-3 w-3" />} label="Restaurantes" onClick={() => toggle('category', 'Restaurantes & Delivery')} />
       </div>

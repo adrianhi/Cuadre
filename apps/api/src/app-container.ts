@@ -2,10 +2,10 @@ import { AnalyticsService } from './modules/analytics/application/analytics.serv
 import { PrismaAnalyticsRepository } from './modules/analytics/infrastructure/prisma-analytics.repository';
 import { AnalyticsController } from './modules/analytics/http/analytics.controller';
 import { CategoryRuleApplicationService, PrismaCategoryRuleRepository, CategoryRuleController,
-  SaveCategoryRule, ListExpenseCategories, PrismaRuleCatalog, CategorizeTransaction,
+  SaveCategoryRule, ListExpenseCategories, ListTransactionCategories, PrismaRuleCatalog, CategorizeTransaction,
   PrismaRuleApplications, ProcessRuleApplication, RuleApplicationRunner, RuleApplicationController,
   PreviewRuleApplication, ConfirmRuleApplication, RetryRuleApplication, PrismaRuleApplicationUnit } from './modules/categorization';
-import { PrismaClassificationCandidates, PrismaClassificationWriter } from './modules/transactions';
+import { PrismaClassificationCandidates, PrismaClassificationWriter, PrismaWorkspaceHolderNameReader } from './modules/transactions';
 import { TransactionApplicationService } from './modules/transactions/application/transaction-application.service';
 import { TransactionHttpController } from './modules/transactions/http/transaction.controller';
 import { ReadinessController } from './modules/system/http/readiness.controller';
@@ -74,6 +74,7 @@ const incomeController = new IncomeController(incomeService);
 const ruleRepository = new PrismaCategoryRuleRepository();
 const ruleCatalog = new PrismaRuleCatalog();
 const expenseCategories = new ListExpenseCategories(ruleCatalog);
+const transactionCategories = new ListTransactionCategories(ruleCatalog);
 const categorizer = new CategorizeTransaction(ruleRepository);
 const ruleApplications = new PrismaRuleApplications((tx) => new PrismaClassificationWriter(tx));
 const ruleApplicationUnit = new PrismaRuleApplicationUnit();
@@ -107,10 +108,11 @@ const budgetController = new BudgetController({
   safeToSpend: getSafeToSpend,
 });
 const categoryRuleService = new CategoryRuleApplicationService(ruleRepository,
-  new SaveCategoryRule(ruleRepository, expenseCategories, ruleCatalog), expenseCategories, ruleCatalog);
+  new SaveCategoryRule(ruleRepository, transactionCategories, ruleCatalog), transactionCategories, ruleCatalog);
 const transactionWriter = new PrismaTransactionWriter(
   categorizer,
-  new PrismaReversalService()
+  new PrismaReversalService(),
+  new PrismaWorkspaceHolderNameReader(),
 );
 const transactionService = new TransactionApplicationService(
   transactionWriter,
@@ -133,7 +135,7 @@ const gmailLifecycleService = new GmailLifecycleService(
 );
 const gmailMessageProcessor = new GmailMessageProcessor(
   googleGmailClient,
-  new NormalizedEmailProcessor(transactionService)
+  new NormalizedEmailProcessor(transactionWriter)
 );
 const gmailSyncService = new GmailSyncService(
   googleGmailClient,
@@ -160,7 +162,6 @@ const inboxConnectionController = new InboxConnectionController(
   ingestionJobService,
   { replace: InstitutionSelectionService.replace.bind(InstitutionSelectionService) }
 );
-
 const proactiveRepository = new PrismaProactiveRepository();
 const proactiveEngineService = new ProactiveEngineService(
   { radar: (wId, curr, win) => recurringService.radar(wId, curr, win) },

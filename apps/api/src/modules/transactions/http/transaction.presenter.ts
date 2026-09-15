@@ -16,6 +16,7 @@ interface CsvTransaction {
   status: string;
   statusCode: string;
   transactionType: string;
+  financialRole: 'EXPENSE' | 'INCOME' | 'INTERNAL_TRANSFER';
   source: string;
   notes: string | null;
   createdAt: Date;
@@ -41,6 +42,7 @@ export function transactionsToCsv(transactions: CsvTransaction[]) {
     Estado: transaction.status,
     'Estado Código': transaction.statusCode,
     'Tipo Transacción': transaction.transactionType,
+    'Impacto Financiero': transaction.financialRole === 'INTERNAL_TRANSFER' ? 'Entre cuentas' : transaction.financialRole === 'INCOME' ? 'Ingreso' : 'Gasto',
     Fuente: transaction.source,
     Notas: transaction.notes || '',
     'Fecha Registro': transaction.createdAt.toISOString(),

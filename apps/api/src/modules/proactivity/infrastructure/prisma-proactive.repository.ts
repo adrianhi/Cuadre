@@ -1,6 +1,6 @@
 import type { TransactionDto } from '@bills/contracts';
 import { prisma } from '../../../config/database';
-import { visibleTransactionWhere } from '../../transactions';
+import { expenseTransactionWhere } from '../../transactions';
 import type {
   ProactiveDismissalRepository,
   ProactiveTransactionReader,
@@ -20,6 +20,9 @@ function mapTransaction(t: {
   status: string;
   statusCode: string;
   transactionType: string;
+  financialRole: 'EXPENSE' | 'INCOME' | 'INTERNAL_TRANSFER';
+  financialRoleOrigin: 'SYSTEM' | 'BANK_SIGNAL' | 'USER_RULE' | 'MANUAL' | 'MIGRATION';
+  suggestedFinancialRole: 'EXPENSE' | 'INCOME' | 'INTERNAL_TRANSFER' | null;
   category: string;
   notes: string | null;
   source: string;
@@ -40,6 +43,9 @@ function mapTransaction(t: {
     status: t.status,
     statusCode: t.statusCode as TransactionDto['statusCode'],
     transactionType: t.transactionType,
+    financialRole: t.financialRole,
+    financialRoleOrigin: t.financialRoleOrigin,
+    suggestedFinancialRole: t.suggestedFinancialRole,
     category: t.category,
     notes: t.notes,
     source: t.source,
@@ -103,6 +109,7 @@ export class PrismaProactiveRepository
         workspaceId,
         currency,
         statusCode: 'APPROVED',
+        ...expenseTransactionWhere(),
         transactionDate: { gte: since },
         OR: [
           { category: 'Otros' },
@@ -165,7 +172,7 @@ export class PrismaProactiveRepository
         workspaceId,
         currency,
         statusCode: 'APPROVED',
-        ...visibleTransactionWhere(),
+        ...expenseTransactionWhere(),
         transactionDate: { gte: from, lte: to },
       },
       orderBy: { transactionDate: 'desc' },

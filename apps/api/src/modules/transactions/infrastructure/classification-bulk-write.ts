@@ -30,6 +30,24 @@ export async function writeClassificationPage(tx: Prisma.TransactionClient,
   const updated = await tx.$queryRaw<{ id: string }[]>`
     UPDATE transactions AS t SET
       category = CASE WHEN item."changeCategory" THEN item.category ELSE t.category END,
+      financial_role = CASE
+        WHEN item."changeCategory" AND item.category = 'Transferencias Propias'
+          THEN 'INTERNAL_TRANSFER'::"TransactionFinancialRole"
+        ELSE t.financial_role
+      END,
+      financial_role_origin = CASE
+        WHEN item."changeCategory" AND item.category = 'Transferencias Propias'
+          THEN 'USER_RULE'::"TransactionFinancialRoleOrigin"
+        ELSE t.financial_role_origin
+      END,
+      suggested_financial_role = CASE
+        WHEN item."changeCategory" AND item.category = 'Transferencias Propias' THEN NULL
+        ELSE t.suggested_financial_role
+      END,
+      transaction_type = CASE
+        WHEN item."changeCategory" AND item.category = 'Transferencias Propias' THEN 'Transferencia entre Cuentas'
+        ELSE t.transaction_type
+      END,
       merchant = CASE WHEN item."changeMerchant" THEN item.merchant ELSE t.merchant END,
       category_origin = CASE WHEN item."changeCategory" THEN 'RULE' ELSE t.category_origin END,
       merchant_origin = CASE WHEN item."changeMerchant" THEN 'RULE' ELSE t.merchant_origin END,
