@@ -13,28 +13,26 @@ const DIGEST_DAYS = [
   { value: '0', label: 'Domingo' },
 ];
 
-const DIGEST_TIME_SLOTS = [
-  { value: '06:00', label: '06:00 a. m.' },
-  { value: '07:00', label: '07:00 a. m.' },
-  { value: '07:30', label: '07:30 a. m.' },
-  { value: '08:00', label: '08:00 a. m.' },
-  { value: '08:30', label: '08:30 a. m.' },
-  { value: '09:00', label: '09:00 a. m.' },
-  { value: '10:00', label: '10:00 a. m.' },
-  { value: '11:00', label: '11:00 a. m.' },
-  { value: '12:00', label: '12:00 p. m. (Mediodía)' },
-  { value: '13:00', label: '01:00 p. m.' },
-  { value: '14:00', label: '02:00 p. m.' },
-  { value: '15:00', label: '03:00 p. m.' },
-  { value: '16:00', label: '04:00 p. m.' },
-  { value: '17:00', label: '05:00 p. m.' },
-  { value: '17:30', label: '05:30 p. m.' },
-  { value: '18:00', label: '06:00 p. m.' },
-  { value: '19:00', label: '07:00 p. m.' },
-  { value: '20:00', label: '08:00 p. m.' },
-  { value: '21:00', label: '09:00 p. m.' },
-  { value: '22:00', label: '10:00 p. m.' },
-];
+const DIGEST_TIME_SLOTS = (() => {
+  const slots: Array<{ value: string; label: string }> = [];
+  for (let hour = 0; hour < 24; hour++) {
+    for (const minute of [0, 30]) {
+      const hStr = String(hour).padStart(2, '0');
+      const mStr = String(minute).padStart(2, '0');
+      const period = hour >= 12 ? 'p. m.' : 'a. m.';
+      const h12 = hour % 12 === 0 ? 12 : hour % 12;
+      const h12Str = String(h12).padStart(2, '0');
+      let note = '';
+      if (hour === 0 && minute === 0) note = ' (Medianoche)';
+      if (hour === 12 && minute === 0) note = ' (Mediodía)';
+      slots.push({
+        value: `${hStr}:${mStr}`,
+        label: `${h12Str}:${mStr} ${period}${note}`,
+      });
+    }
+  }
+  return slots;
+})();
 
 const DIGEST_PRESETS = [
   { value: 'FRIDAY_1700', label: '🍹 Viernes, 5:00 p. m.', description: 'Planificador de fin de semana' },
