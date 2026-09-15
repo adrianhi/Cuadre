@@ -167,13 +167,22 @@ export const sendWeeklyDigestTestResponseSchema = z.object({
 export type SendWeeklyDigestTestResponse = z.infer<typeof sendWeeklyDigestTestResponseSchema>;
 
 // --- Proactive email preferences ---
-export const emailDigestScheduleSchema = z.enum(['MONDAY_0730', 'SUNDAY_1800']);
+export const emailDigestScheduleSchema = z.enum([
+  'MONDAY_0730',
+  'SUNDAY_1800',
+  'FRIDAY_1700',
+  'CUSTOM',
+]);
 export type EmailDigestSchedule = z.infer<typeof emailDigestScheduleSchema>;
 
 export const emailNotificationPreferencesSchema = z.object({
   weeklyDigestEnabled: z.boolean(),
   criticalAlertsEnabled: z.boolean(),
   digestSchedule: emailDigestScheduleSchema,
+  customDayOfWeek: z.number().int().min(0).max(6).nullable().optional(),
+  customHour: z.number().int().min(0).max(23).nullable().optional(),
+  customMinute: z.number().int().min(0).max(59).nullable().optional(),
+  nextWeeklyDigestAt: z.string().nullable().optional(),
   timezone: z.string(),
   recipientMasked: z.string(),
 });
@@ -183,7 +192,19 @@ export const updateEmailNotificationPreferencesSchema = z.object({
   weeklyDigestEnabled: z.boolean(),
   criticalAlertsEnabled: z.boolean(),
   digestSchedule: emailDigestScheduleSchema,
-}).strict();
+  customDayOfWeek: z.number().int().min(0).max(6).nullable().optional(),
+  customHour: z.number().int().min(0).max(23).nullable().optional(),
+  customMinute: z.number().int().min(0).max(59).nullable().optional(),
+}).strict().superRefine((data, ctx) => {
+  if (data.weeklyDigestEnabled && data.digestSchedule === 'CUSTOM') {
+    if (data.customDayOfWeek === undefined || data.customDayOfWeek === null) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['customDayOfWeek'], message: 'Selecciona un día de la semana.' });
+    }
+    if (data.customHour === undefined || data.customHour === null) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['customHour'], message: 'Selecciona una hora para el envío.' });
+    }
+  }
+});
 export type UpdateEmailNotificationPreferencesInput = z.infer<typeof updateEmailNotificationPreferencesSchema>;
 
 export const emailNotificationPreferencesResponseSchema = z.object({

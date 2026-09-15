@@ -5,7 +5,7 @@ import type { EmailDeliveryRecord, EmailPreferenceRecord, ProactiveEmailReposito
 import { decideEmailFailure } from '../domain/email-retry';
 const preferenceSelect = {
   workspaceId: true, profileId: true, weeklyDigestEnabled: true, criticalAlertsEnabled: true,
-  digestSchedule: true, nextWeeklyDigestAt: true,
+  digestSchedule: true, customDayOfWeek: true, customHour: true, customMinute: true, nextWeeklyDigestAt: true,
   membership: { select: { profile: { select: { email: true, displayName: true, timezone: true, defaultCurrency: true } } } },
 } as const;
 
@@ -27,7 +27,11 @@ export class PrismaEmailRepository implements ProactiveEmailRepository {
       where: { workspaceId_profileId: { workspaceId: input.workspaceId, profileId: input.profileId } },
       create: input, update: {
         weeklyDigestEnabled: input.weeklyDigestEnabled, criticalAlertsEnabled: input.criticalAlertsEnabled,
-        digestSchedule: input.digestSchedule, nextWeeklyDigestAt: input.nextWeeklyDigestAt,
+        digestSchedule: input.digestSchedule,
+        customDayOfWeek: input.customDayOfWeek ?? null,
+        customHour: input.customHour ?? null,
+        customMinute: input.customMinute ?? null,
+        nextWeeklyDigestAt: input.nextWeeklyDigestAt,
       }, select: preferenceSelect,
     });
     return preference(row);
@@ -94,55 +98,38 @@ export class PrismaEmailRepository implements ProactiveEmailRepository {
     subject: string; html: string; text: string; headers?: Record<string, string>;
   }) {
     try {
-      const delivery = await prisma.emailDelivery.create({ data: {
-        betaInviteId: input.betaInviteId,
-        kind: 'BETA_INVITE',
-        recipient: input.recipient,
-        contextKey: input.contextKey,
-        subject: input.subject,
-        html: input.html,
-        text: input.text,
-        headers: input.headers || {},
-      }, select: { id: true } });
+      const delivery = await prisma.emailDelivery.create({
+        data: { betaInviteId: input.betaInviteId, kind: 'BETA_INVITE', recipient: input.recipient, contextKey: input.contextKey, subject: input.subject, html: input.html, text: input.text, headers: input.headers || {} },
+        select: { id: true },
+      });
       return { id: delivery.id, created: true };
     } catch (error) {
       if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== 'P2002') throw error;
-      const delivery = await prisma.emailDelivery.findUniqueOrThrow({ where: {
-        betaInviteId_kind_contextKey: {
-          betaInviteId: input.betaInviteId,
-          kind: 'BETA_INVITE',
-          contextKey: input.contextKey,
-        },
-      }, select: { id: true } });
+      const delivery = await prisma.emailDelivery.findUniqueOrThrow({
+        where: { betaInviteId_kind_contextKey: { betaInviteId: input.betaInviteId, kind: 'BETA_INVITE', contextKey: input.contextKey } },
+        select: { id: true },
+      });
       return { id: delivery.id, created: false };
     }
   }
 
   latestBetaInviteDelivery(betaInviteId: string) {
     return prisma.emailDelivery.findFirst({
-      where: { betaInviteId, kind: 'BETA_INVITE' },
-      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-      select: {
-        id: true, status: true, deliveryMode: true, providerMessageId: true,
-        errorCode: true, processedAt: true, nextAttemptAt: true, contextKey: true,
-      },
+      where: { betaInviteId, kind: 'BETA_INVITE' }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      select: { id: true, status: true, deliveryMode: true, providerMessageId: true, errorCode: true, processedAt: true, nextAttemptAt: true, contextKey: true },
     });
   }
 
   betaInviteDelivery(id: string) {
-    return prisma.emailDelivery.findUnique({ where: { id }, select: {
-      id: true, status: true, deliveryMode: true, providerMessageId: true,
-      errorCode: true, processedAt: true, nextAttemptAt: true, contextKey: true,
-    } });
+    return prisma.emailDelivery.findUnique({
+      where: { id },
+      select: { id: true, status: true, deliveryMode: true, providerMessageId: true, errorCode: true, processedAt: true, nextAttemptAt: true, contextKey: true },
+    });
   }
 
   async suppressRetryableBetaInviteDeliveries(betaInviteId: string, now: Date) {
     const result = await prisma.emailDelivery.updateMany({
-      where: {
-        betaInviteId,
-        kind: 'BETA_INVITE',
-        OR: [{ status: 'PENDING' }, { status: 'FAILED', processedAt: null }],
-      },
+      where: { betaInviteId, kind: 'BETA_INVITE', OR: [{ status: 'PENDING' }, { status: 'FAILED', processedAt: null }] },
       data: { status: 'SUPPRESSED', processedAt: now, leaseToken: null, leaseUntil: null },
     });
     return result.count;

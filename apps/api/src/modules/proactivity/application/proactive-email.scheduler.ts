@@ -41,8 +41,14 @@ export class ProactiveEmailScheduler {
       const scheduledAt = member.nextWeeklyDigestAt;
       if (!scheduledAt) continue;
       const timeZone = validTimeZone(member.timezone) ? member.timezone : 'America/Santo_Domingo';
+      const scheduleConfig = {
+        schedule: member.digestSchedule,
+        customDayOfWeek: member.customDayOfWeek,
+        customHour: member.customHour,
+        customMinute: member.customMinute,
+      };
       if (now.getTime() - scheduledAt.getTime() > 12 * 3_600_000) {
-        await this.repository.advanceWeekly(member.workspaceId, member.profileId, nextDigestAt(now, timeZone, member.digestSchedule));
+        await this.repository.advanceWeekly(member.workspaceId, member.profileId, nextDigestAt(now, timeZone, scheduleConfig));
         skipped++; continue;
       }
       try {
@@ -54,11 +60,11 @@ export class ProactiveEmailScheduler {
         });
         const delivery = await this.repository.enqueue({
           workspaceId: member.workspaceId, profileId: member.profileId, kind: 'WEEKLY_DIGEST',
-          recipient: member.email, contextKey: digestCycleKey(scheduledAt, member.digestSchedule, timeZone),
+          recipient: member.email, contextKey: digestCycleKey(scheduledAt, scheduleConfig, timeZone),
           ...content, headers: this.service.unsubscribeHeaders(unsubscribeUrl),
         });
         await this.repository.advanceWeekly(member.workspaceId, member.profileId,
-          nextDigestAt(new Date(scheduledAt.getTime() + 60_000), timeZone, member.digestSchedule));
+          nextDigestAt(new Date(scheduledAt.getTime() + 60_000), timeZone, scheduleConfig));
         if (delivery.created) scheduled++;
       } catch (error) {
         logger.error('weekly_email_schedule_failed', {

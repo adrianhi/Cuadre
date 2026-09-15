@@ -145,6 +145,8 @@ enum RecurringScanStatus {
 enum EmailDigestSchedule {
   MONDAY_0730
   SUNDAY_1800
+  FRIDAY_1700
+  CUSTOM
 }
 
 enum EmailDeliveryKind {
@@ -377,6 +379,9 @@ model EmailNotificationPreference {
   weeklyDigestEnabled   Boolean             @default(false) @map("weekly_digest_enabled")
   criticalAlertsEnabled Boolean             @default(false) @map("critical_alerts_enabled")
   digestSchedule        EmailDigestSchedule @default(MONDAY_0730) @map("digest_schedule")
+  customDayOfWeek       Int?                @map("custom_day_of_week") @db.SmallInt
+  customHour            Int?                @map("custom_hour") @db.SmallInt
+  customMinute          Int?                @map("custom_minute") @db.SmallInt
   nextWeeklyDigestAt    DateTime?           @map("next_weekly_digest_at")
   lastCriticalScanAt    DateTime            @default(now()) @map("last_critical_scan_at")
   membership            WorkspaceMember     @relation("EmailPreferenceMembership", fields: [workspaceId, profileId], references: [workspaceId, profileId], onDelete: Cascade)

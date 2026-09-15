@@ -1,5 +1,6 @@
 import type {
   BudgetSummaryDto,
+  EmailDigestSchedule,
   RecurringRadarDto,
   SafeToSpendDto,
   TransactionDto,
@@ -49,7 +50,10 @@ export interface ProactiveEmailTransport {
 export interface EmailPreferenceRecord {
   workspaceId: string; profileId: string; email: string; displayName: string | null;
   timezone: string; defaultCurrency: string; weeklyDigestEnabled: boolean;
-  criticalAlertsEnabled: boolean; digestSchedule: 'MONDAY_0730' | 'SUNDAY_1800';
+  criticalAlertsEnabled: boolean; digestSchedule: EmailDigestSchedule;
+  customDayOfWeek: number | null;
+  customHour: number | null;
+  customMinute: number | null;
   nextWeeklyDigestAt: Date | null;
 }
 
@@ -64,7 +68,10 @@ export interface ProactiveEmailRepository {
   getPreferences(workspaceId: string, profileId: string): Promise<EmailPreferenceRecord>;
   updatePreferences(input: {
     workspaceId: string; profileId: string; weeklyDigestEnabled: boolean;
-    criticalAlertsEnabled: boolean; digestSchedule: 'MONDAY_0730' | 'SUNDAY_1800';
+    criticalAlertsEnabled: boolean; digestSchedule: EmailDigestSchedule;
+    customDayOfWeek?: number | null;
+    customHour?: number | null;
+    customMinute?: number | null;
     nextWeeklyDigestAt: Date | null;
   }): Promise<EmailPreferenceRecord>;
   disableCategory(workspaceId: string, profileId: string, category: 'WEEKLY_DIGEST' | 'CRITICAL_ALERTS'): Promise<boolean>;

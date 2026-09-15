@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { AlertCircle, CheckCircle2, Loader2, Mail, Send } from 'lucide-react';
-import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch } from '@/shared/ui';
+import type { EmailDigestSchedule } from '@bills/contracts';
+import { Button, Switch } from '@/shared/ui';
 import type { AccountSettingsModel } from '../model/useAccountSettings';
+import { DigestSchedulePicker } from './DigestSchedulePicker';
 
 export function AccountEmailNotificationsSection({ model }: { model: AccountSettingsModel }) {
   const value = model.emailPreferences;
@@ -19,8 +21,33 @@ export function AccountEmailNotificationsSection({ model }: { model: AccountSett
       weeklyDigestEnabled: value.weeklyDigestEnabled,
       criticalAlertsEnabled: value.criticalAlertsEnabled,
       digestSchedule: value.digestSchedule,
+      customDayOfWeek: value.customDayOfWeek,
+      customHour: value.customHour,
+      customMinute: value.customMinute,
       ...changes,
     });
+  };
+
+  const handleScheduleChange = (schedule: EmailDigestSchedule) => {
+    if (schedule === 'CUSTOM') {
+      update({
+        digestSchedule: 'CUSTOM',
+        customDayOfWeek: value.customDayOfWeek ?? 5,
+        customHour: value.customHour ?? 17,
+        customMinute: value.customMinute ?? 0,
+      }, 'schedule');
+    } else {
+      update({ digestSchedule: schedule }, 'schedule');
+    }
+  };
+
+  const handleCustomTimingChange = (day: number, hour: number, minute: number) => {
+    update({
+      digestSchedule: 'CUSTOM',
+      customDayOfWeek: day,
+      customHour: hour,
+      customMinute: minute,
+    }, 'schedule');
   };
 
   return (
@@ -48,27 +75,18 @@ export function AccountEmailNotificationsSection({ model }: { model: AccountSett
       </div>
 
       {value.weeklyDigestEnabled && (
-        <div className="space-y-1.5 pl-1">
-          <label className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5" htmlFor="digest-schedule">
-            <span>Horario del Pulso</span>
-            {busy && activeToggle === 'schedule' && (
-              <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
-            )}
-          </label>
-          <Select
-            value={value.digestSchedule}
-            disabled={busy}
-            onValueChange={(schedule) => update({ digestSchedule: schedule as typeof value.digestSchedule }, 'schedule')}
-          >
-            <SelectTrigger id="digest-schedule">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="MONDAY_0730">Lunes, 7:30 a. m.</SelectItem>
-              <SelectItem value="SUNDAY_1800">Domingo, 6:00 p. m.</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <DigestSchedulePicker
+          schedule={value.digestSchedule}
+          customDayOfWeek={value.customDayOfWeek}
+          customHour={value.customHour}
+          customMinute={value.customMinute}
+          nextWeeklyDigestAt={value.nextWeeklyDigestAt}
+          timezone={value.timezone}
+          disabled={busy}
+          isSaving={busy && activeToggle === 'schedule'}
+          onScheduleChange={handleScheduleChange}
+          onCustomTimingChange={handleCustomTimingChange}
+        />
       )}
 
       <div className="flex min-h-11 items-center justify-between gap-4 rounded-xl border p-3 bg-card/50 transition-colors">

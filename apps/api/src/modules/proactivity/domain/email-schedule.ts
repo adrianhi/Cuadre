@@ -43,11 +43,46 @@ export function shiftLocalDays(date: Date, days: number, timeZone: string): Date
   }, timeZone);
 }
 
-export function nextDigestAt(now: Date, timeZone: string, schedule: EmailDigestSchedule): Date {
+export interface ScheduleTargetConfig {
+  schedule?: EmailDigestSchedule;
+  customDayOfWeek?: number | null;
+  customHour?: number | null;
+  customMinute?: number | null;
+}
+
+export function resolveScheduleTarget(config: ScheduleTargetConfig | EmailDigestSchedule): {
+  weekday: number;
+  hour: number;
+  minute: number;
+} {
+  const schedule = typeof config === 'string' ? config : (config.schedule || 'MONDAY_0730');
+  switch (schedule) {
+    case 'MONDAY_0730':
+      return { weekday: 1, hour: 7, minute: 30 };
+    case 'SUNDAY_1800':
+      return { weekday: 0, hour: 18, minute: 0 };
+    case 'FRIDAY_1700':
+      return { weekday: 5, hour: 17, minute: 0 };
+    case 'CUSTOM': {
+      const c = typeof config === 'object' ? config : {};
+      return {
+        weekday: c.customDayOfWeek ?? 1,
+        hour: c.customHour ?? 7,
+        minute: c.customMinute ?? 30,
+      };
+    }
+    default:
+      return { weekday: 1, hour: 7, minute: 30 };
+  }
+}
+
+export function nextDigestAt(
+  now: Date,
+  timeZone: string,
+  scheduleOrConfig: ScheduleTargetConfig | EmailDigestSchedule
+): Date {
   const p = localParts(now, timeZone);
-  const target = schedule === 'MONDAY_0730'
-    ? { weekday: 1, hour: 7, minute: 30 }
-    : { weekday: 0, hour: 18, minute: 0 };
+  const target = resolveScheduleTarget(scheduleOrConfig);
   let daysAhead = (target.weekday - p.weekday + 7) % 7;
   let base = new Date(Date.UTC(p.year, p.month - 1, p.day + daysAhead));
   let candidate = zonedDate({
@@ -73,9 +108,15 @@ export function rollingDigestWindow(scheduledAt: Date, timeZone: string) {
   return { currentStart, currentEnd, previousStart, previousEnd };
 }
 
-export function digestCycleKey(scheduledAt: Date, schedule: EmailDigestSchedule, timeZone: string): string {
-  const sunday = schedule === 'MONDAY_0730' ? shiftLocalDays(scheduledAt, -1, timeZone) : scheduledAt;
-  const p = localParts(sunday, timeZone);
+export function digestCycleKey(
+  scheduledAt: Date,
+  scheduleOrConfig: ScheduleTargetConfig | EmailDigestSchedule,
+  timeZone: string
+): string {
+  const target = resolveScheduleTarget(scheduleOrConfig);
+  const shouldShift = target.weekday === 1 && target.hour < 12;
+  const normalized = shouldShift ? shiftLocalDays(scheduledAt, -1, timeZone) : scheduledAt;
+  const p = localParts(normalized, timeZone);
   const day = new Date(Date.UTC(p.year, p.month - 1, p.day));
   const thursday = new Date(day.getTime() + (4 - (day.getUTCDay() || 7)) * DAY_MS);
   const yearStart = new Date(Date.UTC(thursday.getUTCFullYear(), 0, 1));

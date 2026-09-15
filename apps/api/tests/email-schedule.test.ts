@@ -11,6 +11,25 @@ describe('proactive email schedule', () => {
     expect(digestCycleKey(monday, 'MONDAY_0730', 'America/Santo_Domingo')).toBe('2026-W37');
   });
 
+  it('resolves Friday afternoon preset and cycle key', () => {
+    const friday = nextDigestAt(new Date('2026-09-10T12:00:00Z'), 'America/Santo_Domingo', 'FRIDAY_1700');
+    expect(friday.toISOString()).toBe('2026-09-11T21:00:00.000Z');
+    expect(digestCycleKey(friday, 'FRIDAY_1700', 'America/Santo_Domingo')).toBe('2026-W37');
+  });
+
+  it('resolves custom schedule day of week and time', () => {
+    // Wednesday 14:15 local time (Wednesday = 3)
+    const next = nextDigestAt(new Date('2026-09-15T10:00:00Z'), 'America/Santo_Domingo', {
+      schedule: 'CUSTOM',
+      customDayOfWeek: 3,
+      customHour: 14,
+      customMinute: 15,
+    });
+    // 2026-09-16 is Wednesday. 14:15 UTC-4 = 18:15 UTC
+    expect(next.toISOString()).toBe('2026-09-16T18:15:00.000Z');
+    expect(digestCycleKey(next, { schedule: 'CUSTOM', customDayOfWeek: 3, customHour: 14, customMinute: 15 }, 'America/Santo_Domingo')).toBe('2026-W38');
+  });
+
   it('keeps local wall-clock boundaries across daylight saving changes', () => {
     const scheduled = nextDigestAt(new Date('2026-10-30T12:00:00Z'), 'America/New_York', 'SUNDAY_1800');
     const window = rollingDigestWindow(scheduled, 'America/New_York');

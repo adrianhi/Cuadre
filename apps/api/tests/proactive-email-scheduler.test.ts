@@ -7,7 +7,9 @@ import type { ProactiveEmailService } from '../src/modules/proactivity/applicati
 const member: EmailPreferenceRecord = {
   workspaceId: 'workspace', profileId: 'profile', email: 'member@example.com', displayName: 'Member',
   timezone: 'America/Santo_Domingo', defaultCurrency: 'DOP', weeklyDigestEnabled: true,
-  criticalAlertsEnabled: true, digestSchedule: 'MONDAY_0730', nextWeeklyDigestAt: new Date('2026-09-14T11:30:00Z'),
+  criticalAlertsEnabled: true, digestSchedule: 'MONDAY_0730',
+  customDayOfWeek: null, customHour: null, customMinute: null,
+  nextWeeklyDigestAt: new Date('2026-09-14T11:30:00Z'),
 };
 
 function repository(overrides: Record<string, unknown> = {}) {
@@ -103,5 +105,29 @@ describe('ProactiveEmailScheduler', () => {
       { weekly: false, imminentBill: false, priceHike: true, pacingWarning: true, paydayRitual: true }, 'https://cuadre.example');
     expect(await scheduler.scheduleDue(new Date('2026-09-15T12:00:00Z'))).toMatchObject({ emailScheduled: 3 });
     expect(vi.mocked(repo.enqueue).mock.calls.map(([value]) => value.kind)).toEqual(['PRICE_HIKE', 'PACING_WARNING', 'PAYDAY_RITUAL']);
+  });
+
+  it('schedules weekly digest for FRIDAY_1700 and advances to next week', async () => {
+    const fridayMember: EmailPreferenceRecord = {
+      ...member,
+      digestSchedule: 'FRIDAY_1700',
+      nextWeeklyDigestAt: new Date('2026-09-11T21:00:00Z'),
+    };
+    const repo = repository({ dueWeekly: vi.fn(async () => [fridayMember]) });
+    const scheduler = new ProactiveEmailScheduler(repo, {} as ProactiveRecurringReader, {} as never, {} as never, builder, service,
+      { weekly: true, imminentBill: false, priceHike: false, pacingWarning: false, paydayRitual: false }, 'https://cuadre.example');
+    const result = await scheduler.scheduleDue(new Date('2026-09-11T21:05:00Z'));
+    expect(result).toMatchObject({ emailScheduled: 1, emailSkippedStale: 0 });
+    expect(repo.enqueue).toHaveBeenCalledWith(expect.objectContaining({
+      kind: 'WEEKLY_DIGEST',
+      contextKey: '2026-W37',
+    }));
+    expect(repo.advanceWeekly).toHaveBeenCalledWith(
+      fridayMember.workspaceId,
+      fridayMember.profileId,
+      expect.any(Date),
+    );
+    const advancedTo = vi.mocked(repo.advanceWeekly).mock.calls[0][2];
+    expect(advancedTo.toISOString()).toBe('2026-09-18T21:00:00.000Z');
   });
 });

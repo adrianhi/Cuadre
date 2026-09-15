@@ -6,7 +6,9 @@ import type { WeeklyEmailBuilder } from '../src/modules/proactivity/application/
 const preference: EmailPreferenceRecord = {
   workspaceId: 'workspace', profileId: 'profile', email: 'adrian@example.com', displayName: 'Adrian',
   timezone: 'America/Santo_Domingo', defaultCurrency: 'DOP', weeklyDigestEnabled: false,
-  criticalAlertsEnabled: false, digestSchedule: 'MONDAY_0730', nextWeeklyDigestAt: null,
+  criticalAlertsEnabled: false, digestSchedule: 'MONDAY_0730',
+  customDayOfWeek: null, customHour: null, customMinute: null,
+  nextWeeklyDigestAt: null,
 };
 
 function fixture() {
@@ -45,6 +47,25 @@ describe('ProactiveEmailService', () => {
     });
     expect(updated.weeklyDigestEnabled).toBe(true);
     expect(vi.mocked(repository.updatePreferences).mock.calls[0][0].nextWeeklyDigestAt).toBeInstanceOf(Date);
+  });
+
+  it('calculates and updates next digest for CUSTOM schedule', async () => {
+    const { service, repository } = fixture();
+    const updated = await service.updatePreferences('workspace', 'profile', {
+      weeklyDigestEnabled: true,
+      criticalAlertsEnabled: true,
+      digestSchedule: 'CUSTOM',
+      customDayOfWeek: 5,
+      customHour: 17,
+      customMinute: 0,
+    });
+    expect(updated.weeklyDigestEnabled).toBe(true);
+    expect(updated.digestSchedule).toBe('CUSTOM');
+    expect(updated.customDayOfWeek).toBe(5);
+    expect(updated.customHour).toBe(17);
+    expect(updated.customMinute).toBe(0);
+    const passedArg = vi.mocked(repository.updatePreferences).mock.calls[0][0];
+    expect(passedArg.nextWeeklyDigestAt).toBeInstanceOf(Date);
   });
 
   it('allows only one of five concurrent processors to send the claimed delivery', async () => {

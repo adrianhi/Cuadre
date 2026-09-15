@@ -29,6 +29,10 @@ export class ProactiveEmailService {
       weeklyDigestEnabled: value.weeklyDigestEnabled,
       criticalAlertsEnabled: value.criticalAlertsEnabled,
       digestSchedule: value.digestSchedule,
+      customDayOfWeek: value.customDayOfWeek ?? null,
+      customHour: value.customHour ?? null,
+      customMinute: value.customMinute ?? null,
+      nextWeeklyDigestAt: value.nextWeeklyDigestAt ? value.nextWeeklyDigestAt.toISOString() : null,
       timezone: value.timezone,
       recipientMasked: maskEmail(value.email),
     };
@@ -41,10 +45,21 @@ export class ProactiveEmailService {
   async updatePreferences(workspaceId: string, profileId: string, input: UpdateEmailNotificationPreferencesInput) {
     const current = await this.repository.getPreferences(workspaceId, profileId);
     if (!validTimeZone(current.timezone)) throw new AppError(400, 'INVALID_TIMEZONE', 'La zona horaria del perfil no es válida.');
+    const isScheduleUnchanged = input.digestSchedule === current.digestSchedule
+      && (input.digestSchedule !== 'CUSTOM' || (
+        input.customDayOfWeek === current.customDayOfWeek
+        && input.customHour === current.customHour
+        && (input.customMinute ?? 0) === (current.customMinute ?? 0)
+      ));
     const keepSchedule = input.weeklyDigestEnabled && current.weeklyDigestEnabled
-      && input.digestSchedule === current.digestSchedule && current.nextWeeklyDigestAt && current.nextWeeklyDigestAt > new Date();
+      && isScheduleUnchanged && current.nextWeeklyDigestAt && current.nextWeeklyDigestAt > new Date();
     const next = input.weeklyDigestEnabled
-      ? (keepSchedule ? current.nextWeeklyDigestAt : nextDigestAt(new Date(), current.timezone, input.digestSchedule))
+      ? (keepSchedule ? current.nextWeeklyDigestAt : nextDigestAt(new Date(), current.timezone, {
+          schedule: input.digestSchedule,
+          customDayOfWeek: input.customDayOfWeek,
+          customHour: input.customHour,
+          customMinute: input.customMinute,
+        }))
       : null;
     return this.present(await this.repository.updatePreferences({ workspaceId, profileId, ...input, nextWeeklyDigestAt: next }));
   }
