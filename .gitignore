@@ -4,6 +4,9 @@ apps/api/node_modules/
 apps/api/dist/
 apps/web/node_modules/
 apps/web/dist/
+apps/landing/node_modules/
+apps/landing/dist/
+apps/landing/.astro/
 apps/web/test-results/
 apps/web/playwright-report/
 apps/api/coverage/

@@ -26,6 +26,19 @@ function parseCorsOrigins(raw: string | undefined): string[] {
   return Array.from(set);
 }
 
+export function parseEmailFrom(raw: string | undefined): string {
+  const fallback = 'Cuadre <notificaciones@mail.cuadre.com.do>';
+  if (!raw) return fallback;
+  let cleaned = raw.trim();
+  if (/^EMAIL_FROM\s*=\s*/i.test(cleaned)) {
+    cleaned = cleaned.replace(/^EMAIL_FROM\s*=\s*/i, '').trim();
+  }
+  if ((cleaned.startsWith('"') && cleaned.endsWith('"')) || (cleaned.startsWith("'") && cleaned.endsWith("'"))) {
+    cleaned = cleaned.slice(1, -1).trim();
+  }
+  return cleaned || fallback;
+}
+
 export const config = {
   port: parseInt(process.env.PORT || '3000', 10),
   nodeEnv: process.env.NODE_ENV || 'development',
@@ -81,7 +94,7 @@ export const config = {
     : 'AUDIT' as const,
   resendApiKey: process.env.RESEND_API_KEY || '',
   resendWebhookSecret: process.env.RESEND_WEBHOOK_SECRET || '',
-  emailFrom: process.env.EMAIL_FROM || 'Cuadre <notificaciones@mail.cuadre.com.do>',
+  emailFrom: parseEmailFrom(process.env.EMAIL_FROM),
   emailUnsubscribeSecret: process.env.EMAIL_UNSUBSCRIBE_SECRET || '',
   emailWeeklyEnabled: process.env.EMAIL_WEEKLY_DIGEST_ENABLED === 'true',
   emailImminentBillEnabled: process.env.EMAIL_IMMINENT_BILL_ENABLED === 'true',

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { config } from '../src/config';
+import { config, parseEmailFrom } from '../src/config';
 import { EmailTransportError, EmailTransportService } from '../src/modules/proactivity/infrastructure/email-transport.service';
 
 const message = {
@@ -18,6 +18,25 @@ afterEach(() => {
   config.resendApiKey = original.apiKey;
   config.emailFrom = original.from;
   vi.unstubAllGlobals();
+});
+
+describe('parseEmailFrom', () => {
+  it('strips redundant EMAIL_FROM= prefix if inadvertently configured', () => {
+    expect(parseEmailFrom('EMAIL_FROM=Cuadre <notificaciones@mail.cuadre.com.do>'))
+      .toBe('Cuadre <notificaciones@mail.cuadre.com.do>');
+    expect(parseEmailFrom('EMAIL_FROM = "Cuadre <notificaciones@mail.cuadre.com.do>"'))
+      .toBe('Cuadre <notificaciones@mail.cuadre.com.do>');
+  });
+
+  it('keeps clean format as is', () => {
+    expect(parseEmailFrom('Cuadre <notificaciones@mail.cuadre.com.do>'))
+      .toBe('Cuadre <notificaciones@mail.cuadre.com.do>');
+  });
+
+  it('returns default fallback when undefined or empty', () => {
+    expect(parseEmailFrom(undefined)).toBe('Cuadre <notificaciones@mail.cuadre.com.do>');
+    expect(parseEmailFrom('')).toBe('Cuadre <notificaciones@mail.cuadre.com.do>');
+  });
 });
 
 describe('EmailTransportService', () => {

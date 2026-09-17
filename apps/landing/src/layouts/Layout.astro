@@ -1,0 +1,105 @@
+---
+import '../styles/global.css';
+
+export interface Props {
+  title?: string;
+  description?: string;
+  canonical?: string;
+  ogImage?: string;
+  includeFaqSchema?: boolean;
+}
+
+const {
+  title = 'Cuadre • ¿Cuánto puedes gastar hoy sin descuadrar tu quincena?',
+  description = 'Cuadre procesa las notificaciones de tus bancos dominicanos (BHD, Popular, Banreservas, Qik) vía Gmail y calcula cada mañana tu margen seguro diario. Beta privada de 30 días de acceso completo.',
+  canonical = new URL(Astro.url.pathname, 'https://cuadre.com.do').href,
+  ogImage = 'https://cuadre.com.do/favicon.svg',
+  includeFaqSchema = false,
+} = Astro.props;
+
+const siteUrl = 'https://cuadre.com.do';
+
+const softwareAppSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Cuadre',
+  applicationCategory: 'FinanceApplication',
+  operatingSystem: 'All (Web browser)',
+  url: siteUrl,
+  description: description,
+  offers: {
+    '@type': 'Offer',
+    price: '0',
+    priceCurrency: 'DOP',
+    priceValidUntil: '2027-12-31',
+  },
+  publisher: {
+    '@type': 'Organization',
+    name: 'Cuadre',
+    url: siteUrl,
+    logo: `${siteUrl}/favicon.svg`,
+  },
+};
+
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Cuadre',
+  url: siteUrl,
+  logo: `${siteUrl}/favicon.svg`,
+  contactPoint: {
+    '@type': 'ContactPoint',
+    contactType: 'customer support',
+    email: 'privacidad@cuadre.do',
+    areaServed: 'DO',
+    availableLanguage: 'Spanish',
+  },
+};
+---
+
+<!doctype html>
+<html lang="es" class="dark scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- SEO Primario -->
+    <title>{title}</title>
+    <meta name="title" content={title} />
+    <meta name="description" content={description} />
+    <meta name="keywords" content="cuadre, finanzas personales, bancos dominicanos, bhd, popular, banreservas, qik, gastos quincena, margen diario, presupuesto rd" />
+    <meta name="author" content="Cuadre" />
+    <link rel="canonical" href={canonical} />
+
+    <!-- Open Graph / Facebook / WhatsApp -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:site_name" content="Cuadre" />
+    <meta property="og:locale" content="es_DO" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:url" content={canonical} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <!-- Theme & App icons -->
+    <meta name="theme-color" content="#020617" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Cuadre" />
+
+    <!-- Google Structured Data (JSON-LD) -->
+    <script type="application/ld+json" set:html={JSON.stringify(softwareAppSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
+  </head>
+  <body class="bg-slate-950 text-slate-100 antialiased min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-white">
+    <slot />
+  </body>
+</html>

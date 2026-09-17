@@ -1,0 +1,71 @@
+---
+export const faqs = [
+  {
+    question: '¿Cuadre me solicitará mi usuario o contraseña de mi banco?',
+    answer:
+      'No. Cuadre no pide contraseñas de internet banking, claves maestras, PIN ni códigos de token. Tampoco tiene capacidad para mover fondos.',
+  },
+  {
+    question: '¿Qué permiso exacto utiliza Cuadre en mi cuenta de Gmail?',
+    answer:
+      'Cuadre solicita únicamente el alcance oficial de solo lectura de Google (gmail.readonly). Este permiso solo permite leer correos electrónicos. No permite enviar mensajes, modificarlos, borrarlos ni acceder a tus contactos.',
+  },
+  {
+    question: '¿Qué bancos dominicanos están operativos actualmente?',
+    answer:
+      'En esta fase de beta privada, contamos con adaptadores de aviso probados y operativos para Banco BHD, Banco Popular Dominicano, Banreservas y Qik Banco Digital. Próximamente sumaremos APAP y Scotiabank República Dominicana.',
+  },
+  {
+    question: '¿Cómo funciona la beta privada de 30 días?',
+    answer:
+      'Al recibir tu invitación e iniciar sesión, dispones de 30 días de acceso completo a todas las funciones sin costo alguno. No solicitamos número de tarjeta de crédito para activar tu cuenta y no se realizarán cobros automáticos al finalizar el período.',
+  },
+  {
+    question: '¿Qué ocurre si cobro quincenal o mensual?',
+    answer:
+      'Cuadre está optimizado nativamente para el ritmo laboral dominicano: puedes configurar pagos quincenales (15 y 30), mensuales (1 cobro al mes) o semanales. El Margen Seguro Diario se recalcula considerando exactamente cuántos días faltan para tu próximo cobro.',
+  },
+  {
+    question: '¿Qué costo tiene usar Cuadre durante la beta privada?',
+    answer:
+      'Cuando recibas una invitación, tendrás 30 días de acceso completo desde la activación. No solicitamos tarjetas ni realizamos cobros automáticos.',
+  },
+];
+---
+
+<section id="preguntas" class="scroll-mt-24 border-t border-slate-800/80 bg-slate-950 py-16 md:py-24">
+  <div class="mx-auto max-w-4xl px-4 sm:px-6">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <div class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-400 mb-2">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
+        <span>Preguntas frecuentes</span>
+      </div>
+      <h2 class="text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-tight">
+        Todo lo que necesitas saber antes de empezar
+      </h2>
+      <p class="mt-3 text-sm text-slate-400 leading-relaxed">
+        Respuestas directas sobre la seguridad de tus cuentas, la lectura de Gmail y los términos de la beta.
+      </p>
+    </div>
+
+    <!-- Accessible Accordion using native details/summary -->
+    <div class="space-y-3.5">
+      {faqs.map((faq, index) => (
+        <details
+          class="group rounded-2xl border border-slate-800/90 bg-slate-900/50 p-5 transition-all duration-300 hover:border-slate-700 open:border-emerald-500/30 open:bg-slate-900/80 hover:shadow-md hover:shadow-emerald-950/10 cursor-pointer"
+          data-faq-index={index}
+        >
+          <summary class="flex items-center justify-between font-bold text-sm sm:text-base text-white list-none select-none">
+            <span>{faq.question}</span>
+            <span class="ml-4 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-800 text-slate-400 group-open:bg-emerald-500/20 group-open:text-emerald-400 group-open:rotate-180 transition-transform">
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
+          </summary>
+          <div class="mt-4 text-xs sm:text-sm text-slate-300 leading-relaxed pt-3 border-t border-slate-800/80">
+            {faq.answer}
+          </div>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>

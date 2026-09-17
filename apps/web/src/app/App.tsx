@@ -75,9 +75,19 @@ export function App() {
     );
   }
 
+  const isAppSubdomain = typeof window !== 'undefined' && window.location.hostname.startsWith('app.');
+
   return (
     <Routes>
-      <Route path="/" element={<LandingPage hasSession={Boolean(authToken)} />} />
+      <Route
+        path="/"
+        element={
+          isAppSubdomain
+            ? (authToken ? <Navigate to="/app" replace /> : <Navigate to="/login" replace />)
+            : <LandingPage hasSession={Boolean(authToken)} />
+        }
+      />
+      <Route path="/landing" element={<LandingPage hasSession={Boolean(authToken)} />} />
       <Route path="/legal/:slug" element={<LegalDocumentPage />} />
       <Route path="/terms" element={<LegalDocumentPage path="/legal/terms" />} />
       <Route path="/privacy" element={<LegalDocumentPage path="/legal/privacy" />} />

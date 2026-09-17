@@ -1,0 +1,40 @@
+---
+import Layout from '../layouts/Layout.astro';
+import LandingHeader from '../components/LandingHeader.astro';
+import LandingHeroSection from '../components/LandingHeroSection.astro';
+import LandingAppPurposeSection from '../components/LandingAppPurposeSection.astro';
+import LandingHowItWorksSection from '../components/LandingHowItWorksSection.astro';
+import LandingComparisonSection from '../components/LandingComparisonSection.astro';
+import LandingBankCoverageSection from '../components/LandingBankCoverageSection.astro';
+import LandingSecuritySection from '../components/LandingSecuritySection.astro';
+import LandingFaqSection, { faqs } from '../components/LandingFaqSection.astro';
+import LandingFooter from '../components/LandingFooter.astro';
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((faq) => ({
+    '@type': 'Question',
+    name: faq.question,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: faq.answer,
+    },
+  })),
+};
+---
+
+<Layout includeFaqSchema={true}>
+  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  <LandingHeader />
+  <main>
+    <LandingHeroSection />
+    <LandingAppPurposeSection />
+    <LandingHowItWorksSection />
+    <LandingComparisonSection />
+    <LandingBankCoverageSection />
+    <LandingSecuritySection />
+    <LandingFaqSection />
+  </main>
+  <LandingFooter />
+</Layout>

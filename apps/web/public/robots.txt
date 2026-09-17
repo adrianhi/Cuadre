@@ -1,11 +1,4 @@
 # https://www.robotstxt.org/robotstxt.html
+# Web App (app.cuadre.com.do) - Private SaaS App, no indexing
 User-agent: *
-Allow: /
-Allow: /terms
-Allow: /privacy
-Allow: /legal/
-Disallow: /app
-Disallow: /login
-Disallow: /api/
-
-Sitemap: https://cuadre.com.do/sitemap.xml
+Disallow: /

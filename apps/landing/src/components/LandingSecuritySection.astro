@@ -1,0 +1,89 @@
+---
+const securityPillars = [
+  {
+    title: 'Solo lectura con Google API (gmail.readonly)',
+    description:
+      'El alcance solicitado es estrictamente de lectura. Cuadre no puede redactar correos, eliminarlos, enviar mensajes ni modificar tu cuenta de Gmail.',
+  },
+  {
+    title: 'Cero claves bancarias',
+    description:
+      'Nunca te solicitaremos contraseñas de internet banking, PIN de cajero ni códigos de token. Cuadre no tiene conexión directa de movimiento de fondos con las cuentas bancarias.',
+  },
+  {
+    title: 'Cifrado robusto en reposo (AES-256-GCM)',
+    description:
+      'Los tokens de sincronización se almacenan cifrados con AES-256-GCM y llaves rotables.',
+  },
+  {
+    title: 'Minimización de datos y retención temporal',
+    description:
+      'Los correos procesados exitosamente no conservan su cuerpo de texto. En caso de fallos de lectura, los mensajes pueden conservarse cifrados hasta 7 días únicamente para diagnósticos técnicos.',
+  },
+  {
+    title: 'Cumplimiento Limited Use y cero entrenamiento de IA',
+    description:
+      'Cumplimos con la política de Limited Use de Google: los datos de Workspace/Gmail nunca se usan, transfieren ni venden para entrenar modelos de IA/ML ni para publicidad.',
+  },
+  {
+    title: 'Marco legal dominicano y transparencia',
+    description:
+      'Publicamos cómo tratamos los datos y tomamos como referencia los principios de la Ley 172-13 de la República Dominicana. Puedes revocar la conexión desde tu panel.',
+  },
+];
+---
+
+<section id="seguridad" class="scroll-mt-24 border-t border-slate-800/80 bg-slate-950 py-16 md:py-24">
+  <div class="mx-auto max-w-5xl px-4 sm:px-6">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <div class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-400 mb-2">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+        <span>Privacidad y seguridad verificables</span>
+      </div>
+      <h2 class="text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-tight">
+        Tu tranquilidad financiera comienza con datos protegidos
+      </h2>
+      <p class="mt-3 text-sm text-slate-400 leading-relaxed">
+        Explicamos cómo cuidamos tu información y cuáles son los límites reales de la plataforma.
+      </p>
+    </div>
+
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {securityPillars.map((pillar) => (
+        <div class="rounded-3xl border border-slate-800 bg-slate-900/40 p-6 flex flex-col justify-between hover:border-slate-700 transition-colors">
+          <div>
+            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 mb-4">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <h3 class="text-base font-bold text-white mb-2 leading-snug">
+              {pillar.title}
+            </h3>
+            <p class="text-xs sm:text-sm text-slate-400 leading-relaxed">
+              {pillar.description}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <!-- Google Limited Use Callout Box -->
+    <div class="mt-10 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div class="space-y-1 max-w-2xl">
+        <h4 class="text-sm font-bold text-white flex items-center gap-2">
+          <svg class="h-4 w-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Declaración de Privacidad y Google API Limited Use
+        </h4>
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Consulta los detalles legales sobre el manejo de datos, derecho a desconectar tu cuenta y no utilización de información para entrenamiento de inteligencia artificial ni publicidad.
+        </p>
+      </div>
+      <a
+        href="/legal/google-api-disclosure"
+        class="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2.5 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/20 hover:border-emerald-500/50 transition-all shrink-0"
+      >
+        <span>Ver divulgación técnica</span>
+        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+      </a>
+    </div>
+  </div>
+</section>

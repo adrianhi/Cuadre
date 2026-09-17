@@ -1,0 +1,101 @@
+---
+const comparisonPoints = [
+  {
+    aspect: 'Ingreso de datos',
+    traditional: 'Digitar manualmente cada recibo o voucher al salir del comercio.',
+    cuadre: 'Automático desde los avisos oficiales de tus bancos vía Gmail.',
+  },
+  {
+    aspect: 'Propósito principal',
+    traditional: 'Registrar y clasificar gastos que ya ocurrieron en el mes pasado.',
+    cuadre: 'Saber cuánto puedes gastar hoy antes de hacer una compra.',
+  },
+  {
+    aspect: 'Respuesta ante una compra',
+    traditional: 'Revisar gráficos de pastel que no te dicen si te alcanza el dinero libre.',
+    cuadre: 'Un número claro: tu cuota diaria segura ajustada en tiempo real.',
+  },
+  {
+    aspect: 'Compromisos futuros',
+    traditional: 'Fácil olvidar que la renta o la tarjeta vencen la próxima semana.',
+    cuadre: 'Reserva automáticamente tus pagos fijos antes de calcular tu margen.',
+  },
+  {
+    aspect: 'Frecuencia salarial',
+    traditional: 'Diseñado para mes calendario (1 al 30), ajeno al ritmo de cobro local.',
+    cuadre: 'Soporte nativo para quincenas dominicanas (15 y 30) y mensuales.',
+  },
+];
+---
+
+<section class="border-t border-slate-800/80 bg-slate-950 py-16 md:py-24">
+  <div class="mx-auto max-w-5xl px-4 sm:px-6">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <p class="text-xs font-bold uppercase tracking-wider text-emerald-400">Comparativa objetiva</p>
+      <h2 class="mt-2 text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-tight">
+        La diferencia entre registrar el pasado y decidir en el presente
+      </h2>
+      <p class="mt-3 text-sm text-slate-400 leading-relaxed">
+        Las herramientas contables tradicionales ayudan a saber en qué se fue el dinero. Cuadre está pensado para la decisión que tomas antes de gastar.
+      </p>
+    </div>
+
+    <!-- Desktop Table / Mobile Cards -->
+    <div class="grid gap-6 md:grid-cols-2">
+      <!-- Traditional Card -->
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/40 p-6 sm:p-8 flex flex-col justify-between hover:border-slate-700 shadow-sm transition-colors">
+        <div>
+          <div class="flex items-center justify-between pb-4 border-b border-slate-800/80 mb-6">
+            <h3 class="text-base font-bold text-slate-300">Registro tradicional o manual</h3>
+            <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+              Enfoque retroactivo
+            </span>
+          </div>
+
+          <ul class="space-y-5">
+            {comparisonPoints.map((point) => (
+              <li class="flex items-start gap-3 text-xs text-slate-400 leading-relaxed">
+                <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-slate-800 text-slate-400 mt-0.5">
+                  <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </span>
+                <div>
+                  <strong class="text-slate-300 font-semibold block mb-0.5">{point.aspect}:</strong>
+                  {point.traditional}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <!-- Cuadre Card -->
+      <div class="rounded-3xl border border-emerald-500/40 bg-gradient-to-b from-emerald-950/20 via-slate-900/70 to-slate-950 p-6 sm:p-8 flex flex-col justify-between hover:border-emerald-500/60 shadow-xl shadow-emerald-950/20 transition-colors">
+        <div>
+          <div class="flex items-center justify-between pb-4 border-b border-emerald-500/20 mb-6">
+            <div class="flex items-center gap-2">
+              <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+              <h3 class="text-base font-bold text-white">Método Cuadre</h3>
+            </div>
+            <span class="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">
+              Decisión en tiempo real
+            </span>
+          </div>
+
+          <ul class="space-y-5">
+            {comparisonPoints.map((point) => (
+              <li class="flex items-start gap-3 text-xs text-slate-300 leading-relaxed">
+                <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-emerald-500/20 text-emerald-400 mt-0.5">
+                  <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                </span>
+                <div>
+                  <strong class="text-white font-semibold block mb-0.5">{point.aspect}:</strong>
+                  {point.cuadre}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,8 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+Allow: /terms
+Allow: /privacy
+Allow: /legal/
+
+Sitemap: https://cuadre.com.do/sitemap-index.xml

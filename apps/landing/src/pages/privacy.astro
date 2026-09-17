@@ -1,0 +1,56 @@
+---
+import Layout from '../layouts/Layout.astro';
+import LandingHeader from '../components/LandingHeader.astro';
+import LandingFooter from '../components/LandingFooter.astro';
+import { LEGAL_DOCUMENTS } from '../data/legal-docs';
+
+const doc = LEGAL_DOCUMENTS.privacy;
+
+const blocks = doc.content.split('\n').map((rawLine) => {
+  const line = rawLine.trim();
+  if (!line) return { type: 'empty' };
+  if (line.startsWith('## ')) return { type: 'h2', text: line.slice(3) };
+  if (line.startsWith('# ')) return { type: 'h1', text: line.slice(2) };
+  if (line.startsWith('- ')) return { type: 'li', text: line.slice(2) };
+  return { type: 'p', text: line };
+}).filter((b) => b.type !== 'empty');
+---
+
+<Layout title={`${doc.title} • Cuadre`} description={`Política de privacidad de Cuadre. Tratamiento y protección de datos personales.`} canonical="https://cuadre.com.do/privacy">
+  <LandingHeader />
+  <main class="min-h-screen px-4 py-12 sm:py-16">
+    <div class="mx-auto max-w-3xl">
+      <a href="/" class="mb-6 inline-flex items-center gap-2 text-sm text-slate-400 hover:text-emerald-400 transition-colors">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" x2="5" y1="12" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        <span>Volver al inicio</span>
+      </a>
+
+      <article class="rounded-3xl border border-slate-800 bg-slate-900/60 p-6 sm:p-10 shadow-xl backdrop-blur-xl">
+        <header class="mb-8 flex items-start gap-4 border-b border-slate-800 pb-6">
+          <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400">
+            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          </div>
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-white">{doc.title}</h1>
+            <p class="mt-1 text-xs text-slate-400">
+              Versión {doc.version} · Vigente desde {doc.effectiveAt}
+            </p>
+          </div>
+        </header>
+
+        <div class="space-y-4 text-sm leading-7 text-slate-300">
+          {blocks.map((block) => {
+            if (block.type === 'h2') {
+              return <h2 class="pt-6 text-lg font-bold text-white border-t border-slate-800/60 first:border-0 first:pt-0">{block.text}</h2>;
+            }
+            if (block.type === 'li') {
+              return <p class="pl-4 before:mr-2 before:content-['•'] before:text-emerald-400 text-slate-300">{block.text}</p>;
+            }
+            return <p class="text-slate-300 leading-relaxed">{block.text}</p>;
+          })}
+        </div>
+      </article>
+    </div>
+  </main>
+  <LandingFooter />
+</Layout>

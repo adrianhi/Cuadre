@@ -1,0 +1,51 @@
+---
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="border-t border-slate-800 bg-slate-950 py-12 text-xs text-slate-500">
+  <div class="mx-auto max-w-5xl px-4 sm:px-6">
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-8 border-b border-slate-900">
+      <div>
+        <div class="flex items-center gap-2 mb-2">
+          <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-tr from-emerald-500 to-teal-400 font-black text-white text-xs">
+            C.
+          </div>
+          <span class="text-base font-bold text-white tracking-tight">Cuadre</span>
+        </div>
+        <p class="text-xs text-slate-400 max-w-sm">
+          Tu Margen Seguro Diario para tomar decisiones y llegar bien a tu quincena.
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-5 text-xs">
+        <a href="/terms" class="hover:text-slate-300 transition-colors">
+          Términos de Servicio
+        </a>
+        <span>•</span>
+        <a href="/privacy" class="hover:text-slate-300 transition-colors">
+          Política de Privacidad
+        </a>
+        <span>•</span>
+        <a href="/legal/google-api-disclosure" class="hover:text-slate-300 transition-colors">
+          Divulgación de Google API
+        </a>
+        <span>•</span>
+        <a href="/legal/data-deletion" class="hover:text-slate-300 transition-colors">
+          Eliminación de Datos
+        </a>
+      </div>
+    </div>
+
+    <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+      <p>© {currentYear} Cuadre. Desarrollado en República Dominicana 🇩🇴</p>
+      <div class="space-y-1 text-[11px] text-slate-500 max-w-lg">
+        <p>
+          El uso y transferencia de datos de Google Workspace cumple con la Política de Datos de Usuario de Google, incluidos los requisitos de Limited Use.
+        </p>
+        <p>
+          Consulta nuestra política de privacidad y la referencia informativa a la Ley No. 172-13 de la República Dominicana.
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>
