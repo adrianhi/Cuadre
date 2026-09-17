@@ -1,5 +1,22 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/api/:match*",
+      "destination": "https://app.cuadre.com.do/api/:match*",
+      "permanent": false
+    },
+    {
+      "source": "/app/:match*",
+      "destination": "https://app.cuadre.com.do/app/:match*",
+      "permanent": false
+    },
+    {
+      "source": "/login",
+      "destination": "https://app.cuadre.com.do/login",
+      "permanent": false
+    }
+  ]
 }
