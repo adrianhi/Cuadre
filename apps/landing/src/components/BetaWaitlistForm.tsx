@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CheckCircle2, ArrowRight, Loader2, Sparkles, Check } from 'lucide-react';
+import { CheckCircle2, ArrowRight, Loader2, Sparkles, Check } from './icons';
 
 interface BetaWaitlistFormProps {
   source?: string;

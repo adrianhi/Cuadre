@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calculator, Calendar, Gauge, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Calculator, Calendar, Gauge, AlertTriangle, CheckCircle2 } from './icons';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { calculateSimulatedMargin, SIMULATOR_PRESETS, type MarginSimulatorInput } from '../lib/margin-simulator';

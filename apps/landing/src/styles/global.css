@@ -29,10 +29,11 @@
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
   body {
-    @apply bg-slate-950 text-slate-100 antialiased font-sans selection:bg-emerald-500 selection:text-white;
+    background-color: #020617;
+    color: #f8fafc;
     min-width: 320px;
     text-rendering: optimizeLegibility;
   }
