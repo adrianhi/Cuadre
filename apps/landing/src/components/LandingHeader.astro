@@ -10,7 +10,7 @@ const navItems = [
 const loginUrl = import.meta.env.PUBLIC_APP_LOGIN_URL || 'https://app.cuadre.com.do/login';
 ---
 
-<header class="sticky top-0 z-50 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl pt-[env(safe-area-inset-top)] transition-colors">
+<header transition:persist="header" class="sticky top-0 z-50 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl pt-[env(safe-area-inset-top)] transition-colors">
   <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5 sm:px-6">
     <!-- Brand -->
     <a href="/" class="flex items-center gap-2.5 group">
@@ -90,28 +90,71 @@ const loginUrl = import.meta.env.PUBLIC_APP_LOGIN_URL || 'https://app.cuadre.com
 </header>
 
 <script>
-  const toggleBtn = document.getElementById('mobile-menu-toggle');
-  const mobileMenu = document.getElementById('mobile-menu');
-  const iconOpen = document.getElementById('menu-icon-open');
-  const iconClose = document.getElementById('menu-icon-close');
+  function initHeader() {
+    const toggleBtn = document.getElementById('mobile-menu-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const iconOpen = document.getElementById('menu-icon-open');
+    const iconClose = document.getElementById('menu-icon-close');
 
-  if (toggleBtn && mobileMenu && iconOpen && iconClose) {
-    toggleBtn.addEventListener('click', () => {
-      const isExpanded = toggleBtn.getAttribute('aria-expanded') === 'true';
-      toggleBtn.setAttribute('aria-expanded', String(!isExpanded));
-      mobileMenu.classList.toggle('hidden');
-      iconOpen.classList.toggle('hidden');
-      iconClose.classList.toggle('hidden');
-    });
+    if (toggleBtn && mobileMenu && iconOpen && iconClose) {
+      toggleBtn.onclick = () => {
+        const isExpanded = toggleBtn.getAttribute('aria-expanded') === 'true';
+        toggleBtn.setAttribute('aria-expanded', String(!isExpanded));
+        mobileMenu.classList.toggle('hidden');
+        iconOpen.classList.toggle('hidden');
+        iconClose.classList.toggle('hidden');
+      };
 
-    // Close mobile menu on anchor clicks
-    document.querySelectorAll('.mobile-nav-link').forEach((link) => {
-      link.addEventListener('click', () => {
-        mobileMenu.classList.add('hidden');
-        iconOpen.classList.remove('hidden');
-        iconClose.classList.add('hidden');
-        toggleBtn.setAttribute('aria-expanded', 'false');
+      // Close mobile menu on anchor clicks
+      document.querySelectorAll('.mobile-nav-link').forEach((link) => {
+        link.addEventListener('click', () => {
+          mobileMenu.classList.add('hidden');
+          iconOpen.classList.remove('hidden');
+          iconClose.classList.add('hidden');
+          toggleBtn.setAttribute('aria-expanded', 'false');
+        });
       });
+    }
+  }
+
+  // Smooth scroll for anchor clicks on the same page
+  function setupSmoothScroll() {
+    document.addEventListener('click', (e) => {
+      const target = (e.target as HTMLElement)?.closest('a');
+      if (!target) return;
+      const href = target.getAttribute('href');
+      if (!href) return;
+
+      const isHome = window.location.pathname === '/' || window.location.pathname === '';
+
+      if (href.startsWith('/#') && isHome) {
+        const id = href.slice(2);
+        const element = document.getElementById(id);
+        if (element) {
+          e.preventDefault();
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          history.pushState(null, '', `#${id}`);
+        }
+      } else if (href.startsWith('#')) {
+        const id = href.slice(1);
+        const element = document.getElementById(id);
+        if (element) {
+          e.preventDefault();
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          history.pushState(null, '', href);
+        }
+      }
     });
+  }
+
+  // Run on initial load and on every View Transition navigation
+  document.addEventListener('astro:page-load', () => {
+    initHeader();
+  });
+
+  // Setup smooth scroll listener once globally
+  if (typeof window !== 'undefined' && !(window as any).__cuadreSmoothScrollInit) {
+    (window as any).__cuadreSmoothScrollInit = true;
+    setupSmoothScroll();
   }
 </script>
