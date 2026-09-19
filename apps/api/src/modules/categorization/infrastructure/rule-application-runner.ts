@@ -1,27 +1,41 @@
+import { RunnerLoopControl, type RunnerDelays } from '../../../shared/application/runner-loop-control';
 import { logger } from '../../../shared/observability/logger';
 
 export class RuleApplicationRunner {
-  private timer: ReturnType<typeof setTimeout> | undefined;
   private running = false;
-  private pending: Promise<unknown> = Promise.resolve();
-  constructor(private readonly processor: { processNext(): Promise<boolean> }) {}
+  private loopPromise: Promise<void> | null = null;
+  constructor(
+    private readonly processor: { processNext(): Promise<boolean> },
+    private readonly delays: RunnerDelays,
+    private readonly control: RunnerLoopControl,
+  ) {}
   start() {
     if (this.running) return;
     this.running = true;
-    this.schedule(0);
+    this.loopPromise = this.loop();
+    logger.info('rule_application_runner_started', { ...this.delays });
   }
   async stop() {
     this.running = false;
-    clearTimeout(this.timer);
-    await this.pending;
+    this.control.interruptAll();
+    if (this.loopPromise) await this.loopPromise;
+    logger.info('rule_application_runner_stopped');
   }
-  private schedule(delay: number) {
-    if (!this.running) return;
-    this.timer = setTimeout(() => {
-      this.pending = this.processor.processNext().then((processed) => this.schedule(processed ? 50 : 3000)).catch(() => {
+  private async loop() {
+    while (this.running) {
+      const observedVersion = this.control.version;
+      try {
+        const processed = await this.processor.processNext();
+        if (!this.running) break;
+        await this.control.wait(
+          processed ? this.delays.busyDelayMs : this.delays.idleDelayMs,
+          observedVersion,
+        );
+      } catch {
         logger.error('rule_application_worker_failed');
-        this.schedule(5000);
-      });
-    }, delay);
+        if (!this.running) break;
+        await this.control.wait(this.delays.errorDelayMs, this.control.version, false);
+      }
+    }
   }
 }

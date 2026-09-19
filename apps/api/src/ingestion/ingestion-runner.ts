@@ -1,4 +1,5 @@
 import type { IngestionJobProcessor } from '../modules/ingestion/application/ingestion-job.port';
+import { RunnerLoopControl, type RunnerDelays } from '../shared/application/runner-loop-control';
 import { logger } from '../shared/observability/logger';
 
 type CycleResult = {
@@ -17,17 +18,22 @@ export class IngestionRunner {
   private activeCycle: Promise<CycleResult> | null = null;
   private nextScheduleAt = 0;
 
-  public constructor(private readonly jobs: IngestionJobProcessor) {}
+  public constructor(
+    private readonly jobs: IngestionJobProcessor,
+    private readonly delays: RunnerDelays,
+    private readonly control: RunnerLoopControl,
+  ) {}
 
   public start() {
     if (this.running) return;
     this.running = true;
     this.loopPromise = this.loop();
-    logger.info('ingestion_runner_started');
+    logger.info('ingestion_runner_started', { ...this.delays });
   }
 
   public async stop(timeoutMs = 25_000) {
     this.running = false;
+    this.control.interruptAll();
     const pending = this.loopPromise;
     if (pending) await Promise.race([pending, delay(timeoutMs)]);
     logger.info('ingestion_runner_stopped');
@@ -50,14 +56,20 @@ export class IngestionRunner {
 
   private async loop() {
     while (this.running) {
+      const observedVersion = this.control.version;
       try {
         const result = await this.runCycle(false);
-        if (!result.gmailProcessed) await delay(3_000);
+        if (!this.running) break;
+        await this.control.wait(
+          result.gmailProcessed ? this.delays.busyDelayMs : this.delays.idleDelayMs,
+          observedVersion,
+        );
       } catch (error) {
         logger.error('embedded_worker_cycle_failed', {
           errorName: error instanceof Error ? error.name : 'UnknownError',
         });
-        await delay(5_000);
+        if (!this.running) break;
+        await this.control.wait(this.delays.errorDelayMs, this.control.version, false);
       }
     }
   }

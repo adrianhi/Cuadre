@@ -18,6 +18,12 @@ services:
         value: 3000
       - key: PROCESS_ROLE
         value: all
+      - key: WORKER_IDLE_DELAY_MS
+        value: "60000"
+      - key: WORKER_BUSY_DELAY_MS
+        value: "50"
+      - key: WORKER_ERROR_DELAY_MS
+        value: "10000"
       - key: APP_URL
         sync: false
       - key: API_PUBLIC_URL

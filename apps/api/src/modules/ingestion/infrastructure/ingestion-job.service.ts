@@ -2,9 +2,8 @@ import crypto from 'crypto';
 import type { Prisma } from '@prisma/client';
 import { prisma } from '../../../config/database';
 import { AppError } from '../../../errors/app-error';
-import { gmailInitialCutoff } from '../../connections';
+import { gmailInitialCutoff, InstitutionSelectionService } from '../../connections';
 import { config } from '../../../config';
-import { InstitutionSelectionService } from '../../connections/infrastructure/institution-selection.service';
 import { GmailJobHandlerRegistry } from '../application/gmail-job-handler.registry';
 import type {
   EnqueueJobInput,
@@ -38,11 +37,12 @@ export class IngestionJobService implements IngestionJobQueue, IngestionJobProce
   public constructor(
     private readonly handlers: GmailJobHandlerRegistry,
     private readonly scheduler: IngestionScheduler,
-    private readonly notifier?: SyncCompletedNotifier
+    private readonly notifier?: SyncCompletedNotifier,
+    private readonly onWorkAvailable: () => void = () => undefined,
   ) {}
 
-  public enqueue(input: EnqueueJobInput) {
-    return prisma.ingestionJob.upsert({
+  public async enqueue(input: EnqueueJobInput) {
+    const job = await prisma.ingestionJob.upsert({
       where: { dedupeKey: input.dedupeKey },
       create: {
         workspaceId: input.workspaceId,
@@ -53,6 +53,8 @@ export class IngestionJobService implements IngestionJobQueue, IngestionJobProce
       },
       update: {},
     });
+    if (job.status === 'PENDING' || job.status === 'FAILED') this.onWorkAvailable();
+    return job;
   }
 
   public enqueueInitial(workspaceId: string, inboxConnectionId: string) {
@@ -74,8 +76,11 @@ export class IngestionJobService implements IngestionJobQueue, IngestionJobProce
     const cutoff = gmailInitialCutoff(new Date(), config.gmailInitialSyncMonths).toISOString().slice(0, 7);
     const dedupeKey = `gmail-bank-backfill:${inboxConnectionId}:${code}:${cutoff}`;
     const existing = await prisma.ingestionJob.findUnique({ where: { dedupeKey } });
-    if (existing && ['PENDING', 'PROCESSING'].includes(existing.status)) return existing;
-    return prisma.ingestionJob.upsert({
+    if (existing && ['PENDING', 'PROCESSING'].includes(existing.status)) {
+      if (existing.status === 'PENDING') this.onWorkAvailable();
+      return existing;
+    }
+    const job = await prisma.ingestionJob.upsert({
       where: { dedupeKey },
       create: {
         workspaceId, inboxConnectionId, type: 'GMAIL_BANK_BACKFILL', dedupeKey,
@@ -86,6 +91,8 @@ export class IngestionJobService implements IngestionJobQueue, IngestionJobProce
         errorCode: null, errorMessage: null, processedAt: null, payload: { institutionCode: code },
       },
     });
+    this.onWorkAvailable();
+    return job;
   }
 
   public async enqueueManual(workspaceId: string, inboxConnectionId: string) {

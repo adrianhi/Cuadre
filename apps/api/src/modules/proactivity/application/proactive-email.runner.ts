@@ -1,4 +1,5 @@
 import { logger } from '../../../shared/observability/logger';
+import { RunnerLoopControl, type RunnerDelays } from '../../../shared/application/runner-loop-control';
 import { ProactiveEmailScheduler } from './proactive-email.scheduler';
 import { ProactiveEmailService } from './proactive-email.service';
 
@@ -11,16 +12,22 @@ export class ProactiveEmailRunner {
   private nextScheduleAt = 0;
   private nextPruneAt = 0;
 
-  constructor(private readonly scheduler: ProactiveEmailScheduler, private readonly service: ProactiveEmailService) {}
+  constructor(
+    private readonly scheduler: ProactiveEmailScheduler,
+    private readonly service: ProactiveEmailService,
+    private readonly delays: RunnerDelays,
+    private readonly control: RunnerLoopControl,
+  ) {}
 
   start() {
     if (this.running) return;
     this.running = true; this.loopPromise = this.loop();
-    logger.info('proactive_email_runner_started');
+    logger.info('proactive_email_runner_started', { ...this.delays });
   }
 
   async stop(timeoutMs = 25_000) {
     this.running = false;
+    this.control.interruptAll();
     if (this.loopPromise) await Promise.race([this.loopPromise, delay(timeoutMs)]);
     logger.info('proactive_email_runner_stopped');
   }
@@ -34,11 +41,18 @@ export class ProactiveEmailRunner {
 
   private async loop() {
     while (this.running) {
+      const observedVersion = this.control.version;
       try {
-        if (!await this.runCycle(true)) await delay(3_000);
+        const processed = await this.runCycle(true);
+        if (!this.running) break;
+        await this.control.wait(
+          processed ? this.delays.busyDelayMs : this.delays.idleDelayMs,
+          observedVersion,
+        );
       } catch (error) {
         logger.error('proactive_email_runner_cycle_failed', { errorName: error instanceof Error ? error.name : 'UnknownError' });
-        await delay(5_000);
+        if (!this.running) break;
+        await this.control.wait(this.delays.errorDelayMs, this.control.version, false);
       }
     }
   }

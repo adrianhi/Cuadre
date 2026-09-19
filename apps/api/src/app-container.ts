@@ -66,6 +66,10 @@ import {
   BetaInterestController, BetaInterestService, BetaInviteService,
   PrismaBetaInterestRepository, PrismaBetaInviteRepository,
 } from './modules/auth';
+import { RunnerLoopControl, type RunnerDelays } from './shared/application/runner-loop-control';
+
+const runnerDelays: RunnerDelays = { idleDelayMs: config.workerIdleDelayMs,
+  busyDelayMs: config.workerBusyDelayMs, errorDelayMs: config.workerErrorDelayMs };
 
 const analyticsService = new AnalyticsService(new PrismaAnalyticsRepository());
 const incomeRepository = new PrismaIncomeRepository();
@@ -77,11 +81,13 @@ const expenseCategories = new ListExpenseCategories(ruleCatalog);
 const transactionCategories = new ListTransactionCategories(ruleCatalog);
 const categorizer = new CategorizeTransaction(ruleRepository);
 const ruleApplications = new PrismaRuleApplications((tx) => new PrismaClassificationWriter(tx));
-const ruleApplicationUnit = new PrismaRuleApplicationUnit();
+const ruleApplicationControl = new RunnerLoopControl();
+const ruleApplicationUnit = new PrismaRuleApplicationUnit(() => ruleApplicationControl.notifyWork());
 const previewRuleApplication = new PreviewRuleApplication(ruleApplicationUnit, ruleApplications);
 const confirmRuleApplication = new ConfirmRuleApplication(ruleApplicationUnit, ruleApplications);
 const retryRuleApplication = new RetryRuleApplication(ruleApplicationUnit, ruleApplications);
-const ruleApplicationRunner = new RuleApplicationRunner(new ProcessRuleApplication(ruleApplications, new PrismaClassificationCandidates()));
+const ruleApplicationRunner = new RuleApplicationRunner(new ProcessRuleApplication(
+  ruleApplications, new PrismaClassificationCandidates()), runnerDelays, ruleApplicationControl);
 const budgetRepository = new PrismaBudgetRepository();
 const budgetExpenses = new PrismaBudgetExpenseReadModel();
 const budgetCategories = new ListBudgetCategories(budgetExpenses, expenseCategories);
@@ -90,7 +96,7 @@ const engagementService = new EngagementService(new PrismaEngagementRepository()
 const recurringRepository = new PrismaRecurringRepository();
 const recurringService = new RecurringService(recurringRepository, engagementService);
 const recurringJobService = new RecurringJobService(new ProcessRecurringScan(recurringRepository));
-const recurringRunner = new RecurringRunner(recurringJobService);
+const recurringRunner = new RecurringRunner(recurringJobService, runnerDelays, new RunnerLoopControl());
 const getSafeToSpend = new GetSafeToSpend(
   budgetRepository,
   new PrismaSafeToSpendExpenseReader(),
@@ -133,35 +139,25 @@ const gmailLifecycleService = new GmailLifecycleService(
     revoke: LegalService.revokeGoogleConsent.bind(LegalService),
   }
 );
-const gmailMessageProcessor = new GmailMessageProcessor(
-  googleGmailClient,
-  new NormalizedEmailProcessor(transactionWriter)
-);
-const gmailSyncService = new GmailSyncService(
-  googleGmailClient,
-  gmailTokenProvider,
-  gmailQueryService,
-  gmailMessageProcessor
-);
+const gmailMessageProcessor = new GmailMessageProcessor(googleGmailClient,
+  new NormalizedEmailProcessor(transactionWriter));
+const gmailSyncService = new GmailSyncService(googleGmailClient, gmailTokenProvider,
+  gmailQueryService, gmailMessageProcessor);
 const emailTransport = new EmailTransportService();
 const syncCompletedNotifier = new SyncCompletedNotifier(
   emailTransport, new PrismaSyncCompletedContextReader(), config.appUrl,
 );
 const gmailJobHandlers = new GmailJobHandlerRegistry(gmailSyncService);
+const ingestionControl = new RunnerLoopControl();
 let ingestionJobService!: IngestionJobService;
 const ingestionScheduler = new IngestionScheduler((input) => ingestionJobService.enqueue(input));
-ingestionJobService = new IngestionJobService(gmailJobHandlers, ingestionScheduler, syncCompletedNotifier);
-const ingestionRunner = new IngestionRunner(ingestionJobService);
-const gmailPushHandler = new HandleGmailPush(
-  new GoogleOidcAdapter(),
-  new PrismaInboxConnectionRepository(),
-  ingestionJobService
-);
-const inboxConnectionController = new InboxConnectionController(
-  gmailLifecycleService,
-  ingestionJobService,
-  { replace: InstitutionSelectionService.replace.bind(InstitutionSelectionService) }
-);
+ingestionJobService = new IngestionJobService(gmailJobHandlers, ingestionScheduler,
+  syncCompletedNotifier, () => ingestionControl.notifyWork());
+const ingestionRunner = new IngestionRunner(ingestionJobService, runnerDelays, ingestionControl);
+const gmailPushHandler = new HandleGmailPush(new GoogleOidcAdapter(),
+  new PrismaInboxConnectionRepository(), ingestionJobService);
+const inboxConnectionController = new InboxConnectionController(gmailLifecycleService,
+  ingestionJobService, { replace: InstitutionSelectionService.replace.bind(InstitutionSelectionService) });
 const proactiveRepository = new PrismaProactiveRepository();
 const proactiveEngineService = new ProactiveEngineService(
   { radar: (wId, curr, win) => recurringService.radar(wId, curr, win) },
@@ -194,7 +190,8 @@ const proactiveEmailScheduler = new ProactiveEmailScheduler(
     paydayRitual: config.emailPaydayRitualEnabled,
   }, config.appUrl,
 );
-const proactiveEmailRunner = new ProactiveEmailRunner(proactiveEmailScheduler, proactiveEmailService);
+const proactiveEmailRunner = new ProactiveEmailRunner(proactiveEmailScheduler,
+  proactiveEmailService, runnerDelays, new RunnerLoopControl());
 const proactiveController = new ProactiveController(proactiveEngineService, proactiveEmailService);
 const emailNotificationController = new EmailNotificationController(proactiveEmailService);
 

@@ -1,4 +1,5 @@
 import type { RecurringJobProcessor } from './recurring.ports';
+import { RunnerLoopControl, type RunnerDelays } from '../../../shared/application/runner-loop-control';
 import { logger } from '../../../shared/observability/logger';
 
 const delay = (milliseconds: number) => new Promise<void>((resolve) => setTimeout(resolve, milliseconds));
@@ -9,17 +10,22 @@ export class RecurringRunner {
   private activeCycle: Promise<boolean> | null = null;
   private nextScheduleAt = 0;
 
-  constructor(private readonly jobs: RecurringJobProcessor) {}
+  constructor(
+    private readonly jobs: RecurringJobProcessor,
+    private readonly delays: RunnerDelays,
+    private readonly control: RunnerLoopControl,
+  ) {}
 
   start() {
     if (this.running) return;
     this.running = true;
     this.loopPromise = this.loop();
-    logger.info('recurring_runner_started');
+    logger.info('recurring_runner_started', { ...this.delays });
   }
 
   async stop(timeoutMs = 25_000) {
     this.running = false;
+    this.control.interruptAll();
     if (this.loopPromise) await Promise.race([this.loopPromise, delay(timeoutMs)]);
     logger.info('recurring_runner_stopped');
   }
@@ -33,11 +39,18 @@ export class RecurringRunner {
 
   private async loop() {
     while (this.running) {
+      const observedVersion = this.control.version;
       try {
-        if (!await this.runCycle(false)) await delay(3_000);
+        const processed = await this.runCycle(false);
+        if (!this.running) break;
+        await this.control.wait(
+          processed ? this.delays.busyDelayMs : this.delays.idleDelayMs,
+          observedVersion,
+        );
       } catch (error) {
         logger.error('recurring_runner_cycle_failed', { errorName: error instanceof Error ? error.name : 'UnknownError' });
-        await delay(5_000);
+        if (!this.running) break;
+        await this.control.wait(this.delays.errorDelayMs, this.control.version, false);
       }
     }
   }

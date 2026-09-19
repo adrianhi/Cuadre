@@ -103,4 +103,39 @@ describe('IngestionJobService notification on completion', () => {
 
     expect(notifier.notify).not.toHaveBeenCalled();
   });
+
+  it('signals work only after a durable enqueue succeeds', async () => {
+    const onWorkAvailable = vi.fn();
+    const service = new IngestionJobService(
+      {} as GmailJobHandlerRegistry,
+      {} as IngestionScheduler,
+      undefined,
+      onWorkAvailable,
+    );
+    vi.mocked(prisma.ingestionJob.upsert).mockResolvedValue({ status: 'PENDING' } as any);
+
+    await service.enqueue({
+      workspaceId: 'workspace-1', inboxConnectionId: 'inbox-1',
+      type: 'GMAIL_RECONCILIATION', dedupeKey: 'job-1',
+    });
+
+    expect(onWorkAvailable).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not signal work when enqueue fails', async () => {
+    const onWorkAvailable = vi.fn();
+    const service = new IngestionJobService(
+      {} as GmailJobHandlerRegistry,
+      {} as IngestionScheduler,
+      undefined,
+      onWorkAvailable,
+    );
+    vi.mocked(prisma.ingestionJob.upsert).mockRejectedValueOnce(new Error('database unavailable'));
+
+    await expect(service.enqueue({
+      workspaceId: 'workspace-1', inboxConnectionId: 'inbox-1',
+      type: 'GMAIL_RECONCILIATION', dedupeKey: 'job-2',
+    })).rejects.toThrow('database unavailable');
+    expect(onWorkAvailable).not.toHaveBeenCalled();
+  });
 });

@@ -39,6 +39,13 @@ export function parseEmailFrom(raw: string | undefined): string {
   return cleaned || fallback;
 }
 
+export function parseDelayMs(raw: string | undefined, fallback: number, minimum: number): number {
+  if (!raw?.trim()) return fallback;
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || !Number.isInteger(parsed)) return fallback;
+  return Math.max(parsed, minimum);
+}
+
 export const config = {
   port: parseInt(process.env.PORT || '3000', 10),
   nodeEnv: process.env.NODE_ENV || 'development',
@@ -88,6 +95,9 @@ export const config = {
   processRole: ['all', 'web', 'worker'].includes(process.env.PROCESS_ROLE || '')
     ? (process.env.PROCESS_ROLE as 'all' | 'web' | 'worker')
     : 'all',
+  workerIdleDelayMs: parseDelayMs(process.env.WORKER_IDLE_DELAY_MS, 60_000, 5_000),
+  workerBusyDelayMs: parseDelayMs(process.env.WORKER_BUSY_DELAY_MS, 50, 0),
+  workerErrorDelayMs: parseDelayMs(process.env.WORKER_ERROR_DELAY_MS, 10_000, 1_000),
   maintenanceSecret: process.env.MAINTENANCE_SECRET || '',
   emailDeliveryMode: (process.env.EMAIL_DELIVERY_MODE === 'LIVE' || (!process.env.EMAIL_DELIVERY_MODE && Boolean(process.env.RESEND_API_KEY) && process.env.NODE_ENV === 'production'))
     ? 'LIVE' as const

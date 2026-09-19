@@ -83,6 +83,9 @@ Copia y pega las siguientes variables en la pestaña **Environment** de tu servi
 | `NODE_ENV` | `production` | Activa modo producción y validaciones estrictas |
 | `PORT` | `3000` | Puerto interno de escucha |
 | `PROCESS_ROLE` | `all` | Corre API y runners en el mismo proceso |
+| `WORKER_IDLE_DELAY_MS` | `60000` | Espera entre consultas cuando no hay trabajo; mínimo 5000 ms |
+| `WORKER_BUSY_DELAY_MS` | `50` | Espera corta mientras se drena trabajo pendiente; mínimo 0 ms |
+| `WORKER_ERROR_DELAY_MS` | `10000` | Backoff después de un error del runner; mínimo 1000 ms |
 | `APP_URL` | `https://tu-servicio.onrender.com` | URL pública HTTPS del frontend |
 | `API_PUBLIC_URL` | `https://tu-servicio.onrender.com` | URL pública HTTPS de la API |
 | `CORS_ORIGIN` | `https://tu-servicio.onrender.com` | Origen permitido para CORS |
