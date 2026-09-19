@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Calculator, Calendar, Gauge, AlertTriangle, CheckCircle2, ArrowRight } from './icons';
 import { formatAmountInputOnBlur, parseAmountInput } from '../lib/formatters';
-import { AmountField, NumberField } from './common/AmountField';
+import { AmountField, NumberStepperField } from './common/AmountField';
 
 interface QuincenaForm {
   periodIncome: string;
@@ -166,36 +166,40 @@ export function InteractiveQuincenaCalculator() {
       {/* Grid: Inputs + Output */}
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Form Inputs (7 cols) */}
-        <div className="lg:col-span-7 space-y-4">
-          <AmountField
-            label={`Sueldo neto en este cobro (${form.cycleType === 'QUINCENAL' ? 'Esta quincena' : 'Este mes'})`}
-            sublabel="Tras TSS e impuestos"
-            value={form.periodIncome}
-            onChange={(val) => {
-              setActivePreset('');
-              setForm((prev) => ({ ...prev, periodIncome: val }));
-            }}
-            prefix="RD$"
-            prefixColor="text-emerald-400"
-            placeholder="40,000.00"
-          />
+        <div className="lg:col-span-7 space-y-5">
+          {/* 2-column amounts grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <AmountField
+              label="Sueldo neto en este cobro"
+              sublabel={form.cycleType === 'QUINCENAL' ? 'Esta quincena' : 'Este mes'}
+              value={form.periodIncome}
+              onChange={(val) => {
+                setActivePreset('');
+                setForm((prev) => ({ ...prev, periodIncome: val }));
+              }}
+              prefix="RD$"
+              prefixColor="text-emerald-400"
+              placeholder="40,000.00"
+            />
 
-          <AmountField
-            label="Compromisos fijos que debes pagar en este ciclo"
-            sublabel="Alquiler, préstamos, luz, colegios"
-            value={form.fixedCommitments}
-            onChange={(val) => {
-              setActivePreset('');
-              setForm((prev) => ({ ...prev, fixedCommitments: val }));
-            }}
-            prefix="RD$"
-            prefixColor="text-rose-400"
-            placeholder="22,000.00"
-          />
+            <AmountField
+              label="Compromisos fijos a pagar"
+              sublabel="Alquiler, luz, préstamos"
+              value={form.fixedCommitments}
+              onChange={(val) => {
+                setActivePreset('');
+                setForm((prev) => ({ ...prev, fixedCommitments: val }));
+              }}
+              prefix="RD$"
+              prefixColor="text-rose-400"
+              placeholder="22,000.00"
+            />
+          </div>
 
-          <NumberField
-            label="Días restantes para el próximo depósito"
-            sublabel="Normalmente día 15 o 30"
+          {/* Stepper for days */}
+          <NumberStepperField
+            label="Días restantes para el próximo cobro"
+            sublabel={form.cycleType === 'QUINCENAL' ? 'Ciclo del 15 o 30' : 'Ciclo mensual'}
             value={form.daysRemaining}
             onChange={(val) => {
               setActivePreset('');
@@ -204,12 +208,27 @@ export function InteractiveQuincenaCalculator() {
             icon={<Calendar className="h-4 w-4" />}
             min={1}
             max={31}
-            placeholder="11"
+            quickOptions={
+              form.cycleType === 'QUINCENAL'
+                ? [
+                    { label: '5 días', value: 5 },
+                    { label: '10 días', value: 10 },
+                    { label: '15 días', value: 15 },
+                  ]
+                : [
+                    { label: '10 días', value: 10 },
+                    { label: '20 días', value: 20 },
+                    { label: '30 días', value: 30 },
+                  ]
+            }
           />
 
-          <p className="text-[11px] text-slate-500 leading-relaxed pt-1">
-            💡 En República Dominicana, si el día 15 o 30 coincide con sábado, domingo o día feriado, tu empresa o banco suele acreditar los fondos el día hábil anterior.
-          </p>
+          <div className="rounded-xl border border-slate-800/80 bg-slate-950/60 p-3.5 flex items-start gap-2.5 text-[11px] text-slate-400 leading-relaxed">
+            <span className="text-sm shrink-0">💡</span>
+            <span>
+              En República Dominicana, si el día 15 o 30 coincide con sábado, domingo o día feriado, tu empresa o banco suele acreditar los fondos el día hábil anterior.
+            </span>
+          </div>
         </div>
 
         {/* Result Card (5 cols) */}
