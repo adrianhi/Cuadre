@@ -26,7 +26,7 @@ async function run() {
       ...Array.from({ length: 255 }, (_, index) => ({ ...base, externalId: `qa-auto-${index}` })),
       { ...base, externalId: 'qa-manual', categoryOrigin: 'MANUAL', merchantOrigin: 'MANUAL' },
       { ...base, externalId: 'qa-legacy', categoryOrigin: 'LEGACY_UNKNOWN', merchantOrigin: 'LEGACY_UNKNOWN' },
-      { ...base, externalId: 'qa-income', category: 'Ingresos / Transferencias', source: 'BHD_TRANSFER_INCOME' },
+      { ...base, externalId: 'qa-income', category: 'Ingresos / Transferencias', source: 'BHD_TRANSFER_INCOME', financialRole: 'INCOME', financialRoleOrigin: 'BANK_SIGNAL' },
       { ...base, externalId: 'qa-eats', rawMerchant: 'UBER EATS QA' },
     ] });
     const store = new PrismaRuleApplications((tx) => new PrismaClassificationWriter(tx));

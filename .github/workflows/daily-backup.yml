@@ -32,6 +32,17 @@ jobs:
       - name: Generate Prisma Client
         run: npm run prisma:generate
 
+      - name: Validate Database Credentials
+        env:
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [ -z "$DIRECT_URL" ] && [ -z "$DATABASE_URL" ]; then
+            echo "::error::Neither DIRECT_URL nor DATABASE_URL secret is set in GitHub repository secrets (Settings > Secrets and variables > Actions). Please configure at least one of these secrets pointing to your Supabase PostgreSQL database."
+            exit 1
+          fi
+          echo "Database credentials secret found."
+
       - name: Execute Logical Backup
         env:
           DIRECT_URL: ${{ secrets.DIRECT_URL }}

@@ -246,6 +246,7 @@ integrationDescribe('SaaS API integration and tenant isolation', () => {
         merchant: 'Transferencia recibida', category: 'Ingresos / Transferencias', amount: 1500,
         currency: 'DOP', status: 'Aprobada', statusCode: 'APPROVED', transactionType: 'Transferencia Recibida',
         transactionDate: new Date('2026-08-16T04:00:00.000Z'), source: 'POPULAR_TRANSFER_INCOME',
+        financialRole: 'INCOME', financialRoleOrigin: 'BANK_SIGNAL',
       },
     });
 

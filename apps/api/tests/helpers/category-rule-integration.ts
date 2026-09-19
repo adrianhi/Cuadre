@@ -42,6 +42,7 @@ export function registerRuleIntegrationTests(app: Express, authA: Record<string,
     legacyId = legacy.id; manualId = manual.id; automaticId = automatic.id;
     for (const bank of ['BHD', 'QIK', 'POPULAR']) await prisma.transaction.create({ data: {
       ...base, institutionCode: bank, externalId: crypto.randomUUID(), source: `${bank}_TRANSFER_INCOME`, category: 'Ingresos / Transferencias', transactionType: 'Transferencia Recibida',
+      financialRole: 'INCOME', financialRoleOrigin: 'BANK_SIGNAL',
     } });
     const preview = await request(app).post(`/api/v1/rules/${ruleId}/applications/preview`).set(authA).send(period);
     expect(preview.status).toBe(202);

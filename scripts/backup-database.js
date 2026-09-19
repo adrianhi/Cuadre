@@ -14,11 +14,18 @@ dotenv.config({ path: path.join(root, 'apps', 'api', '.env') });
 
 const dbUrl = process.env.DIRECT_URL || process.env.DATABASE_URL;
 if (!dbUrl) {
-  console.error('Error: DIRECT_URL or DATABASE_URL is required for backup.');
+  console.error('[backup] Error: Neither DIRECT_URL nor DATABASE_URL environment variable is set.');
+  console.error('[backup] If running in GitHub Actions, ensure the secret is added to Settings > Secrets and variables > Actions.');
   process.exit(1);
 }
 
-const { PrismaClient } = require(path.join(root, 'node_modules', '@prisma', 'client'));
+let PrismaClient;
+try {
+  ({ PrismaClient } = require('@prisma/client'));
+} catch {
+  ({ PrismaClient } = require(path.join(root, 'node_modules', '@prisma', 'client')));
+}
+
 const prisma = new PrismaClient({
   datasources: { db: { url: dbUrl } },
   log: ['error'],
@@ -89,7 +96,10 @@ async function runBackup() {
 }
 
 runBackup().catch(async (err) => {
-  console.error('[backup] Fatal backup error:', err);
+  console.error('[backup] Fatal backup error:', err?.message || err);
+  if (err?.code === 'P1001') {
+    console.error('[backup] Tip: Database server cannot be reached. Check that host, port, and network access (e.g. Supabase connection pooler or IPv4/IPv6 support) are valid.');
+  }
   await prisma.$disconnect();
   process.exit(1);
 });

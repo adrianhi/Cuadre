@@ -9,6 +9,7 @@ export default defineConfig({
     },
   },
   test: {
+    reporters: process.env.GITHUB_ACTIONS ? ['default', 'github-actions'] : ['default'],
     environment: 'node',
     include: ['src/**/*.test.{ts,tsx}'],
     coverage: {
