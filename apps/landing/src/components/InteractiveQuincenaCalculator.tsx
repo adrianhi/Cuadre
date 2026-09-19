@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Calculator, Calendar, Gauge, AlertTriangle, CheckCircle2, ArrowRight } from './icons';
-import { formatAmountInput, formatAmountInputOnBlur, parseAmountInput } from '../lib/formatters';
+import { formatAmountInputOnBlur, parseAmountInput } from '../lib/formatters';
+import { AmountField, NumberField } from './common/AmountField';
 
 interface QuincenaForm {
   periodIncome: string;
@@ -166,74 +167,45 @@ export function InteractiveQuincenaCalculator() {
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Form Inputs (7 cols) */}
         <div className="lg:col-span-7 space-y-4">
-          {/* Income */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-300 flex items-center justify-between">
-              <span>Sueldo neto en este cobro ({form.cycleType === 'QUINCENAL' ? 'Esta quincena' : 'Este mes'})</span>
-              <span className="text-[11px] font-normal text-slate-500">Tras TSS e impuestos</span>
-            </label>
-            <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-emerald-400">
-                RD$
-              </span>
-              <input
-                type="text"
-                inputMode="decimal"
-                value={form.periodIncome}
-                onChange={(e) => updateAmount('periodIncome', e.target.value)}
-                onBlur={() => setForm((p) => ({ ...p, periodIncome: formatAmountInputOnBlur(p.periodIncome) }))}
-                className="w-full h-11 bg-slate-950/90 border border-slate-800 text-white pl-13 pr-4 rounded-xl text-sm font-semibold focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
-                placeholder="40,000"
-              />
-            </div>
-          </div>
+          <AmountField
+            label={`Sueldo neto en este cobro (${form.cycleType === 'QUINCENAL' ? 'Esta quincena' : 'Este mes'})`}
+            sublabel="Tras TSS e impuestos"
+            value={form.periodIncome}
+            onChange={(val) => {
+              setActivePreset('');
+              setForm((prev) => ({ ...prev, periodIncome: val }));
+            }}
+            prefix="RD$"
+            prefixColor="text-emerald-400"
+            placeholder="40,000.00"
+          />
 
-          {/* Commitments */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-300 flex items-center justify-between">
-              <span>Compromisos fijos que debes pagar en este ciclo</span>
-              <span className="text-[11px] font-normal text-slate-500">Alquiler, préstamos, luz, colegios</span>
-            </label>
-            <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-rose-400">
-                RD$
-              </span>
-              <input
-                type="text"
-                inputMode="decimal"
-                value={form.fixedCommitments}
-                onChange={(e) => updateAmount('fixedCommitments', e.target.value)}
-                onBlur={() => setForm((p) => ({ ...p, fixedCommitments: formatAmountInputOnBlur(p.fixedCommitments) }))}
-                className="w-full h-11 bg-slate-950/90 border border-slate-800 text-white pl-13 pr-4 rounded-xl text-sm font-semibold focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
-                placeholder="22,000"
-              />
-            </div>
-          </div>
+          <AmountField
+            label="Compromisos fijos que debes pagar en este ciclo"
+            sublabel="Alquiler, préstamos, luz, colegios"
+            value={form.fixedCommitments}
+            onChange={(val) => {
+              setActivePreset('');
+              setForm((prev) => ({ ...prev, fixedCommitments: val }));
+            }}
+            prefix="RD$"
+            prefixColor="text-rose-400"
+            placeholder="22,000.00"
+          />
 
-          {/* Days Remaining */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-300 flex items-center justify-between">
-              <span>Días restantes para el próximo depósito</span>
-              <span className="text-[11px] font-normal text-slate-500">Normalmente día 15 o 30</span>
-            </label>
-            <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500">
-                <Calendar className="h-4 w-4" />
-              </span>
-              <input
-                type="number"
-                min="1"
-                max="31"
-                value={form.daysRemaining}
-                onChange={(e) => {
-                  setActivePreset('');
-                  setForm((p) => ({ ...p, daysRemaining: e.target.value }));
-                }}
-                className="w-full h-11 bg-slate-950/90 border border-slate-800 text-white pl-10 pr-4 rounded-xl text-sm font-semibold focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
-                placeholder="11"
-              />
-            </div>
-          </div>
+          <NumberField
+            label="Días restantes para el próximo depósito"
+            sublabel="Normalmente día 15 o 30"
+            value={form.daysRemaining}
+            onChange={(val) => {
+              setActivePreset('');
+              setForm((prev) => ({ ...prev, daysRemaining: val }));
+            }}
+            icon={<Calendar className="h-4 w-4" />}
+            min={1}
+            max={31}
+            placeholder="11"
+          />
 
           <p className="text-[11px] text-slate-500 leading-relaxed pt-1">
             💡 En República Dominicana, si el día 15 o 30 coincide con sábado, domingo o día feriado, tu empresa o banco suele acreditar los fondos el día hábil anterior.

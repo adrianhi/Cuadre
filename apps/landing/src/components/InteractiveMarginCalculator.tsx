@@ -17,37 +17,7 @@ interface SimulatorForm {
   daysRemaining: string;
 }
 
-interface AmountFieldProps {
-  label: string;
-  value: string;
-  onChange: (val: string) => void;
-  isBold?: boolean;
-}
-
-function AmountField({ label, value, onChange, isBold }: AmountFieldProps) {
-  return (
-    <div>
-      <label className="text-xs font-semibold text-slate-300">{label}</label>
-      <div className="relative mt-1">
-        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-500 z-10">RD$</span>
-        <input
-          type="text"
-          inputMode="decimal"
-          value={value}
-          onChange={(e) => onChange(formatAmountInput(e.target.value))}
-          onBlur={() => {
-            if (value) onChange(formatAmountInputOnBlur(value));
-          }}
-          aria-label={label}
-          className={cn(
-            'w-full h-10 rounded-xl border border-slate-700/80 bg-slate-900/90 pl-10 pr-3 text-sm text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors',
-            isBold && 'font-semibold'
-          )}
-        />
-      </div>
-    </div>
-  );
-}
+import { AmountField } from './common/AmountField';
 
 export function InteractiveMarginCalculator() {
   const [form, setForm] = useState<SimulatorForm>({
