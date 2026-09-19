@@ -70,6 +70,22 @@ export function createApp(): Express {
       },
     })
   );
+  // Serve Web UI Dashboard and Static Assets before CORS and rate-limiting
+  const publicDir = resolvePublicDir();
+  app.use(express.static(publicDir, {
+    etag: true,
+    setHeaders(res, filePath) {
+      if (/[\\/]assets[\\/]/.test(filePath)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      } else if (filePath.endsWith('index.html')) {
+        res.setHeader('Cache-Control', 'no-cache');
+      } else if (/\.(svg|ico|png|json|woff2?)$/i.test(filePath)) {
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+      }
+    },
+  }));
+
+  // CORS and rate limiting for dynamic API endpoints and webhooks
   app.use(
     cors({
       origin(origin, callback) {
@@ -122,6 +138,12 @@ export function createApp(): Express {
     });
   }
 
+  // Prevent financial API routes from being cached by CDN / downstream proxies
+  app.use('/api', (_req: Request, res: Response, next) => {
+    res.setHeader('Cache-Control', 'private, no-store, max-age=0, must-revalidate');
+    next();
+  });
+
   // Health checks
   app.get(['/health', '/api/v1/health'], (_req: Request, res: Response) => {
     res.status(200).json({
@@ -132,19 +154,6 @@ export function createApp(): Express {
       commit: process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || 'local',
     });
   });
-
-  // Serve Web UI Dashboard
-  const publicDir = resolvePublicDir();
-  app.use(express.static(publicDir, {
-    etag: true,
-    setHeaders(res, filePath) {
-      if (filePath.includes(`${path.sep}assets${path.sep}`)) {
-        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-      } else if (filePath.endsWith('index.html')) {
-        res.setHeader('Cache-Control', 'no-cache');
-      }
-    },
-  }));
 
   // Google OAuth callback aliases
   app.get(
