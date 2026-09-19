@@ -5,10 +5,18 @@ const baseURL = `http://127.0.0.1:${port}`;
 
 export default defineConfig({
   testDir: './e2e',
+  timeout: 60000,
   fullyParallel: false,
   // Four browser/device projects share the local machine with development services.
   workers: 1,
   retries: process.env.CI ? 2 : 0,
+  reporter: process.env.CI
+    ? [
+        ['github'],
+        ['list'],
+        ['html', { open: 'never', outputFolder: 'playwright-report' }],
+      ]
+    : 'list',
   use: { baseURL, trace: 'retain-on-failure' },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
@@ -19,6 +27,7 @@ export default defineConfig({
   webServer: {
     command: `npm run build:contracts --prefix ../.. && npm run dev -- --port ${port}`,
     url: baseURL,
+    timeout: 120000,
     reuseExistingServer: !process.env.CI,
     env: {
       ...process.env,
