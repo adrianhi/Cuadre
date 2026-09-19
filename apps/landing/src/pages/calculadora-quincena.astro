@@ -1,0 +1,247 @@
+---
+import Layout from '../layouts/Layout.astro';
+import LandingHeader from '../components/LandingHeader.astro';
+import LandingFooter from '../components/LandingFooter.astro';
+import { InteractiveQuincenaCalculator } from '../components/InteractiveQuincenaCalculator';
+import { BetaWaitlistForm } from '../components/BetaWaitlistForm';
+
+const pageTitle = 'Calculadora de Quincena Dominicana | Presupuesto y Margen Seguro Diario • Cuadre';
+const pageDescription = 'Calcula gratis tu margen de gasto diario entre tus cobros de nómina del 15 y 30 en República Dominicana. Evita descuadrarte antes de que llegue tu próximo depósito bancario.';
+
+const quincenaFaqs = [
+  {
+    question: '¿Cómo se calculan los días de una quincena en República Dominicana?',
+    answer: 'La nómina quincenal en República Dominicana se divide formalmente entre el día 15 y el último día del mes (30 o 31, y 28 en febrero). Cuando el día de pago coincide con un sábado, domingo o día feriado, los departamentos de gestión humana y la banca suelen acreditar los fondos el día laborable anterior.',
+  },
+  {
+    question: '¿Por qué la primera quincena (día 15) suele sentirse más pesada que la segunda?',
+    answer: 'En República Dominicana, los contratos de alquiler, mensualidades escolares y cuotas de préstamos hipotecarios o vehiculares suelen vencer entre los días 1 y 15 de cada mes. Esto concentra la mayor carga de compromisos fijos en el primer cobro del mes.',
+  },
+  {
+    question: '¿Qué es el Margen Seguro Diario y en qué se diferencia del saldo bancario?',
+    answer: 'El saldo bancario muestra todo el dinero disponible en tu cuenta, incluyendo el monto que debes pagar por luz, renta o tarjetas. El Margen Seguro Diario descuenta esos compromisos obligatorios y divide el dinero verdaderamente libre entre los días que faltan para tu próximo cobro, indicándote la cifra exacta que puedes gastar hoy con tranquilidad.',
+  },
+  {
+    question: '¿Cómo automatiza Cuadre este cálculo con mis bancos?',
+    answer: 'Cuadre se conecta en modo de solo lectura a tus notificaciones bancarias vía Gmail (Popular, BHD, Banreservas, Qik). Cada vez que realizas una compra con tu tarjeta o recibes tu nómina, Cuadre actualiza automáticamente tu margen diario sin que tengas que anotar nada en hojas de cálculo.',
+  },
+];
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebApplication',
+      name: 'Calculadora de Quincena Cuadre',
+      url: 'https://cuadre.com.do/calculadora-quincena',
+      description: pageDescription,
+      applicationCategory: 'FinanceApplication',
+      operatingSystem: 'All',
+      offers: {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'DOP',
+      },
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: 'Inicio',
+          item: 'https://cuadre.com.do/',
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: 'Herramientas',
+          item: 'https://cuadre.com.do/#proposito',
+        },
+        {
+          '@type': 'ListItem',
+          position: 3,
+          name: 'Calculadora de Quincena',
+          item: 'https://cuadre.com.do/calculadora-quincena',
+        },
+      ],
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: quincenaFaqs.map((faq) => ({
+        '@type': 'Question',
+        name: faq.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: faq.answer,
+        },
+      })),
+    },
+  ],
+};
+---
+
+<Layout
+  title={pageTitle}
+  description={pageDescription}
+  canonical="https://cuadre.com.do/calculadora-quincena"
+>
+  <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+
+  <LandingHeader />
+
+  <main class="relative z-10 pb-20">
+    {/* Breadcrumbs */}
+    <div class="mx-auto max-w-5xl px-4 pt-8 sm:px-6">
+      <nav class="flex items-center gap-2 text-xs text-slate-400">
+        <a href="/" class="hover:text-emerald-400 transition-colors">Inicio</a>
+        <span>/</span>
+        <span class="text-slate-500">Herramientas</span>
+        <span>/</span>
+        <span class="text-emerald-400 font-medium">Calculadora de Quincena</span>
+      </nav>
+    </div>
+
+    {/* Hero Section */}
+    <section class="mx-auto max-w-5xl px-4 pt-8 pb-12 sm:px-6 text-center sm:text-left">
+      <div class="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1 text-xs font-medium text-emerald-300 backdrop-blur-xs mb-4">
+        <span>🇩🇴 Optimizada para el ritmo de nómina en República Dominicana</span>
+      </div>
+
+      <h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight max-w-3xl leading-tight">
+        Calculadora de Quincena:{' '}
+        <span class="bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-200 bg-clip-text text-transparent">
+          ¿Cuánto puedes gastar hoy?
+        </span>
+      </h1>
+
+      <p class="mt-4 text-base sm:text-lg text-slate-300 max-w-2xl leading-relaxed">
+        Ingresa el sueldo de tu próximo depósito (15 o 30) y tus pagos fijos. Descubre al instante tu <strong>Margen Seguro Diario</strong> para disfrutar sin remordimientos y llegar con dinero al próximo cobro.
+      </p>
+
+      {/* Interactive Tool Island */}
+      <div class="mt-8">
+        <InteractiveQuincenaCalculator client:visible />
+      </div>
+    </section>
+
+    {/* Editorial Guide: Quincena 15 vs Quincena 30 */}
+    <section class="mx-auto max-w-5xl px-4 py-12 sm:px-6 border-t border-slate-800/80">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+        <div class="space-y-4">
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Estrategia Financiera Dominicana</span>
+          <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+            El secreto para no descuadrarse: Equilibrar la quincena 15 y la 30
+          </h2>
+          <p class="text-sm text-slate-400 leading-relaxed">
+            En la mayoría de los hogares y profesionales dominicanos, la <strong>quincena del día 15</strong> recibe un impacto desproporcionado porque allí se concentra el pago de alquiler o hipoteca, colegios y préstamos bancarios.
+          </p>
+          <p class="text-sm text-slate-400 leading-relaxed">
+            Si intentas vivir en la quincena del 15 con el dinero que te sobra después de pagar la renta, tu margen diario cae a casi cero, obligándote a financiarte con la tarjeta de crédito. La solución no es ganar más, sino <strong>reservar la mitad de los compromisos grandes en el cobro del día 30</strong>.
+          </p>
+        </div>
+
+        <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6 space-y-4 text-xs">
+          <h3 class="text-sm font-bold text-white">Regla práctica de distribución quincenal</h3>
+          <div class="space-y-3">
+            <div class="p-3 rounded-xl bg-slate-950/80 border border-slate-800">
+              <span class="font-bold text-emerald-400">Cobro del 15:</span>
+              <p class="mt-1 text-slate-300">
+                Paga los compromisos fijados en la primera mitad del mes (alquiler/mantenimiento, colegiaturas). Lo restante divídelo entre 15 días con tu Margen Seguro Diario.
+              </p>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-950/80 border border-slate-800">
+              <span class="font-bold text-teal-400">Cobro del 30:</span>
+              <p class="mt-1 text-slate-300">
+                Cubre servicios básicos (Edeeste/Edesur/Edenorte, internet Claro/Altice, CAASD), reserva el 50% del alquiler del próximo 15 y destina tu cuota de ahorro antes de gastar en ocio.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* Bank Coverage Interlinking */}
+    <section class="mx-auto max-w-5xl px-4 py-12 sm:px-6 border-t border-slate-800/80">
+      <div class="text-center sm:text-left">
+        <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Automatización Bancaria</span>
+        <h2 class="text-2xl font-bold text-white tracking-tight mt-1">
+          Compatible con los principales bancos de República Dominicana
+        </h2>
+        <p class="mt-2 text-xs sm:text-sm text-slate-400 max-w-2xl">
+          No necesitas calcular esto manualmente en un Excel. Cuadre procesa tus notificaciones por correo de manera automática y segura.
+        </p>
+
+        <div class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <a
+            href="/bancos/popular"
+            class="group p-4 rounded-xl border border-slate-800 bg-slate-900/60 hover:border-emerald-500/40 hover:bg-slate-900 transition-all text-left"
+          >
+            <span class="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors">Banco Popular</span>
+            <p class="text-[11px] text-slate-400 mt-1">Avisos Popular en Línea</p>
+          </a>
+          <a
+            href="/bancos/bhd"
+            class="group p-4 rounded-xl border border-slate-800 bg-slate-900/60 hover:border-emerald-500/40 hover:bg-slate-900 transition-all text-left"
+          >
+            <span class="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors">Banco BHD</span>
+            <p class="text-[11px] text-slate-400 mt-1">Alertas BHD por correo</p>
+          </a>
+          <a
+            href="/bancos/banreservas"
+            class="group p-4 rounded-xl border border-slate-800 bg-slate-900/60 hover:border-emerald-500/40 hover:bg-slate-900 transition-all text-left"
+          >
+            <span class="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors">Banreservas</span>
+            <p class="text-[11px] text-slate-400 mt-1">TuBanco Banreservas</p>
+          </a>
+          <a
+            href="/bancos/qik"
+            class="group p-4 rounded-xl border border-slate-800 bg-slate-900/60 hover:border-emerald-500/40 hover:bg-slate-900 transition-all text-left"
+          >
+            <span class="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors">Qik Banco Digital</span>
+            <p class="text-[11px] text-slate-400 mt-1">Notificaciones instantáneas</p>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    {/* Frequently Asked Questions */}
+    <section class="mx-auto max-w-5xl px-4 py-12 sm:px-6 border-t border-slate-800/80">
+      <div class="text-center sm:text-left mb-8">
+        <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Respuestas Claras</span>
+        <h2 class="text-2xl font-bold text-white tracking-tight mt-1">
+          Preguntas frecuentes sobre la quincena dominicana
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {quincenaFaqs.map((faq) => (
+          <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 space-y-2">
+            <h3 class="text-sm font-semibold text-white">{faq.question}</h3>
+            <p class="text-xs text-slate-400 leading-relaxed">{faq.answer}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    {/* Final CTA / Waitlist */}
+    <section class="mx-auto max-w-5xl px-4 pt-12 sm:px-6">
+      <div class="rounded-3xl border border-emerald-500/30 bg-gradient-to-b from-slate-900/90 to-slate-950 p-8 sm:p-12 text-center shadow-2xl relative overflow-hidden">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.15),transparent_70%)] pointer-events-none"></div>
+        <div class="relative z-10 max-w-xl mx-auto">
+          <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
+            Deja de calcular tu quincena a mano
+          </h2>
+          <p class="mt-3 text-sm text-slate-300 leading-relaxed">
+            Conecta tus notificaciones bancarias en 2 minutos vía Google en modo de solo lectura. Sin claves bancarias ni números de tarjetas.
+          </p>
+          <div class="mt-6 flex justify-center">
+            <BetaWaitlistForm client:visible source="CALCULADORA_QUINCENA" className="max-w-md" />
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <LandingFooter />
+</Layout>

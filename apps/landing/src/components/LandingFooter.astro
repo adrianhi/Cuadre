@@ -1,49 +1,104 @@
 ---
 const currentYear = new Date().getFullYear();
+
+const bankLinks = [
+  { href: '/bancos/popular', label: 'Banco Popular Dominicano' },
+  { href: '/bancos/bhd', label: 'Banco BHD' },
+  { href: '/bancos/banreservas', label: 'Banreservas' },
+  { href: '/bancos/qik', label: 'Qik Banco Digital' },
+];
+
+const productLinks = [
+  { href: '/#proposito', label: 'Margen Seguro Diario' },
+  { href: '/#como-funciona', label: 'Cómo funciona Cuadre' },
+  { href: '/calculadora-quincena', label: 'Calculadora de Quincena' },
+  { href: '/#beta-waitlist', label: 'Solicitar Beta Privada' },
+];
+
+const legalLinks = [
+  { href: '/seguridad', label: 'Centro de Seguridad' },
+  { href: '/terms', label: 'Términos de Servicio' },
+  { href: '/privacy', label: 'Política de Privacidad' },
+  { href: '/legal/google-api-disclosure', label: 'Divulgación de Google API' },
+  { href: '/legal/data-deletion', label: 'Eliminación de Datos' },
+];
 ---
 
-<footer class="border-t border-slate-800 bg-slate-950 py-12 text-xs text-slate-500">
-  <div class="mx-auto max-w-5xl px-4 sm:px-6">
-    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-8 border-b border-slate-900">
-      <div>
-        <div class="flex items-center gap-2 mb-2">
-          <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-tr from-emerald-500 to-teal-400 font-black text-white text-xs">
+<footer class="border-t border-slate-800 bg-slate-950 pt-16 pb-12 text-xs text-slate-400">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6">
+    {/* Main Grid Navigation */}
+    <div class="grid grid-cols-1 gap-10 pb-12 border-b border-slate-900 sm:grid-cols-2 md:grid-cols-5">
+      {/* Brand Column (2 cols) */}
+      <div class="sm:col-span-2 space-y-4">
+        <a href="/" class="flex items-center gap-2.5">
+          <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 font-black text-white text-xs shadow-md shadow-emerald-500/20">
             C.
           </div>
-          <span class="text-base font-bold text-white tracking-tight">Cuadre</span>
-        </div>
-        <p class="text-xs text-slate-400 max-w-sm">
-          Tu Margen Seguro Diario para tomar decisiones y llegar bien a tu quincena.
+          <span class="text-lg font-bold text-white tracking-tight">Cuadre</span>
+          <span class="text-[10px] font-semibold text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded-md bg-emerald-500/10">
+            Beta RD 🇩🇴
+          </span>
+        </a>
+        <p class="text-xs text-slate-400 leading-relaxed max-w-sm">
+          Inteligencia financiera para República Dominicana. Procesa tus avisos bancarios vía Gmail en modo de solo lectura y calcula cada mañana tu Margen Seguro Diario para llegar con calma a tu quincena.
         </p>
+        <div class="flex items-center gap-2 text-[11px] text-slate-500">
+          <span>Hecho con serenidad en Santo Domingo 🇩🇴</span>
+        </div>
       </div>
 
-      <div class="flex flex-wrap items-center gap-5 text-xs">
-        <a href="/terms" class="hover:text-slate-300 transition-colors">
-          Términos de Servicio
-        </a>
-        <span>•</span>
-        <a href="/privacy" class="hover:text-slate-300 transition-colors">
-          Política de Privacidad
-        </a>
-        <span>•</span>
-        <a href="/legal/google-api-disclosure" class="hover:text-slate-300 transition-colors">
-          Divulgación de Google API
-        </a>
-        <span>•</span>
-        <a href="/legal/data-deletion" class="hover:text-slate-300 transition-colors">
-          Eliminación de Datos
-        </a>
+      {/* Product Column */}
+      <div class="space-y-3">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-white">Producto</h4>
+        <ul class="space-y-2 text-xs">
+          {productLinks.map((link) => (
+            <li>
+              <a href={link.href} class="text-slate-400 hover:text-emerald-400 transition-colors">
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Banks Column */}
+      <div class="space-y-3">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-white">Bancos en RD</h4>
+        <ul class="space-y-2 text-xs">
+          {bankLinks.map((link) => (
+            <li>
+              <a href={link.href} class="text-slate-400 hover:text-emerald-400 transition-colors">
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Security & Legal Column */}
+      <div class="space-y-3">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-white">Seguridad & Legal</h4>
+        <ul class="space-y-2 text-xs">
+          {legalLinks.map((link) => (
+            <li>
+              <a href={link.href} class="text-slate-400 hover:text-emerald-400 transition-colors">
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
 
-    <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-      <p>© {currentYear} Cuadre. Desarrollado en República Dominicana 🇩🇴</p>
-      <div class="space-y-1 text-[11px] text-slate-500 max-w-lg">
+    {/* Bottom Disclaimers and Copyright */}
+    <div class="pt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-[11px] text-slate-500 leading-relaxed">
+      <p>© {currentYear} Cuadre. Todos los derechos reservados.</p>
+      <div class="max-w-xl text-left sm:text-right space-y-0.5">
         <p>
-          El uso y transferencia de datos de Google Workspace cumple con la Política de Datos de Usuario de Google, incluidos los requisitos de Limited Use.
+          El uso de la información recibida a través de las APIs de Google se adhiere a la Política de Datos de Usuario de Google API Services, incluidos los requisitos de Uso Limitado (Limited Use).
         </p>
         <p>
-          Consulta nuestra política de privacidad y la referencia informativa a la Ley No. 172-13 de la República Dominicana.
+          Cuadre opera en estricto cumplimiento de la Ley No. 172-13 sobre Protección Integral de Datos Personales en la República Dominicana.
         </p>
       </div>
     </div>

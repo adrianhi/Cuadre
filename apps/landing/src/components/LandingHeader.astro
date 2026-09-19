@@ -1,9 +1,10 @@
 ---
 const navItems = [
-  { href: '#proposito', label: 'Propósito' },
-  { href: '#como-funciona', label: 'Cómo funciona' },
-  { href: '#seguridad', label: 'Seguridad y Privacidad' },
-  { href: '#preguntas', label: 'Preguntas frecuentes' },
+  { href: '/#proposito', label: 'Propósito' },
+  { href: '/#como-funciona', label: 'Cómo funciona' },
+  { href: '/calculadora-quincena', label: 'Calculadora' },
+  { href: '/seguridad', label: 'Seguridad' },
+  { href: '/#preguntas', label: 'Preguntas' },
 ];
 
 const loginUrl = import.meta.env.PUBLIC_APP_LOGIN_URL || 'https://app.cuadre.com.do/login';
@@ -40,7 +41,7 @@ const loginUrl = import.meta.env.PUBLIC_APP_LOGIN_URL || 'https://app.cuadre.com
         Iniciar Sesión
       </a>
       <a
-        href="#beta-waitlist"
+        href="/#beta-waitlist"
         class="inline-flex h-9 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-4 text-xs font-bold text-slate-950 shadow-md shadow-emerald-500/20 hover:from-emerald-400 hover:to-teal-400 transition-all"
       >
         <span>Solicitar Acceso</span>
@@ -78,7 +79,7 @@ const loginUrl = import.meta.env.PUBLIC_APP_LOGIN_URL || 'https://app.cuadre.com
         Iniciar Sesión
       </a>
       <a
-        href="#beta-waitlist"
+        href="/#beta-waitlist"
         class="mobile-nav-link inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-xs font-bold text-slate-950"
       >
         <span>Solicitar Acceso</span>
