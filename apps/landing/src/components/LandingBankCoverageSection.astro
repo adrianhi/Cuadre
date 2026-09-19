@@ -1,9 +1,9 @@
 ---
 const activeBanks = [
-  { name: 'Banco BHD', status: 'Piloto activo', detail: 'Tarjetas de crédito, débito y transferencias' },
-  { name: 'Banco Popular Dominicano', status: 'Piloto activo', detail: 'Avisos de consumo y retiros de cuenta' },
-  { name: 'Banreservas', status: 'Piloto activo', detail: 'Notificaciones de débito y compras con tarjeta' },
-  { name: 'Qik Banco Digital', status: 'Piloto activo', detail: 'Tarjetas digitales, crédito y transacciones' },
+  { slug: 'bhd', name: 'Banco BHD', status: 'Piloto activo', detail: 'Tarjetas de crédito, débito y transferencias' },
+  { slug: 'popular', name: 'Banco Popular Dominicano', status: 'Piloto activo', detail: 'Avisos de consumo y retiros de cuenta' },
+  { slug: 'banreservas', name: 'Banreservas', status: 'Piloto activo', detail: 'Notificaciones de débito y compras con tarjeta' },
+  { slug: 'qik', name: 'Qik Banco Digital', status: 'Piloto activo', detail: 'Tarjetas digitales, crédito y transacciones' },
 ];
 
 const upcomingBanks = [
@@ -12,7 +12,7 @@ const upcomingBanks = [
 ];
 ---
 
-<section class="border-t border-slate-800/80 bg-slate-900/30 py-16 md:py-20">
+<section id="cobertura-bancaria" class="scroll-mt-24 border-t border-slate-800/80 bg-slate-900/30 py-16 md:py-20">
   <div class="mx-auto max-w-5xl px-4 sm:px-6">
     <div class="text-center max-w-2xl mx-auto mb-12">
       <div class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-400 mb-2">
@@ -35,7 +35,10 @@ const upcomingBanks = [
       </div>
       <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {activeBanks.map((bank) => (
-          <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 flex flex-col justify-between hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-950/20 shadow-xs group transition-all">
+          <a
+            href={`/bancos/${bank.slug}`}
+            class="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 flex flex-col justify-between hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-950/20 shadow-xs group transition-all"
+          >
             <div>
               <div class="flex items-center justify-between mb-2">
                 <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase group-hover:bg-emerald-500/20 transition-colors">
@@ -45,7 +48,11 @@ const upcomingBanks = [
               <h3 class="text-sm font-bold text-white leading-tight group-hover:text-emerald-300 transition-colors">{bank.name}</h3>
               <p class="mt-2 text-[11px] text-slate-400 leading-relaxed">{bank.detail}</p>
             </div>
-          </div>
+            <div class="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-[11px] font-semibold text-emerald-400">
+              <span>Ver integración</span>
+              <span class="group-hover:translate-x-1 transition-transform">→</span>
+            </div>
+          </a>
         ))}
       </div>
     </div>

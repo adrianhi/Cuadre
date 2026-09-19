@@ -19,6 +19,7 @@
     "dev:api": "npm run dev --prefix apps/api",
     "build:landing": "npm --prefix apps/landing run build",
     "preview:landing": "npm --prefix apps/landing run preview",
+    "og:generate": "node scripts/generate-og-image.js",
     "build:web": "npm run build --prefix apps/web",
     "build:api": "npm run build --prefix apps/api",
     "build:contracts": "npm run build --workspace=@bills/contracts",

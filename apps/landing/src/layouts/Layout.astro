@@ -10,23 +10,43 @@ export interface Props {
 }
 
 const {
-  title = 'Cuadre • ¿Cuánto puedes gastar hoy sin descuadrar tu quincena?',
-  description = 'Cuadre procesa las notificaciones de tus bancos dominicanos (BHD, Popular, Banreservas, Qik) vía Gmail y calcula cada mañana tu margen seguro diario. Beta privada de 30 días de acceso completo.',
+  title = 'Cuadre | Control de Gastos y Quincena con tus Bancos Dominicanos',
+  description = 'Descubre cada mañana cuánto puedes gastar sin descuadrar tu quincena. Cuadre procesa tus avisos bancarios (BHD, Popular, Banreservas, Qik) vía Gmail de forma segura y privada.',
   canonical = new URL(Astro.url.pathname, 'https://cuadre.com.do').href,
-  ogImage = 'https://cuadre.com.do/favicon.svg',
+  ogImage = 'https://cuadre.com.do/og-image.png',
   includeFaqSchema = false,
 } = Astro.props;
 
 const siteUrl = 'https://cuadre.com.do';
+
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'Cuadre',
+  alternateName: ['Cuadre App', 'Cuadre Finanzas', 'Cuadre RD', 'Cuadre República Dominicana'],
+  url: siteUrl,
+  description: description,
+  inLanguage: 'es-DO',
+};
 
 const softwareAppSchema = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
   name: 'Cuadre',
   applicationCategory: 'FinanceApplication',
-  operatingSystem: 'All (Web browser)',
+  applicationSubCategory: 'Personal Finance & Budgeting',
+  operatingSystem: 'All (Web browser, PWA, iOS, Android)',
   url: siteUrl,
+  image: `${siteUrl}/og-image.png`,
+  screenshot: `${siteUrl}/og-image.png`,
   description: description,
+  featureList: [
+    'Margen Seguro Diario para gastos variables',
+    'Lectura oficial de avisos bancarios vía Gmail (gmail.readonly)',
+    'Soporte para Banco Popular, Banco BHD, Banreservas y Qik',
+    'Reserva automática de compromisos fijos quincenales y mensuales',
+    'Cero claves bancarias requeridas y sin capacidad de mover dinero',
+  ],
   offers: {
     '@type': 'Offer',
     price: '0',
@@ -69,7 +89,7 @@ const organizationSchema = {
     <title>{title}</title>
     <meta name="title" content={title} />
     <meta name="description" content={description} />
-    <meta name="keywords" content="cuadre, finanzas personales, bancos dominicanos, bhd, popular, banreservas, qik, gastos quincena, margen diario, presupuesto rd" />
+    <meta name="keywords" content="cuadre, finanzas personales, bancos dominicanos, bhd, popular, banreservas, qik, gastos quincena, margen diario, presupuesto rd, control de gastos republica dominicana" />
     <meta name="author" content="Cuadre" />
     <link rel="canonical" href={canonical} />
 
@@ -79,15 +99,21 @@ const organizationSchema = {
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={ogImage} />
+    <meta property="og:image:secure_url" content={ogImage} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Cuadre - Control de Gastos y Quincena para Bancos Dominicanos" />
     <meta property="og:site_name" content="Cuadre" />
     <meta property="og:locale" content="es_DO" />
 
     <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:url" content={canonical} />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content="Cuadre - Control de Gastos y Quincena para Bancos Dominicanos" />
 
     <!-- Theme & App icons -->
     <meta name="theme-color" content="#020617" />
@@ -96,6 +122,7 @@ const organizationSchema = {
     <meta name="apple-mobile-web-app-title" content="Cuadre" />
 
     <!-- Google Structured Data (JSON-LD) -->
+    <script type="application/ld+json" set:html={JSON.stringify(websiteSchema)} />
     <script type="application/ld+json" set:html={JSON.stringify(softwareAppSchema)} />
     <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
   </head>
