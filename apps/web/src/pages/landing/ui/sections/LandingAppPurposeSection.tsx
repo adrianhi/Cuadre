@@ -25,7 +25,7 @@ export function LandingAppPurposeSection() {
                   <span>Uso de la integración con Google y alcance de Gmail (gmail.readonly)</span>
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                  Para que no tengas que digitar manualmente cada factura o voucher de compra, Cuadre permite a los usuarios conectar opcionalmente su cuenta de Google mediante el permiso oficial de solo lectura (<code className="text-emerald-300 font-mono text-xs bg-slate-800 px-1.5 py-0.5 rounded">https://www.googleapis.com/auth/gmail.readonly</code>).
+                  Para que no tengas que digitar manualmente cada factura o voucher de compra, Cuadre permite a los usuarios conectar opcionalmente su cuenta de Google mediante el permiso oficial de solo lectura (<code className="text-emerald-300 font-mono text-xs bg-slate-800 px-1.5 py-0.5 rounded break-all">https://www.googleapis.com/auth/gmail.readonly</code>).
                 </p>
                 <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
                   El sistema utiliza este acceso exclusivamente para identificar y leer los avisos automáticos de consumo y transferencias enviados por los bancos dominicanos autorizados por el usuario (Banco BHD, Banco Popular Dominicano, Banreservas y Qik Banco Digital). A partir de ellos extrae únicamente la fecha, el monto y el nombre del comercio.

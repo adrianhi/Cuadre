@@ -10,8 +10,8 @@ export function LandingHeroSection() {
 
       <div className="relative mx-auto max-w-5xl px-4 sm:px-6 text-center">
         {/* Cohort badge with live pulse */}
-        <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1 text-xs font-medium text-emerald-300 backdrop-blur-xs mb-6 animate-fade-in-up [animation-delay:100ms] shadow-sm shadow-emerald-950/20">
-          <span className="relative flex h-2 w-2">
+        <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1 text-xs font-medium text-emerald-300 backdrop-blur-xs mb-6 animate-fade-in-up [animation-delay:100ms] shadow-sm shadow-emerald-950/20 text-center">
+          <span className="relative flex h-2 w-2 shrink-0">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
           </span>
@@ -36,7 +36,7 @@ export function LandingHeroSection() {
         </p>
 
         {/* Trust bullet */}
-        <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-400 animate-fade-in-up [animation-delay:380ms]">
+        <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-400 animate-fade-in-up [animation-delay:380ms] text-center">
           <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0" />
           <span>Solo lectura vía Google API · Sin contraseñas bancarias · Sin tarjeta para solicitar acceso</span>
         </div>

@@ -14,9 +14,9 @@ interface LandingPageProps {
 
 export function LandingPage({ hasSession = false }: LandingPageProps) {
   return (
-    <div className="dark min-h-screen bg-slate-950 text-slate-100 selection:bg-emerald-500 selection:text-white">
+    <div className="dark min-h-screen bg-slate-950 text-slate-100 selection:bg-emerald-500 selection:text-white overflow-x-clip w-full">
       <LandingHeader hasSession={hasSession} />
-      <main>
+      <main className="overflow-x-hidden w-full">
         <LandingHeroSection />
         <LandingAppPurposeSection />
         <LandingHowItWorksSection />

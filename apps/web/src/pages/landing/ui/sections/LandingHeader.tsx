@@ -79,9 +79,10 @@ export function LandingHeader({ hasSession }: LandingHeaderProps) {
         <div className="flex items-center gap-2">
           <Link
             to="/app"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-700/80 bg-slate-900/90 px-3.5 py-1.5 text-xs font-semibold text-slate-200 transition-all hover:bg-slate-800 hover:text-white hover:border-slate-600 shadow-xs active:scale-95"
+            className="inline-flex items-center gap-1 sm:gap-1.5 rounded-xl border border-slate-700/80 bg-slate-900/90 px-2.5 py-1.5 sm:px-3.5 text-xs font-semibold text-slate-200 transition-all hover:bg-slate-800 hover:text-white hover:border-slate-600 shadow-xs active:scale-95 shrink-0"
           >
-            {hasSession ? 'Ir a mi panel' : 'Ya tengo invitación'}
+            <span className="hidden sm:inline">{hasSession ? 'Ir a mi panel' : 'Ya tengo invitación'}</span>
+            <span className="sm:hidden">{hasSession ? 'Mi panel' : 'Acceder'}</span>
             <ArrowRight className="h-3.5 w-3.5 text-emerald-400" />
           </Link>
 
