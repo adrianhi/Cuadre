@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, Plus, Settings, SlidersHorizontal } from 'lucide-react';
+import { Download, PartyPopper, Plus, Settings, SlidersHorizontal } from 'lucide-react';
 import { APP_SECTIONS, type AppSection } from '@/widgets/bottom-nav';
 import { Button } from '@/shared/ui';
 import { ConnectionStatusBadge, type InboxConnection } from '@/entities/connection';
@@ -11,6 +11,7 @@ interface DashboardSidebarProps {
   activeFiltersCount?: number;
   onOpenRules: () => void;
   onOpenExport: () => void;
+  onOpenCoro: () => void;
   onOpenSettings: () => void;
   userEmail?: string | null;
   connection?: InboxConnection;
@@ -23,6 +24,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   activeFiltersCount = 0,
   onOpenRules,
   onOpenExport,
+  onOpenCoro,
   onOpenSettings,
   userEmail,
   connection,
@@ -67,6 +69,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
         <div className="mt-5 border-t pt-4">
           <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Herramientas</p>
           <button type="button" onClick={onOpenRules} className="flex min-h-10 w-full items-center gap-3 rounded-xl px-3 text-sm font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground"><SlidersHorizontal className="h-4 w-4" />Reglas de categorías</button>
+          <button type="button" onClick={onOpenCoro} className="flex min-h-10 w-full items-center gap-3 rounded-xl px-3 text-sm font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground"><PartyPopper className="h-4 w-4" />Modo Coro</button>
           <button type="button" onClick={onOpenExport} className="flex min-h-10 w-full items-center gap-3 rounded-xl px-3 text-sm font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground"><Download className="h-4 w-4" />Exportar</button>
         </div>
       </nav>

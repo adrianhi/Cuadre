@@ -10,6 +10,10 @@ const DashboardPage = lazy(async () => {
   const module = await import('@/pages/dashboard');
   return { default: module.DashboardPage };
 });
+const CoroPublicPage = lazy(async () => {
+  const module = await import('@/pages/coro');
+  return { default: module.CoroPublicPage };
+});
 
 export function App() {
   // Authentication & Session
@@ -93,6 +97,7 @@ export function App() {
       <Route path="/legal/:slug" element={<LegalDocumentPage />} />
       <Route path="/terms" element={<LegalDocumentPage path="/legal/terms" />} />
       <Route path="/privacy" element={<LegalDocumentPage path="/legal/privacy" />} />
+      <Route path="/coro/:slug" element={<Suspense fallback={<LoadingScreen message="Abriendo el coro…" />}><CoroPublicPage /></Suspense>} />
       <Route path="/login" element={authToken ? <Navigate to="/app" replace /> : protectedContent} />
       <Route path="/auth/callback" element={authToken
         ? <Navigate to="/app" replace />

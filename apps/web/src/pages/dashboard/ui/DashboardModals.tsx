@@ -11,6 +11,7 @@ import { ProductTour, ProductTourInvite } from '@/features/product-guide';
 import { ExportModal } from '@/features/export-center';
 import { CategoryManagerPanel } from '@/features/manage-categories';
 import { IncomeStreamsSettingsModal } from '@/features/income-streams';
+import { CoroHubModal } from '@/features/coro-hub';
 
 interface DashboardModalsProps {
   authToken: string;
@@ -56,6 +57,8 @@ interface DashboardModalsProps {
     transactionType?: string;
     search?: string;
   };
+  isCoroOpen: boolean;
+  setIsCoroOpen: (open: boolean) => void;
 }
 
 export const DashboardModals: React.FC<DashboardModalsProps> = ({
@@ -90,6 +93,8 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
   currentPeriod,
   currency,
   filters,
+  isCoroOpen,
+  setIsCoroOpen,
 }) => {
   const [ruleSuggestion, setRuleSuggestion] = useState<RuleSuggestion>();
   const [incomeSettingsOpen, setIncomeSettingsOpen] = useState(false);
@@ -174,6 +179,7 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
         initialCurrency={currency}
         initialFilters={filters}
       />
+      <CoroHubModal open={isCoroOpen} onOpenChange={setIsCoroOpen} />
     </>
   );
 };

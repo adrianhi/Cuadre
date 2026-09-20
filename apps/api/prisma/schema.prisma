@@ -21,6 +21,18 @@ enum PlanTier {
   BETA
 }
 
+enum CoroStatus {
+  ACTIVE
+  LOCKED
+  ARCHIVED
+}
+
+enum CoroSettlementStatus {
+  PENDING
+  MARKED_PAID
+  CONFIRMED
+}
+
 enum InstitutionStatus {
   PILOT
   ACTIVE
@@ -208,6 +220,7 @@ model Profile {
   integrationConsents          IntegrationConsent[]
   paydayRitualReviews          PaydayRitualReview[]
   productEvents                ProductEvent[]
+  coroParticipants             CoroParticipant[]
 
   @@map("profiles")
 }
@@ -234,6 +247,7 @@ model Workspace {
   recurringScanJob     RecurringScanJob?
   paydayRitualReviews  PaydayRitualReview[]
   productEvents        ProductEvent[]
+  coroGroups           CoroGroup[]
   createdAt            DateTime                 @default(now()) @map("created_at")
   updatedAt            DateTime                 @updatedAt @map("updated_at")
 
@@ -241,20 +255,131 @@ model Workspace {
 }
 
 model WorkspaceCategory {
-  id         String    @id @default(uuid()) @db.Uuid
-  workspaceId String   @map("workspace_id") @db.Uuid
-  key        String
-  name       String
-  colorKey   String    @map("color_key")
-  icon       String?
-  isArchived Boolean   @default(false) @map("is_archived")
-  workspace  Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  createdAt  DateTime  @default(now()) @map("created_at")
-  updatedAt  DateTime  @updatedAt @map("updated_at")
+  id          String    @id @default(uuid()) @db.Uuid
+  workspaceId String    @map("workspace_id") @db.Uuid
+  key         String
+  name        String
+  colorKey    String    @map("color_key")
+  icon        String?
+  isArchived  Boolean   @default(false) @map("is_archived")
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
   @@unique([workspaceId, key])
   @@index([workspaceId, isArchived])
   @@map("workspace_categories")
+}
+
+model CoroGroup {
+  id           String            @id @default(uuid()) @db.Uuid
+  workspaceId  String            @map("workspace_id") @db.Uuid
+  slug         String            @unique
+  name         String
+  description  String?
+  currency     String            @default("DOP")
+  status       CoroStatus        @default(ACTIVE)
+  lockedAt     DateTime?         @map("locked_at")
+  archivedAt   DateTime?         @map("archived_at")
+  workspace    Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  participants CoroParticipant[]
+  expenses     CoroExpense[]
+  settlements  CoroSettlement[]
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+
+  @@index([workspaceId, status, updatedAt])
+  @@map("coro_groups")
+}
+
+model CoroParticipant {
+  id                      String             @id @default(uuid()) @db.Uuid
+  coroGroupId             String             @map("coro_group_id") @db.Uuid
+  profileId               String?            @map("profile_id") @db.Uuid
+  name                    String
+  normalizedName          String             @map("normalized_name")
+  isOwner                 Boolean            @default(false) @map("is_owner")
+  claimTokenHash          String?            @unique @map("claim_token_hash")
+  tokenCreatedAt          DateTime?          @map("token_created_at")
+  tokenRevokedAt          DateTime?          @map("token_revoked_at")
+  paymentDetailsEncrypted String?            @map("payment_details_encrypted") @db.Text
+  coroGroup               CoroGroup          @relation(fields: [coroGroupId], references: [id], onDelete: Cascade)
+  profile                 Profile?           @relation(fields: [profileId], references: [id], onDelete: SetNull)
+  paidExpenses            CoroExpense[]      @relation("CoroExpensePayer")
+  createdExpenses         CoroExpense[]      @relation("CoroExpenseCreator")
+  splits                  CoroExpenseSplit[]
+  settlementsFrom         CoroSettlement[]   @relation("CoroSettlementFrom")
+  settlementsTo           CoroSettlement[]   @relation("CoroSettlementTo")
+  confirmedSettlements    CoroSettlement[]   @relation("CoroSettlementConfirmer")
+  createdAt               DateTime           @default(now()) @map("created_at")
+  updatedAt               DateTime           @updatedAt @map("updated_at")
+
+  @@unique([coroGroupId, normalizedName])
+  @@unique([coroGroupId, profileId])
+  @@index([coroGroupId, createdAt])
+  @@map("coro_participants")
+}
+
+model CoroExpense {
+  id                     String             @id @default(uuid()) @db.Uuid
+  coroGroupId            String             @map("coro_group_id") @db.Uuid
+  paidById               String             @map("paid_by_id") @db.Uuid
+  createdByParticipantId String             @map("created_by_participant_id") @db.Uuid
+  transactionId          String?            @unique @map("transaction_id")
+  title                  String
+  amount                 Decimal            @db.Decimal(18, 2)
+  currency               String             @default("DOP")
+  category               String             @default("Varios")
+  expenseDate            DateTime           @default(now()) @map("expense_date")
+  notes                  String?
+  deletedAt              DateTime?          @map("deleted_at")
+  coroGroup              CoroGroup          @relation(fields: [coroGroupId], references: [id], onDelete: Cascade)
+  paidBy                 CoroParticipant    @relation("CoroExpensePayer", fields: [paidById], references: [id], onDelete: Restrict)
+  createdBy              CoroParticipant    @relation("CoroExpenseCreator", fields: [createdByParticipantId], references: [id], onDelete: Restrict)
+  transaction            Transaction?       @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+  splits                 CoroExpenseSplit[]
+  createdAt              DateTime           @default(now()) @map("created_at")
+  updatedAt              DateTime           @updatedAt @map("updated_at")
+
+  @@index([coroGroupId, expenseDate])
+  @@index([coroGroupId, deletedAt])
+  @@index([createdByParticipantId])
+  @@map("coro_expenses")
+}
+
+model CoroExpenseSplit {
+  id             String          @id @default(uuid()) @db.Uuid
+  expenseId      String          @map("expense_id") @db.Uuid
+  participantId  String          @map("participant_id") @db.Uuid
+  assignedAmount Decimal         @map("assigned_amount") @db.Decimal(18, 2)
+  expense        CoroExpense     @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  participant    CoroParticipant @relation(fields: [participantId], references: [id], onDelete: Restrict)
+
+  @@unique([expenseId, participantId])
+  @@index([participantId])
+  @@map("coro_expense_splits")
+}
+
+model CoroSettlement {
+  id                       String               @id @default(uuid()) @db.Uuid
+  coroGroupId              String               @map("coro_group_id") @db.Uuid
+  fromParticipantId        String               @map("from_participant_id") @db.Uuid
+  toParticipantId          String               @map("to_participant_id") @db.Uuid
+  confirmedByParticipantId String?              @map("confirmed_by_participant_id") @db.Uuid
+  amount                   Decimal              @db.Decimal(18, 2)
+  status                   CoroSettlementStatus @default(PENDING)
+  markedPaidAt             DateTime?            @map("marked_paid_at")
+  confirmedAt              DateTime?            @map("confirmed_at")
+  coroGroup                CoroGroup            @relation(fields: [coroGroupId], references: [id], onDelete: Cascade)
+  fromParticipant          CoroParticipant      @relation("CoroSettlementFrom", fields: [fromParticipantId], references: [id], onDelete: Restrict)
+  toParticipant            CoroParticipant      @relation("CoroSettlementTo", fields: [toParticipantId], references: [id], onDelete: Restrict)
+  confirmedByParticipant   CoroParticipant?     @relation("CoroSettlementConfirmer", fields: [confirmedByParticipantId], references: [id], onDelete: SetNull)
+  createdAt                DateTime             @default(now()) @map("created_at")
+  updatedAt                DateTime             @updatedAt @map("updated_at")
+
+  @@unique([coroGroupId, fromParticipantId, toParticipantId])
+  @@index([coroGroupId, status])
+  @@map("coro_settlements")
 }
 
 model SpendingBudgetLimit {
@@ -764,42 +889,43 @@ model BetaInterest {
 }
 
 model Transaction {
-  id                    String                   @id @default(uuid())
-  workspaceId           String?                  @map("workspace_id") @db.Uuid
-  institutionCode       String                   @default("BHD") @map("institution_code")
-  ingestionChannel      IngestionChannel         @default(EMAIL_FORWARD) @map("ingestion_channel")
-  externalId            String                   @map("external_id")
-  cardLast4             String?                  @map("card_last_4")
-  cardType              String?                  @map("card_type")
-  rawMerchant           String                   @map("raw_merchant")
-  merchantKey           String?                  @map("merchant_key")
-  merchantIdentityLabel String?                  @map("merchant_identity_label")
-  categoryOrigin        String                   @default("LEGACY_UNKNOWN") @map("category_origin")
-  merchantOrigin        String                   @default("LEGACY_UNKNOWN") @map("merchant_origin")
-  categoryRuleId        String?                  @map("category_rule_id")
-  merchantRuleId        String?                  @map("merchant_rule_id")
-  classificationVersion Int                      @default(0) @map("classification_version")
-  merchant              String
-  category              String
-  amount                Decimal                  @db.Decimal(18, 2)
-  currency              String                   @default("DOP")
-  status                String                   @default("Aprobada")
-  statusCode            TransactionStatusCode    @default(APPROVED) @map("status_code")
-  statusUpdatedAt       DateTime?                @map("status_updated_at")
-  transactionType       String                   @default("Compra") @map("transaction_type")
-  financialRole         TransactionFinancialRole @default(EXPENSE) @map("financial_role")
-  financialRoleOrigin   TransactionFinancialRoleOrigin @default(SYSTEM) @map("financial_role_origin")
-  suggestedFinancialRole TransactionFinancialRole? @map("suggested_financial_role")
-  transactionDate       DateTime                 @map("transaction_date")
-  source                String                   @default("BHD_EMAIL")
-  notes                 String?
-  deletedAt             DateTime?                @map("deleted_at")
-  createdAt             DateTime                 @default(now()) @map("created_at")
-  updatedAt             DateTime                 @updatedAt @map("updated_at")
-  workspace             Workspace?               @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  institution           FinancialInstitution     @relation(fields: [institutionCode], references: [code], onDelete: Restrict)
-  statusEvents          TransactionStatusEvent[]
-  recurringOccurrence   RecurringOccurrence?
+  id                     String                         @id @default(uuid())
+  workspaceId            String?                        @map("workspace_id") @db.Uuid
+  institutionCode        String                         @default("BHD") @map("institution_code")
+  ingestionChannel       IngestionChannel               @default(EMAIL_FORWARD) @map("ingestion_channel")
+  externalId             String                         @map("external_id")
+  cardLast4              String?                        @map("card_last_4")
+  cardType               String?                        @map("card_type")
+  rawMerchant            String                         @map("raw_merchant")
+  merchantKey            String?                        @map("merchant_key")
+  merchantIdentityLabel  String?                        @map("merchant_identity_label")
+  categoryOrigin         String                         @default("LEGACY_UNKNOWN") @map("category_origin")
+  merchantOrigin         String                         @default("LEGACY_UNKNOWN") @map("merchant_origin")
+  categoryRuleId         String?                        @map("category_rule_id")
+  merchantRuleId         String?                        @map("merchant_rule_id")
+  classificationVersion  Int                            @default(0) @map("classification_version")
+  merchant               String
+  category               String
+  amount                 Decimal                        @db.Decimal(18, 2)
+  currency               String                         @default("DOP")
+  status                 String                         @default("Aprobada")
+  statusCode             TransactionStatusCode          @default(APPROVED) @map("status_code")
+  statusUpdatedAt        DateTime?                      @map("status_updated_at")
+  transactionType        String                         @default("Compra") @map("transaction_type")
+  financialRole          TransactionFinancialRole       @default(EXPENSE) @map("financial_role")
+  financialRoleOrigin    TransactionFinancialRoleOrigin @default(SYSTEM) @map("financial_role_origin")
+  suggestedFinancialRole TransactionFinancialRole?      @map("suggested_financial_role")
+  transactionDate        DateTime                       @map("transaction_date")
+  source                 String                         @default("BHD_EMAIL")
+  notes                  String?
+  deletedAt              DateTime?                      @map("deleted_at")
+  createdAt              DateTime                       @default(now()) @map("created_at")
+  updatedAt              DateTime                       @updatedAt @map("updated_at")
+  workspace              Workspace?                     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  institution            FinancialInstitution           @relation(fields: [institutionCode], references: [code], onDelete: Restrict)
+  statusEvents           TransactionStatusEvent[]
+  recurringOccurrence    RecurringOccurrence?
+  coroExpense            CoroExpense?
 
   @@unique([workspaceId, institutionCode, externalId])
   @@index([workspaceId, transactionDate])

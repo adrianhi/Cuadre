@@ -17,10 +17,8 @@ import { BudgetSection } from './sections/BudgetSection';
 
 interface DashboardPageProps {
   authToken: string; userEmail?: string | null;
-  productGuide: ProductGuideState;
-  onProductGuideChange: (state: ProductGuideState) => void;
-  onLock: () => void;
-  onAccountDeleted: () => void;
+  productGuide: ProductGuideState; onProductGuideChange: (state: ProductGuideState) => void;
+  onLock: () => void; onAccountDeleted: () => void;
 }
 
 export const DashboardPage: React.FC<DashboardPageProps> = ({
@@ -59,7 +57,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
     editingTransaction, setEditingTransaction, onSaveTransaction, onDeleteTransaction,
     isRulesModalOpen, setIsRulesModalOpen, isQuickAddOpen, setIsQuickAddOpen,
   } = model;
-  const [deletingTransaction, setDeletingTransaction] = useState<Transaction | null>(null);
+  const [deletingTransaction, setDeletingTransaction] = useState<Transaction | null>(null); const [isCoroOpen, setIsCoroOpen] = useState(false);
   const [, setSearchParams] = useSearchParams();
   const openBudgetTab = (tab?: string) => {
     setSearchParams((prev) => {
@@ -95,7 +93,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         onSelectSection={selectSection}
         onQuickAdd={() => setIsQuickAddOpen(true)}
         activeFiltersCount={activeFiltersCount}
-        onOpenRules={() => setIsRulesModalOpen(true)} onOpenExport={() => setIsExportModalOpen(true)}
+        onOpenRules={() => setIsRulesModalOpen(true)} onOpenCoro={() => setIsCoroOpen(true)} onOpenExport={() => setIsExportModalOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)} userEmail={userEmail} connection={primaryConnection}
       />
       <Navbar
@@ -104,6 +102,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         setHideBalances={setHideBalances}
         onRefresh={onRefresh}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenCoro={() => setIsCoroOpen(true)}
         refreshing={refreshing || refreshingStats}
         connection={primaryConnection}
       />
@@ -203,7 +202,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           />
         )}
       </main>
-
       <BottomNav
         activeSection={activeSection}
         onSelectSection={selectSection}
@@ -243,6 +241,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         currentPeriod={currentPeriod}
         currency={currency}
         filters={activeSection === 'transactions' ? currentFilters : {}}
+        isCoroOpen={isCoroOpen} setIsCoroOpen={setIsCoroOpen}
       />
     </div>
   );

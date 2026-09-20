@@ -68,10 +68,9 @@ import {
   PrismaBetaInterestRepository, PrismaBetaInviteRepository,
 } from './modules/auth';
 import { RunnerLoopControl, type RunnerDelays } from './shared/application/runner-loop-control';
-
-const runnerDelays: RunnerDelays = { idleDelayMs: config.workerIdleDelayMs,
-  busyDelayMs: config.workerBusyDelayMs, errorDelayMs: config.workerErrorDelayMs };
-
+import { createCoroController } from './modules/coro';
+const runnerDelays: RunnerDelays = { idleDelayMs: config.workerIdleDelayMs, busyDelayMs: config.workerBusyDelayMs,
+  errorDelayMs: config.workerErrorDelayMs };
 const analyticsService = new AnalyticsService(new PrismaAnalyticsRepository());
 const incomeRepository = new PrismaIncomeRepository();
 const incomeService = new IncomeService(incomeRepository, analyticsService);
@@ -198,6 +197,7 @@ const proactiveController = new ProactiveController(proactiveEngineService, proa
 const emailNotificationController = new EmailNotificationController(proactiveEmailService);
 
 export const appContainer = {
+  coroController: createCoroController(),
   categoryCatalogController: new CategoryCatalogController(categoryCatalogService),
   betaInviteService,
   proactiveController,

@@ -33,7 +33,8 @@ function safeRequestUrl(req: Request): string {
   try {
     const url = new URL(req.originalUrl, 'http://localhost');
     if (url.searchParams.has('invite')) url.searchParams.set('invite', '[REDACTED]');
-    return `${url.pathname}${url.search}`;
+    const pathname = url.pathname.replace(/(\/(?:api\/v1\/public\/)?coro\/)[^/]+/i, '$1[REDACTED]');
+    return `${pathname}${url.search}`;
   } catch {
     return req.path;
   }
@@ -129,7 +130,7 @@ export function createApp(): Express {
         logger.info('http_request_completed', {
           requestId: req.requestId,
           method: req.method,
-          path: req.path,
+          path: safeRequestUrl(req),
           statusCode: res.statusCode,
           durationMs: Date.now() - startedAt,
         });
