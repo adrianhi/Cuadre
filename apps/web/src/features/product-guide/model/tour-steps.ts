@@ -1,4 +1,4 @@
-export type TourSection = 'home' | 'transactions' | 'analytics' | 'budget';
+export type TourSection = 'home' | 'transactions' | 'control' | 'hub' | 'analytics' | 'budget';
 export type TourDirection = 'forward' | 'backward';
 export type TourPhase = 'exiting' | 'navigating' | 'locating' | 'scrolling' | 'settled';
 

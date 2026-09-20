@@ -1,19 +1,9 @@
-import React, { type ReactNode } from "react";
+import React, { useState, type ReactNode } from "react";
 import type { InboxConnection } from "@/entities/connection";
 import type { StatsSummary } from "@/entities/stat";
 import type { Transaction } from "@/entities/transaction";
-import { MetricCards } from "@/widgets/metric-summary";
-import { AsyncErrorState, Card, CardContent } from "@/shared/ui";
-import { ConnectionHealthCard } from "../ConnectionHealthCard";
-import { RecentTransactionsCard } from "./RecentTransactionsCard";
-import { CurrentBudgetCard } from "./CurrentBudgetCard";
-import { CashFlowCard } from "@/widgets/cash-flow";
 import { useSafeToSpend } from "@/entities/budget";
 import { SafeToSpendDial } from "@/widgets/safe-to-spend";
-import { usePaydayRitual } from "@/entities/payday-ritual";
-import { useCompletePaydayRitual } from "@/features/complete-payday-ritual";
-import { CoroPromoCard } from "@/features/coro-hub";
-import { PaydayRitualCard } from "@/widgets/payday-ritual";
 import { useTrackProductView } from "@/features/track-engagement";
 import {
   useProactiveFeed,
@@ -26,7 +16,11 @@ import { QuickTriageDialog, type QuickTriageItem } from "@/features/quick-triage
 import { WeeklyCheckinDialog } from "@/features/weekly-checkin";
 import { ExpenseSimulatorDialog } from "@/features/expense-simulator";
 import { WeeklyDigestPreviewDialog } from "@/features/weekly-digest";
-import { LoadingSummaryCards } from "./LoadingSummaryCards";
+import { ConnectionHealthCard } from "../ConnectionHealthCard";
+import { RecentTransactionsCard } from "./RecentTransactionsCard";
+import { QuickActionRail } from "./QuickActionRail";
+import { CardTrafficLightDialog } from "../modals/CardTrafficLightDialog";
+import { CuadreDelMesModal } from "@/features/cuadre-del-mes";
 
 interface HomeSectionProps {
   periodToolbar: ReactNode;
@@ -35,8 +29,6 @@ interface HomeSectionProps {
   connectionsFailed: boolean;
   onOpenConnections: () => void;
   stats: StatsSummary | null;
-  statsError: unknown;
-  loadingStats: boolean;
   currency: string;
   hideBalances: boolean;
   onRefresh: () => void;
@@ -45,7 +37,6 @@ interface HomeSectionProps {
   onViewAllTransactions: () => void;
   onSelectTransaction: (transaction: Transaction) => void;
   onAddManual: () => void;
-  activeMonth?: string;
   onSyncConnection?: () => void;
   syncingConnection?: boolean;
   onOpenBudget: () => void;
@@ -60,50 +51,46 @@ export const HomeSection: React.FC<HomeSectionProps> = ({
   connectionsFailed,
   onOpenConnections,
   stats,
-  statsError,
-  loadingStats,
   currency,
   hideBalances,
-  onRefresh,
   transactions,
   loadingTransactions,
   onViewAllTransactions,
   onSelectTransaction,
   onAddManual,
-  activeMonth,
   onSyncConnection,
   syncingConnection,
   onOpenBudget,
   onOpenRecurring,
   onOpenCoro,
 }) => {
-  const safeToSpend = useSafeToSpend(currency === 'USD' ? 'USD' : 'DOP');
   const activeCurrency = currency === 'USD' ? 'USD' : 'DOP';
-  const paydayRitual = usePaydayRitual(activeCurrency);
-  const completePaydayRitual = useCompletePaydayRitual(activeCurrency);
+  const safeToSpend = useSafeToSpend(activeCurrency);
   const proactiveFeed = useProactiveFeed(activeCurrency);
   const dismissProactiveAction = useDismissProactiveAction(activeCurrency);
   const weeklyCheckin = useWeeklyCheckin(activeCurrency);
   const completeWeeklyCheckin = useCompleteWeeklyCheckin(activeCurrency);
-  const [triageItems, setTriageItems] = React.useState<QuickTriageItem[]>([]);
-  const [isTriageOpen, setIsTriageOpen] = React.useState(false);
-  const [isWeeklyCheckinOpen, setIsWeeklyCheckinOpen] = React.useState(false);
-  const [isSimulatorOpen, setIsSimulatorOpen] = React.useState(false);
-  const [isDigestOpen, setIsDigestOpen] = React.useState(false);
+
+  const [triageItems, setTriageItems] = useState<QuickTriageItem[]>([]);
+  const [isTriageOpen, setIsTriageOpen] = useState(false);
+  const [isWeeklyCheckinOpen, setIsWeeklyCheckinOpen] = useState(false);
+  const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
+  const [isDigestOpen, setIsDigestOpen] = useState(false);
+  const [isTrafficLightOpen, setIsTrafficLightOpen] = useState(false);
+  const [isWrappedOpen, setIsWrappedOpen] = useState(false);
+
   useTrackProductView(safeToSpend.data ? {
-    name: 'SAFE_TO_SPEND_VIEWED', contextKey: safeToSpend.data.date,
+    name: 'SAFE_TO_SPEND_VIEWED',
+    contextKey: safeToSpend.data.date,
     properties: { currency: activeCurrency, status: safeToSpend.data.status },
   } : null);
-  useTrackProductView(paydayRitual.data?.status === 'OPEN' && paydayRitual.data.cycleKey ? {
-    name: 'PAYDAY_RITUAL_VIEWED', contextKey: paydayRitual.data.cycleKey,
-    properties: { currency: activeCurrency, status: paydayRitual.data.status },
-  } : null);
+
   return (
     <>
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <h2 className="text-xl font-bold tracking-tight sm:text-2xl">Tu panorama</h2>
-          <p className="text-xs text-muted-foreground sm:text-sm">Lo importante de este período, sin sobrecargarte.</p>
+          <p className="text-xs text-muted-foreground sm:text-sm">Lo importante de hoy, ágil y sin sobrecargas.</p>
         </div>
         {periodToolbar}
       </div>
@@ -115,7 +102,12 @@ export const HomeSection: React.FC<HomeSectionProps> = ({
         onManageBudget={onOpenBudget}
       />
 
-      {onOpenCoro && <CoroPromoCard onOpenCoro={onOpenCoro} />}
+      <QuickActionRail
+        onOpenTrafficLight={() => setIsTrafficLightOpen(true)}
+        onOpenCoro={() => onOpenCoro?.()}
+        onOpenWrapped={() => setIsWrappedOpen(true)}
+        onOpenSimulator={() => setIsSimulatorOpen(true)}
+      />
 
       <ConnectionHealthCard
         connection={primaryConnection}
@@ -124,14 +116,6 @@ export const HomeSection: React.FC<HomeSectionProps> = ({
         onOpenConnections={onOpenConnections}
         onSync={onSyncConnection}
         syncing={syncingConnection}
-      />
-
-      <PaydayRitualCard
-        ritual={paydayRitual.data || null}
-        loading={paydayRitual.isLoading}
-        completing={completePaydayRitual.isPending}
-        hideBalances={hideBalances}
-        onComplete={(cycleKey) => completePaydayRitual.mutate(cycleKey)}
       />
 
       <ProactiveFeedCard
@@ -145,7 +129,23 @@ export const HomeSection: React.FC<HomeSectionProps> = ({
         onOpenSimulator={() => setIsSimulatorOpen(true)}
       />
 
-      <QuickTriageDialog open={isTriageOpen} onOpenChange={setIsTriageOpen} items={triageItems} currency={activeCurrency} />
+      <RecentTransactionsCard
+        transactions={transactions}
+        loading={loadingTransactions}
+        hideBalances={hideBalances}
+        onViewAll={onViewAllTransactions}
+        onSelectTransaction={onSelectTransaction}
+        onOpenConnections={onOpenConnections}
+        onAddManual={onAddManual}
+      />
+
+      {/* Dialogs */}
+      <QuickTriageDialog
+        open={isTriageOpen}
+        onOpenChange={setIsTriageOpen}
+        items={triageItems}
+        currency={activeCurrency}
+      />
 
       <WeeklyCheckinDialog
         open={isWeeklyCheckinOpen}
@@ -163,7 +163,7 @@ export const HomeSection: React.FC<HomeSectionProps> = ({
         open={isSimulatorOpen}
         onOpenChange={setIsSimulatorOpen}
         currency={activeCurrency}
-        onProceedToRecord={() => onAddManual()}
+        onProceedToRecord={onAddManual}
       />
 
       <WeeklyDigestPreviewDialog
@@ -172,30 +172,17 @@ export const HomeSection: React.FC<HomeSectionProps> = ({
         currency={activeCurrency}
       />
 
-      <RecentTransactionsCard
-        transactions={transactions}
-        loading={loadingTransactions}
-        hideBalances={hideBalances}
-        onViewAll={onViewAllTransactions}
-        onSelectTransaction={onSelectTransaction}
-        onOpenConnections={onOpenConnections}
-        onAddManual={onAddManual}
+      <CardTrafficLightDialog
+        open={isTrafficLightOpen}
+        onOpenChange={setIsTrafficLightOpen}
       />
 
-      {statsError && !stats ? (
-        <Card>
-          <CardContent className="p-0">
-            <AsyncErrorState title="No pudimos cargar el resumen" description="Tus movimientos guardados siguen disponibles." onRetry={onRefresh} error={statsError} area="resumen" />
-          </CardContent>
-        </Card>
-      ) : loadingStats ? (
-        <LoadingSummaryCards />
-      ) : (
-        <MetricCards stats={stats} currency={currency} hideBalances={hideBalances} />
-      )}
-
-      <CurrentBudgetCard currency={currency} hideBalances={hideBalances} />
-      <CashFlowCard currency={currency} hideBalances={hideBalances} activeMonth={activeMonth} />
+      <CuadreDelMesModal
+        open={isWrappedOpen}
+        onOpenChange={setIsWrappedOpen}
+        initialStats={stats}
+        currency={currency}
+      />
     </>
   );
 };

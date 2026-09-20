@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { FileDown } from 'lucide-react';
 import type { ProductGuideState } from '@bills/contracts';
 import type { Transaction } from '@/entities/transaction';
 import { Navbar } from '@/widgets/navbar';
@@ -12,8 +11,8 @@ import { PeriodToolbar } from './PeriodToolbar';
 import { DashboardModals } from './DashboardModals';
 import { HomeSection } from './sections/HomeSection';
 import { TransactionsSection } from './sections/TransactionsSection';
-import { AnalyticsSection } from './sections/AnalyticsSection';
-import { BudgetSection } from './sections/BudgetSection';
+import { ControlSection } from './sections/ControlSection';
+import { HubSection } from './sections/HubSection';
 import { CoroHubPage } from '@/features/coro-hub';
 
 interface DashboardPageProps {
@@ -32,17 +31,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 }) => {
   const shell = useDashboardShell(productGuide);
   const {
-    activeSection,
-    isCoroRoute,
-    selectSection,
-    navigateForTour,
-    connectionsQuery,
-    primaryConnection,
-    requiresBankSelection,
-    isSettingsOpen,
-    setIsSettingsOpen,
-    isTourInviteOpen,
-    setIsTourInviteOpen,
+    activeSection, isCoroRoute, selectSection, navigateForTour,
+    connectionsQuery, primaryConnection, requiresBankSelection,
+    isSettingsOpen, setIsSettingsOpen, isTourInviteOpen, setIsTourInviteOpen,
     isTourOpen, setIsTourOpen, isExportModalOpen, setIsExportModalOpen,
     handleSyncConnection, isSyncingConnection,
   } = shell;
@@ -69,10 +60,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   const openBudgetTab = (tab?: string) => {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
+      next.set('view', 'budget');
       if (tab) next.set('tab', tab); else next.delete('tab');
       return next;
     });
-    selectSection('budget');
+    selectSection('control');
   };
   const activeFiltersCount = [categoryFilter, statusFilter, organizationFilter, typeFilter].filter(Boolean).length;
   const periodToolbarNode = (
@@ -125,8 +117,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
             connectionsFailed={connectionsQuery.isError}
             onOpenConnections={() => setIsSettingsOpen(true)}
             stats={stats}
-            statsError={statsError}
-            loadingStats={loadingStats}
             currency={currency}
             hideBalances={hideBalances}
             onRefresh={onRefresh}
@@ -135,7 +125,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
             onViewAllTransactions={() => selectSection('transactions')}
             onSelectTransaction={setEditingTransaction}
             onAddManual={() => setIsQuickAddOpen(true)}
-            activeMonth={currentPeriod.month}
             onSyncConnection={primaryConnection ? () => handleSyncConnection(primaryConnection.id) : undefined}
             syncingConnection={isSyncingConnection}
             onOpenBudget={() => openBudgetTab()}
@@ -158,39 +147,36 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
             onOpenConnections={() => setIsSettingsOpen(true)} onAddManual={() => setIsQuickAddOpen(true)}
           />
         )}
-        {!isCoroRoute && activeSection === 'analytics' && (
-          <AnalyticsSection
-            periodToolbar={(
-              <PeriodToolbar
-                currentPeriod={currentPeriod} onApplyPeriod={onApplyPeriod}
-                currency={currency} setCurrency={setCurrency}
-                action={
-                  <button
-                    type="button"
-                    onClick={() => setIsExportModalOpen(true)}
-                    className="flex min-h-12 flex-1 sm:flex-initial cursor-pointer items-center justify-center gap-2 rounded-2xl border border-border bg-card px-3 sm:px-4 text-xs font-bold text-foreground shadow-sm transition-all hover:bg-muted/60 active:scale-[0.98] whitespace-nowrap"
-                    title="Exportar informe"
-                  >
-                    <FileDown className="h-4 w-4 text-primary shrink-0" />
-                    <span>Exportar <span className="hidden sm:inline">reporte</span></span>
-                  </button>
-                }
-              />
-            )}
-            currentPeriod={currentPeriod} stats={stats} statsError={statsError}
-            loadingStats={loadingStats} currency={currency} hideBalances={hideBalances} onRefresh={onRefresh}
+        {!isCoroRoute && activeSection === 'control' && (
+          <ControlSection
+            periodToolbar={periodToolbarNode}
+            currentPeriod={currentPeriod}
+            currency={currency}
+            hideBalances={hideBalances}
+            stats={stats}
+            statsError={statsError}
+            loadingStats={loadingStats}
+            onRefresh={onRefresh}
+            onOpenExport={() => setIsExportModalOpen(true)}
           />
         )}
-        {!isCoroRoute && activeSection === 'budget' && (
-          <BudgetSection
-            periodToolbar={periodToolbarNode} currentPeriod={currentPeriod}
-            currency={currency} hideBalances={hideBalances}
+        {!isCoroRoute && activeSection === 'hub' && (
+          <HubSection
+            onOpenCoro={handleOpenCoro}
+            onOpenRules={() => setIsRulesModalOpen(true)}
+            onOpenConnections={() => setIsSettingsOpen(true)}
+            onOpenExport={() => setIsExportModalOpen(true)}
+            stats={stats}
+            currency={currency}
           />
         )}
       </main>
       <BottomNav
-        activeSection={isCoroRoute ? null : activeSection} onSelectSection={selectSection}
-        onQuickAdd={() => setIsQuickAddOpen(true)} activeFiltersCount={activeFiltersCount}
+        activeSection={isCoroRoute ? null : activeSection}
+        onSelectSection={selectSection}
+        onQuickAdd={() => setIsQuickAddOpen(true)}
+        onOpenCoro={() => handleOpenCoro()}
+        activeFiltersCount={activeFiltersCount}
       />
 
       <DashboardModals

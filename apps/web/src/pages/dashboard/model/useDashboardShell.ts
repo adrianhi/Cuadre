@@ -9,15 +9,17 @@ import { APP_SECTIONS, type AppSection } from '@/widgets/bottom-nav';
 export const DASHBOARD_SECTION_TITLES: Record<AppSection, string> = {
   home: 'Inicio',
   transactions: 'Movimientos',
-  budget: 'Presupuesto',
-  analytics: 'Analítica',
+  control: 'Control',
+  hub: 'Hub',
 };
 
 function sectionFromPath(pathname: string): AppSection | null {
   if (pathname.includes('/transactions') || pathname.includes('/movimientos')) return 'transactions';
-  if (pathname.includes('/analytics') || pathname.includes('/analitica')) return 'analytics';
-  if (pathname.includes('/budget') || pathname.includes('/presupuesto') || pathname.includes('/recurring')) return 'budget';
-  if (pathname.includes('/more') || pathname.includes('/mas')) return 'home';
+  if (pathname.includes('/control')) return 'control';
+  if (pathname.includes('/hub')) return 'hub';
+  if (pathname.includes('/analytics') || pathname.includes('/analitica')) return 'control';
+  if (pathname.includes('/budget') || pathname.includes('/presupuesto') || pathname.includes('/recurring')) return 'control';
+  if (pathname.includes('/more') || pathname.includes('/mas')) return 'hub';
   if (pathname.includes('/home') || pathname.includes('/inicio')) return 'home';
   return null;
 }
@@ -29,8 +31,6 @@ export function useDashboardShell(productGuide: ProductGuideState) {
   const activeSection = sectionFromPath(location.pathname) ?? 'home';
   const [isSettingsOpen, setIsSettingsOpen] = useState(
     () => new URLSearchParams(window.location.search).has('settings')
-      || window.location.pathname.includes('/mas')
-      || window.location.pathname.includes('/more')
   );
   const [isTourInviteOpen, setIsTourInviteOpen] = useState(
     () => productGuide.versionSeen !== productGuide.currentVersion
@@ -83,7 +83,7 @@ export function useDashboardShell(productGuide: ProductGuideState) {
 
   useEffect(() => {
     if (location.pathname.includes('/mas') || location.pathname.includes('/more')) {
-      navigate('/app/home?settings=tools', { replace: true });
+      navigate('/app/hub', { replace: true });
       return;
     }
     if (location.pathname.includes('/inicio')) {
@@ -94,16 +94,16 @@ export function useDashboardShell(productGuide: ProductGuideState) {
       navigate('/app/transactions', { replace: true });
       return;
     }
-    if (location.pathname.includes('/presupuesto')) {
-      navigate('/app/budget', { replace: true });
+    if (location.pathname.includes('/presupuesto') || location.pathname.includes('/budget')) {
+      navigate('/app/control?view=budget', { replace: true });
       return;
     }
     if (location.pathname.includes('/recurring') || location.pathname.includes('/suscripciones')) {
-      navigate('/app/budget?tab=recurring', { replace: true });
+      navigate('/app/control?view=budget&tab=recurring', { replace: true });
       return;
     }
-    if (location.pathname.includes('/analitica')) {
-      navigate('/app/analytics', { replace: true });
+    if (location.pathname.includes('/analitica') || location.pathname.includes('/analytics')) {
+      navigate('/app/control?view=analytics', { replace: true });
       return;
     }
     if (!sectionFromPath(location.pathname) && !isCoroRoute) {

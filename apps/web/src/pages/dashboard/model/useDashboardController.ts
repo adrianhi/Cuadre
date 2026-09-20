@@ -4,14 +4,13 @@ import { useStatsSummary } from '@/entities/stat';
 import { useTransactions } from '@/entities/transaction';
 import { usePeriodFilter } from '@/features/period-filter';
 import { useThemeAndPrivacy } from '@/shared/hooks/useThemeAndPrivacy';
+import type { AppSection } from '@/widgets/bottom-nav';
 
-type DashboardSection = 'home' | 'transactions' | 'budget' | 'analytics';
-
-export function useDashboardController(authToken: string, onLock: () => void, section: DashboardSection) {
+export function useDashboardController(authToken: string, onLock: () => void, section: AppSection) {
   const theme = useThemeAndPrivacy();
   const { periodSelection, handleApplyPeriod } = usePeriodFilter();
   const transactionsEnabled = section === 'home' || section === 'transactions';
-  const statsEnabled = section === 'home' || section === 'analytics';
+  const statsEnabled = section === 'home' || section === 'control' || section === 'hub';
   const transactions = useTransactions({ authToken, periodSelection, onUnauthorized: onLock, enabled: transactionsEnabled });
   const statsQuery = useStatsSummary({
     authToken, currency: transactions.currency, periodSelection,

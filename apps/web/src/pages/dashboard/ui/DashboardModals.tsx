@@ -167,7 +167,13 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
         open={isTourOpen && !requiresBankSelection && !isSettingsOpen}
         activeSection={activeSection}
         onOpenChange={setIsTourOpen}
-        onNavigate={onNavigate}
+        onNavigate={(section) => {
+          if (section === 'budget' || section === 'analytics') {
+            onNavigate('control');
+          } else {
+            onNavigate(section);
+          }
+        }}
         onStateChange={onProductGuideChange}
       />
       <ExportModal
