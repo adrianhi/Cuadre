@@ -11,3 +11,4 @@ export * from './payday-ritual';
 export * from './engagement';
 export * from './proactive';
 export * from './auth';
+export * from './category-catalog';

@@ -15,6 +15,7 @@ export function App() {
   // Authentication & Session
   const {
     authToken,
+    userEmail,
     checkingSession,
     setupError,
     onboardingComplete,
@@ -66,6 +67,7 @@ export function App() {
       >
         <DashboardPage
           authToken={authToken}
+          userEmail={userEmail}
           productGuide={productGuide}
           onProductGuideChange={setProductGuide}
           onLock={() => void handleLock()}

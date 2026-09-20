@@ -1,5 +1,6 @@
 import { ArrowLeftRight, ArrowUpRight, Check, CreditCard, Landmark, Receipt } from 'lucide-react';
-import { COMMON_CATEGORIES, FINANCIAL_INSTITUTIONS } from '@/shared/config/financial-options';
+import { FINANCIAL_INSTITUTIONS } from '@/shared/config/financial-options';
+import { CategoryPicker } from '@/entities/category';
 import { formatCurrency, parseAmountInput, toDateValue } from '@/shared/lib';
 import { Button, CurrencyAmountInput, DateTimePickerField, DialogFooter, Input } from '@/shared/ui';
 import type { QuickAddTransactionModel } from '../model/useQuickAddTransaction';
@@ -80,9 +81,7 @@ export function QuickAddTransactionFields({ model, onCancel }: QuickAddTransacti
       </div>
       <div className="space-y-1.5">
         <label className="text-xs font-semibold text-foreground">Categoría</label>
-        <select value={category} onChange={(event) => setCategory(event.target.value)} className="h-10 w-full cursor-pointer rounded-xl border border-input bg-background px-3 text-xs font-semibold text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
-          {COMMON_CATEGORIES.map((item) => <option key={item} value={item}>{item}</option>)}
-        </select>
+        <CategoryPicker value={category} onValueChange={setCategory} ariaLabel="Categoría del movimiento" />
       </div>
       <DateTimePickerField value={dateTime} onChange={setDateTime} label="Fecha y hora" maxDate={toDateValue(new Date())} error={fieldErrors.dateTime} description="Usaremos tu hora local y la guardaremos de forma segura." />
       <div className="space-y-1.5">

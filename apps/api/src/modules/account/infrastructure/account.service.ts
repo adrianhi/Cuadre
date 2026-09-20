@@ -82,6 +82,7 @@ export class AccountService {
                 incomeStreams: true,
                 recurringBills: { include: { occurrences: true, alerts: true } },
                 paydayRitualReviews: true,
+                categories: true,
               },
             },
           },

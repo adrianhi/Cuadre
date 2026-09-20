@@ -24,8 +24,14 @@ async function setupReports(page: Page) {
 }
 
 async function openReport(page: Page) {
-  await page.getByRole('button', { name: 'Abrir conexiones y privacidad' }).click();
-  await page.getByRole('button', { name: /Exportar datos/ }).click();
+  const desktopExport = page.getByRole('button', { name: 'Exportar', exact: true });
+  if (await desktopExport.isVisible()) {
+    await desktopExport.click();
+  } else {
+    await page.getByRole('button', { name: 'Abrir conexiones y privacidad' }).click();
+    await page.getByRole('tab', { name: 'Seguridad y datos' }).click();
+    await page.getByRole('button', { name: /Exportar datos/ }).click();
+  }
   const dialog = page.getByRole('dialog', { name: 'Centro de exportación' });
   await expect(dialog).toBeVisible();
   return dialog;

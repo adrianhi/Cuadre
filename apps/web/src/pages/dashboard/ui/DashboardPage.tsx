@@ -16,7 +16,7 @@ import { AnalyticsSection } from './sections/AnalyticsSection';
 import { BudgetSection } from './sections/BudgetSection';
 
 interface DashboardPageProps {
-  authToken: string;
+  authToken: string; userEmail?: string | null;
   productGuide: ProductGuideState;
   onProductGuideChange: (state: ProductGuideState) => void;
   onLock: () => void;
@@ -25,6 +25,7 @@ interface DashboardPageProps {
 
 export const DashboardPage: React.FC<DashboardPageProps> = ({
   authToken,
+  userEmail,
   productGuide,
   onProductGuideChange,
   onLock: lockSession,
@@ -94,6 +95,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         onSelectSection={selectSection}
         onQuickAdd={() => setIsQuickAddOpen(true)}
         activeFiltersCount={activeFiltersCount}
+        onOpenRules={() => setIsRulesModalOpen(true)} onOpenExport={() => setIsExportModalOpen(true)}
+        onOpenSettings={() => setIsSettingsOpen(true)} userEmail={userEmail} connection={primaryConnection}
       />
       <Navbar
         title={DASHBOARD_SECTION_TITLES[activeSection]}
@@ -102,6 +105,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         onRefresh={onRefresh}
         onOpenSettings={() => setIsSettingsOpen(true)}
         refreshing={refreshing || refreshingStats}
+        connection={primaryConnection}
       />
       <main className="mx-auto max-w-7xl space-y-6 px-4 py-5 pb-[calc(9rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-8 lg:ml-64 lg:pb-10">
         {activeSection === 'home' && (

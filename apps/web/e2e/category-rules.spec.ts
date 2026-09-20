@@ -6,13 +6,14 @@ test('editing suggests an exact rule, previews protected records and recovers ba
   await page.goto('/app/transactions');
   await page.locator('button[title="Editar clasificación"]:visible').or(page.getByRole('button', { name: /Uber.*Transporte/ })).first().click();
   const edit = page.getByRole('dialog');
-  await edit.locator('select').selectOption('Servicios');
+  await edit.getByRole('combobox', { name: 'Categoría del movimiento' }).click();
+  await page.getByRole('option', { name: 'Servicios' }).click();
   await edit.getByRole('checkbox', { name: 'Crear una regla para futuros' }).check();
   await edit.getByRole('button', { name: 'Guardar Cambios' }).click();
   await expect(page.getByRole('heading', { name: 'Reglas de categorización' })).toBeVisible();
   await expect(page.getByLabel('Coincidencia', { exact: true })).toHaveValue('MERCHANT');
   await expect(page.getByLabel('Comercio exacto')).toHaveValue('brand:uber-rides');
-  await expect(page.getByLabel('Categoría de la regla')).toHaveValue('Servicios');
+  await expect(page.getByRole('combobox', { name: 'Categoría de la regla' })).toHaveAttribute('data-category-value', 'Servicios');
   await page.getByRole('button', { name: 'Guardar regla', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Preparar vista previa' })).toBeVisible();
   await expect(page.getByRole('checkbox', { name: 'Incluir registros anteriores sin origen conocido' })).not.toBeChecked();
@@ -25,6 +26,7 @@ test('editing suggests an exact rule, previews protected records and recovers ba
   await page.getByRole('button', { name: 'Cerrar', exact: true }).first().click();
   mock.finish();
   await page.getByRole('button', { name: 'Abrir conexiones y privacidad' }).click();
+  await page.getByRole('tab', { name: 'Reglas y automatización' }).click();
   await page.getByRole('button', { name: /Reglas de categorías/ }).click();
   await expect(page.getByText('Aplicación · Completado')).toBeVisible();
   expect(mock.calls.find((call) => call.path.endsWith('/rules'))?.body).toMatchObject({ matchType: 'MERCHANT', merchantKey: 'brand:uber-rides', category: 'Servicios' });
@@ -37,6 +39,7 @@ test('contains mode warns about broad matches and validates without creating a r
   const mock = await mockRules(page);
   await page.goto('/app');
   await page.getByRole('button', { name: 'Abrir conexiones y privacidad' }).click();
+  await page.getByRole('tab', { name: 'Reglas y automatización' }).click();
   await page.getByRole('button', { name: /Reglas de categorías/ }).click();
   await page.getByLabel('Coincidencia', { exact: true }).selectOption('CONTAINS');
   await expect(page.getByText(/“UBER” también coincide con Uber Eats/)).toBeVisible();

@@ -15,3 +15,6 @@ export { PreviewRuleApplication } from './application/preview-rule-application';
 export { ConfirmRuleApplication } from './application/confirm-rule-application';
 export { RetryRuleApplication } from './application/retry-rule-application';
 export { PrismaRuleApplicationUnit } from './infrastructure/prisma-rule-application.unit';
+export { CategoryCatalogService } from './application/category-catalog.service';
+export { PrismaWorkspaceCategoryRepository } from './infrastructure/prisma-workspace-category.repository';
+export { CategoryCatalogController } from './http/category-catalog.controller';

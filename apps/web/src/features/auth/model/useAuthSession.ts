@@ -12,6 +12,7 @@ const CLEAR_INVITE_ERRORS = new Set(['BETA_INVITE_INVALID', 'BETA_INVITE_EXPIRED
 
 export function useAuthSession() {
   const [authToken, setAuthToken] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const [checkingSession, setCheckingSession] = useState(true);
   const [setupError, setSetupError] = useState<AuthSetupError | null>(null);
   const [onboardingComplete, setOnboardingComplete] = useState(false);
@@ -25,6 +26,7 @@ export function useAuthSession() {
   const clearSession = useCallback((clearError = true) => {
     tokenRef.current = null;
     setAuthToken(null);
+    setUserEmail(null);
     setOnboardingComplete(false);
     setLegalAcceptanceRequired(false);
     setProductGuide(EMPTY_GUIDE);
@@ -44,7 +46,7 @@ export function useAuthSession() {
   useEffect(() => {
     let active = true;
 
-    const activateSession = async (token?: string) => {
+    const activateSession = async (token?: string, email?: string) => {
       if (!active) return;
       if (!token) {
         activatingTokenRef.current = null;
@@ -65,6 +67,7 @@ export function useAuthSession() {
         clearInviteCode();
         inviteCodeRef.current = undefined;
         setAuthToken(token);
+        setUserEmail(email ?? null);
         setLegalAcceptanceRequired(bootstrap.legalAcceptanceRequired);
         setOnboardingComplete(bootstrap.onboardingComplete);
         setProductGuide(bootstrap.productGuide);
@@ -91,7 +94,7 @@ export function useAuthSession() {
     };
 
     authService.getSession()
-      .then((session) => activateSession(session?.access_token))
+      .then((session) => activateSession(session?.access_token, session?.user?.email))
       .catch((error: unknown) => {
         if (active) {
           setSetupError({ code: 'SESSION_CHECK_FAILED', message: error instanceof Error ? error.message : 'No se pudo comprobar la sesión.' });
@@ -99,7 +102,7 @@ export function useAuthSession() {
         }
       });
     const subscription = authService.onSessionChange((_event, session) => {
-      void activateSession(session?.access_token);
+      void activateSession(session?.access_token, session?.user?.email);
     });
 
     return () => {
@@ -110,6 +113,7 @@ export function useAuthSession() {
 
   return {
     authToken,
+    userEmail,
     checkingSession,
     setupError,
     onboardingComplete,

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Eye, EyeOff, RotateCcw } from 'lucide-react';
 import { 
   PieChart, 
   Pie, 
@@ -9,22 +10,13 @@ import {
 import { Card, CardHeader, CardTitle, CardContent } from '@/shared/ui';
 import { formatCurrency } from '@/shared/lib';
 import type { StatsSummary } from '@/entities/stat';
+import { categoryHexColor, useCategoryCatalog } from '@/entities/category';
+import { buildCategoryBreakdown, visibleCategoryBreakdown } from '../model/category-breakdown';
 
 interface CategoryBreakdownChartProps {
   stats: StatsSummary | null;
   currency: string;
 }
-
-const CATEGORY_COLORS = [
-  '#10b981', // Emerald (Supermercados)
-  '#3b82f6', // Blue (Servicios Financieros / Bancos)
-  '#f59e0b', // Amber (Restaurantes)
-  '#8b5cf6', // Purple (Transporte / Combustible)
-  '#ec4899', // Pink (Compras & Hogar)
-  '#06b6d4', // Cyan (Servicios / Suscripciones)
-  '#64748b', // Slate (Otros)
-  '#ef4444', // Red
-];
 
 interface CategoryTooltipProps {
   active?: boolean;
@@ -46,16 +38,24 @@ function CategoryTooltip({ active, payload, currency }: CategoryTooltipProps) {
 }
 
 export const CategoryBreakdownChart: React.FC<CategoryBreakdownChartProps> = ({ stats, currency }) => {
-  const data = React.useMemo(() => {
+  const categories = useCategoryCatalog(Boolean(stats));
+  const baseData = React.useMemo(() => {
     if (!stats || !stats.byCategory || stats.byCategory.length === 0) return [];
-    return stats.byCategory.map((cat, idx) => ({
-      name: cat.category,
-      value: cat.total,
-      count: cat.count,
-      percentage: cat.percentage,
-      color: CATEGORY_COLORS[idx % CATEGORY_COLORS.length],
-    }));
-  }, [stats]);
+    const colors = new Map((categories.data || []).map((item) => [item.label, categoryHexColor(item.colorKey)]));
+    return buildCategoryBreakdown(stats.byCategory).map((item) => ({ ...item, color: colors.get(item.name) || item.color }));
+  }, [stats, categories.data]);
+  const signature = `${currency}:${stats?.period || ''}:${baseData.map((item) => `${item.name}:${item.value}`).join('|')}`;
+  const [exclusionState, setExclusionState] = React.useState<{ signature: string; values: Set<string> }>({
+    signature: '', values: new Set(),
+  });
+  const excluded = exclusionState.signature === signature ? exclusionState.values : new Set<string>();
+  const { data, originalTotal, visibleTotal } = visibleCategoryBreakdown(baseData, excluded);
+  const toggle = (name: string) => setExclusionState((current) => {
+    const values = new Set(current.signature === signature ? current.values : []);
+    if (values.has(name)) values.delete(name); else values.add(name);
+    return { signature, values };
+  });
+  const reset = () => setExclusionState({ signature, values: new Set() });
 
   return (
     <Card className="border-border/60 shadow-sm flex flex-col justify-between" data-product-tour="analytics">
@@ -63,19 +63,27 @@ export const CategoryBreakdownChart: React.FC<CategoryBreakdownChartProps> = ({ 
         <div className="flex items-center justify-between">
           <CardTitle className="text-base font-semibold">Gastos por Categoría</CardTitle>
           <span className="text-xs text-muted-foreground">
-            {data.length} categorías activas
+            {data.length} de {baseData.length} categorías
           </span>
         </div>
       </CardHeader>
       <CardContent className="pt-2">
-        {data.length === 0 ? (
+        {baseData.length === 0 ? (
           <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
             No hay gastos registrados en este período.
           </div>
         ) : (
+          <div className="space-y-3">
+            {excluded.size > 0 && <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-muted/50 px-3 py-2 text-xs">
+              <span>Mostrando <strong>{formatCurrency(visibleTotal, currency)}</strong> de {formatCurrency(originalTotal, currency)} · {excluded.size} oculta{excluded.size === 1 ? '' : 's'}</span>
+              <button type="button" onClick={reset} className="flex items-center gap-1 font-semibold text-primary hover:underline"><RotateCcw className="h-3.5 w-3.5" />Mostrar todas</button>
+            </div>}
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <div className="h-64 w-full sm:w-1/2">
-              <ResponsiveContainer width="100%" height="100%">
+              {data.length === 0 ? <div className="flex h-full flex-col items-center justify-center gap-2 text-sm text-muted-foreground">
+                <EyeOff className="h-6 w-6" /><span>No hay categorías visibles.</span>
+                <button type="button" onClick={reset} className="font-semibold text-primary hover:underline">Mostrar todas</button>
+              </div> : <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={data}
@@ -92,30 +100,38 @@ export const CategoryBreakdownChart: React.FC<CategoryBreakdownChartProps> = ({ 
                   </Pie>
                   <Tooltip content={<CategoryTooltip currency={currency} />} />
                 </PieChart>
-              </ResponsiveContainer>
+              </ResponsiveContainer>}
             </div>
 
             {/* List / Legend */}
             <div className="w-full sm:w-1/2 space-y-2 max-h-60 overflow-y-auto pr-1">
-              {data.map((cat, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center justify-between text-xs p-1.5 rounded-lg hover:bg-muted/50 transition-colors"
+              {baseData.map((cat) => {
+                const hidden = excluded.has(cat.name);
+                const visiblePercentage = visibleTotal > 0 ? Math.round(cat.value / visibleTotal * 100) : 0;
+                return <button
+                  type="button"
+                  key={cat.name}
+                  aria-pressed={hidden}
+                  aria-label={`${hidden ? 'Mostrar' : 'Ocultar'} ${cat.name}`}
+                  onClick={() => toggle(cat.name)}
+                  className={`flex w-full items-center justify-between text-xs p-1.5 rounded-lg hover:bg-muted/50 transition-colors ${hidden ? 'opacity-40 grayscale' : ''}`}
                 >
                   <div className="flex items-center gap-2 truncate max-w-[130px]" title={cat.name}>
                     <span
                       className="h-2.5 w-2.5 rounded-full flex-shrink-0"
                       style={{ backgroundColor: cat.color }}
                     />
-                    <span className="font-medium truncate">{cat.name}</span>
+                    <span className={`font-medium truncate ${hidden ? 'line-through' : ''}`}>{cat.name}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground">{cat.percentage}%</span>
+                    {hidden ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5 text-muted-foreground" />}
+                    <span className="text-muted-foreground">{hidden ? '—' : `${visiblePercentage}%`}</span>
                     <span className="font-semibold">{formatCurrency(cat.value, currency)}</span>
                   </div>
-                </div>
-              ))}
+                </button>;
+              })}
             </div>
+          </div>
           </div>
         )}
       </CardContent>

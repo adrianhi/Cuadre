@@ -5,6 +5,7 @@ import { CategoryRuleApplicationService, PrismaCategoryRuleRepository, CategoryR
   SaveCategoryRule, ListExpenseCategories, ListTransactionCategories, PrismaRuleCatalog, CategorizeTransaction,
   PrismaRuleApplications, ProcessRuleApplication, RuleApplicationRunner, RuleApplicationController,
   PreviewRuleApplication, ConfirmRuleApplication, RetryRuleApplication, PrismaRuleApplicationUnit } from './modules/categorization';
+import { CategoryCatalogController, CategoryCatalogService, PrismaWorkspaceCategoryRepository } from './modules/categorization';
 import { PrismaClassificationCandidates, PrismaClassificationWriter, PrismaWorkspaceHolderNameReader } from './modules/transactions';
 import { TransactionApplicationService } from './modules/transactions/application/transaction-application.service';
 import { TransactionHttpController } from './modules/transactions/http/transaction.controller';
@@ -77,8 +78,9 @@ const incomeService = new IncomeService(incomeRepository, analyticsService);
 const incomeController = new IncomeController(incomeService);
 const ruleRepository = new PrismaCategoryRuleRepository();
 const ruleCatalog = new PrismaRuleCatalog();
-const expenseCategories = new ListExpenseCategories(ruleCatalog);
-const transactionCategories = new ListTransactionCategories(ruleCatalog);
+const workspaceCategories = new PrismaWorkspaceCategoryRepository(); const categoryCatalogService = new CategoryCatalogService(workspaceCategories, ruleCatalog);
+const expenseCategories = new ListExpenseCategories(ruleCatalog, workspaceCategories);
+const transactionCategories = new ListTransactionCategories(ruleCatalog, workspaceCategories);
 const categorizer = new CategorizeTransaction(ruleRepository);
 const ruleApplications = new PrismaRuleApplications((tx) => new PrismaClassificationWriter(tx));
 const ruleApplicationControl = new RunnerLoopControl();
@@ -196,6 +198,7 @@ const proactiveController = new ProactiveController(proactiveEngineService, proa
 const emailNotificationController = new EmailNotificationController(proactiveEmailService);
 
 export const appContainer = {
+  categoryCatalogController: new CategoryCatalogController(categoryCatalogService),
   betaInviteService,
   proactiveController,
   proactiveEmailRunner,

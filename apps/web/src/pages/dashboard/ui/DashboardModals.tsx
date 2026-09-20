@@ -9,6 +9,8 @@ import { RulesManagerModal, type RuleSuggestion } from '@/features/manage-rules'
 import { AccountSettingsModal } from '@/features/account-settings';
 import { ProductTour, ProductTourInvite } from '@/features/product-guide';
 import { ExportModal } from '@/features/export-center';
+import { CategoryManagerPanel } from '@/features/manage-categories';
+import { IncomeStreamsSettingsModal } from '@/features/income-streams';
 
 interface DashboardModalsProps {
   authToken: string;
@@ -90,6 +92,7 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
   filters,
 }) => {
   const [ruleSuggestion, setRuleSuggestion] = useState<RuleSuggestion>();
+  const [incomeSettingsOpen, setIncomeSettingsOpen] = useState(false);
   return (
     <>
       <QuickAddTransactionModal
@@ -140,8 +143,12 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
         onRepeatTour={() => { setIsSettingsOpen(false); setIsTourInviteOpen(false); setIsTourOpen(true); }}
         onOpenRules={() => { setIsSettingsOpen(false); setIsRulesModalOpen(true); }}
         onOpenExport={() => { setIsSettingsOpen(false); setIsExportModalOpen(true); }}
+        onOpenIncomeSettings={() => { setIsSettingsOpen(false); setIncomeSettingsOpen(true); }}
+        categoryManagement={<CategoryManagerPanel enabled={isSettingsOpen && !requiresBankSelection} />}
         onLock={onLock}
       />
+      <IncomeStreamsSettingsModal open={incomeSettingsOpen} onOpenChange={setIncomeSettingsOpen}
+        currency={currency === 'USD' ? 'USD' : 'DOP'} />
       <ProductTourInvite
         open={
           isTourInviteOpen &&

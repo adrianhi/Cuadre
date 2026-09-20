@@ -20,7 +20,10 @@ export async function mockRules(page: Page) {
       success: true, data: [transaction], pagination: { page: 1, limit: 20, total: 1, totalItems: 1, totalPages: 1 },
     }) });
     if (path.endsWith('/transactions/tx-rule')) { Object.assign(transaction, request.postDataJSON()); return json(transaction); }
-    if (path.endsWith('/rules/categories')) return json([{ key: 'transporte', label: 'Transporte' }, { key: 'servicios', label: 'Servicios' }]);
+    if (path.endsWith('/category-catalog') || path.endsWith('/rules/categories')) return json([
+      { id: null, key: 'transporte', label: 'Transporte', kind: 'SYSTEM', colorKey: 'violet', icon: '🚕', isArchived: false },
+      { id: null, key: 'servicios', label: 'Servicios', kind: 'SYSTEM', colorKey: 'blue', icon: '🧾', isArchived: false },
+    ]);
     if (path.endsWith('/rules/merchants')) return json([{ key: 'brand:uber-rides', label: 'Uber Viajes' }, { key: 'brand:uber-eats', label: 'Uber Eats' }]);
     if (path.endsWith('/rules/applications')) return json(jobs);
     if (path.endsWith('/applications/preview')) {

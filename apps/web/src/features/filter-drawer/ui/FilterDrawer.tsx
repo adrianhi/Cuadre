@@ -1,7 +1,8 @@
 import type { FC } from 'react';
 import { Download, RotateCcw, SlidersHorizontal, X } from 'lucide-react';
 import { Button } from '@/shared/ui';
-import { categoryOptions, movementTypeOptions, organizationOptions, statusOptions } from '../model/filter-options';
+import { categoryDotClass, useCategoryCatalog } from '@/entities/category';
+import { movementTypeOptions, organizationOptions, statusOptions } from '../model/filter-options';
 import { useDragToDismiss } from '../model/useDragToDismiss';
 import { FilterOptionSection } from './FilterOptionSection';
 
@@ -37,6 +38,7 @@ export const FilterDrawer: FC<FilterDrawerProps> = ({
   onExport,
 }) => {
   const { dragY, isDragging, handlers } = useDragToDismiss(onClose);
+  const categories = useCategoryCatalog(isOpen);
 
   if (!isOpen) return null;
 
@@ -133,7 +135,10 @@ export const FilterDrawer: FC<FilterDrawerProps> = ({
           />
           <FilterOptionSection
             title="Categoría"
-            options={categoryOptions}
+            options={[
+              { id: '', label: 'Todas las categorías' },
+              ...(categories.data || []).map((item) => ({ id: item.label, label: `${item.icon ? `${item.icon} ` : ''}${item.label}`, dot: categoryDotClass(item.colorKey) })),
+            ]}
             selected={categoryFilter}
             onSelect={setCategoryFilter}
           />

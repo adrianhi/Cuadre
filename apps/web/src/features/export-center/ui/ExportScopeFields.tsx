@@ -1,7 +1,7 @@
 import type { Institution } from '@/entities/connection';
 import type { PeriodSelection } from '@/entities/period';
 import { Building2, Calendar, Check, Coins, Filter } from 'lucide-react';
-import { COMMON_CATEGORIES } from '@/shared/config/financial-options';
+import { CategoryPicker } from '@/entities/category';
 import { formatDateLabel } from '@/shared/lib';
 import { DatePickerField } from '@/shared/ui';
 import { computePresetRange, type ExportPeriodType } from '../model/export-form';
@@ -172,20 +172,10 @@ export function ExportScopeFields(props: ExportScopeFieldsProps) {
       </fieldset>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <label className="text-xs font-medium">
+        <label className="space-y-1.5 text-xs font-medium">
           Categoría
-          <select
-            value={props.category}
-            onChange={(event) => props.setCategory(event.target.value)}
-            className={`${selectClass} mt-1.5`}
-          >
-            <option value="">Todas</option>
-            {COMMON_CATEGORIES.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
-          </select>
+          <CategoryPicker value={props.category} onValueChange={props.setCategory} emptyLabel="Todas"
+            ariaLabel="Filtrar exportación por categoría" />
         </label>
         <label className="text-xs font-medium">
           Tipo de movimiento

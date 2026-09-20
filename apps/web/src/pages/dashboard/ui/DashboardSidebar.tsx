@@ -1,13 +1,19 @@
 import React from 'react';
-import { Plus } from 'lucide-react';
+import { Download, Plus, Settings, SlidersHorizontal } from 'lucide-react';
 import { APP_SECTIONS, type AppSection } from '@/widgets/bottom-nav';
 import { Button } from '@/shared/ui';
+import { ConnectionStatusBadge, type InboxConnection } from '@/entities/connection';
 
 interface DashboardSidebarProps {
   activeSection: AppSection;
   onSelectSection: (section: AppSection) => void;
   onQuickAdd: () => void;
   activeFiltersCount?: number;
+  onOpenRules: () => void;
+  onOpenExport: () => void;
+  onOpenSettings: () => void;
+  userEmail?: string | null;
+  connection?: InboxConnection;
 }
 
 export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
@@ -15,7 +21,14 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   onSelectSection,
   onQuickAdd,
   activeFiltersCount = 0,
+  onOpenRules,
+  onOpenExport,
+  onOpenSettings,
+  userEmail,
+  connection,
 }) => {
+  const accountLabel = userEmail || connection?.email || 'Tu cuenta';
+  const initial = accountLabel.charAt(0).toUpperCase();
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r bg-card lg:flex">
       <div className="flex h-20 items-center gap-3 border-b px-6">
@@ -51,8 +64,13 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
             )}
           </button>
         ))}
+        <div className="mt-5 border-t pt-4">
+          <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Herramientas</p>
+          <button type="button" onClick={onOpenRules} className="flex min-h-10 w-full items-center gap-3 rounded-xl px-3 text-sm font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground"><SlidersHorizontal className="h-4 w-4" />Reglas de categorías</button>
+          <button type="button" onClick={onOpenExport} className="flex min-h-10 w-full items-center gap-3 rounded-xl px-3 text-sm font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground"><Download className="h-4 w-4" />Exportar</button>
+        </div>
       </nav>
-      <div className="border-t p-4">
+      <div className="space-y-3 border-t p-4">
         <Button
           onClick={onQuickAdd}
           data-product-tour="new-movement"
@@ -61,6 +79,11 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
           <Plus className="h-4 w-4" />
           Nuevo movimiento
         </Button>
+        <button type="button" onClick={onOpenSettings} className="flex w-full items-center gap-3 rounded-xl border p-2.5 text-left transition hover:bg-muted">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/10 text-sm font-bold text-primary">{initial}</span>
+          <span className="min-w-0 flex-1"><span className="block truncate text-xs font-semibold">{accountLabel}</span><ConnectionStatusBadge connection={connection} /></span>
+          <Settings className="h-4 w-4 text-muted-foreground" />
+        </button>
       </div>
     </aside>
   );

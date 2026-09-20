@@ -1,5 +1,6 @@
 import type { FormEvent } from 'react';
 import { Button, Input } from '@/shared/ui';
+import { CategoryPicker } from '@/entities/category';
 import type { useRulesManager } from '../model/useRulesManager';
 
 export function RuleEditorForm({ model, disabled, onSaved }: {
@@ -25,9 +26,8 @@ export function RuleEditorForm({ model, disabled, onSaved }: {
       <p className="text-xs text-muted-foreground">El nombre visible no cambia esta identidad. Uber Viajes y Uber Eats son comercios distintos.</p>
     </div> : <div className="space-y-2"><Input aria-label="Texto del patrón" maxLength={60} placeholder="Ej. FARMACIA CAROL" value={draft.pattern} onChange={(event) => field('pattern', event.target.value)} />
       <p className="text-xs text-amber-700 dark:text-amber-300">Una coincidencia amplia puede afectar a varios comercios. “UBER” también coincide con Uber Eats. Revisa la vista previa.</p></div>}
-    <label className="block text-sm">Categoría<select aria-label="Categoría de la regla" className={selectClass} value={draft.category}
-      onChange={(event) => field('category', event.target.value)}><option value="">Selecciona una categoría</option>
-      {model.categories.map((item) => <option key={item.key} value={item.label}>{item.label}</option>)}</select></label>
+    <label className="block space-y-1 text-sm">Categoría<CategoryPicker value={draft.category}
+      onValueChange={(value) => field('category', value)} ariaLabel="Categoría de la regla" /></label>
     <label className="block text-sm">Nombre visible opcional<Input aria-label="Nombre visible opcional" value={draft.normalizedMerchant || ''}
       maxLength={60} placeholder="Dejar vacío para conservar el nombre" onChange={(event) => field('normalizedMerchant', event.target.value)} /></label>
     <p className="text-xs text-muted-foreground">Guardar afecta a movimientos futuros. Para el histórico, genera y confirma una vista previa.</p>

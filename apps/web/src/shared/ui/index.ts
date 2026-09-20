@@ -13,4 +13,5 @@ export * from './card-overlay-loader';
 export * from './async-error-state';
 export * from './select';
 export * from './switch';
+export * from './tabs';
 export * from './toast';

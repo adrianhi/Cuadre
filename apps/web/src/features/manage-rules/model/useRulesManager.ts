@@ -1,20 +1,24 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createCategoryRuleInputSchema } from '@bills/contracts';
-import { categoryRuleService, categoryRuleKeys, useCategoryRules, useRuleCategories, useRuleMerchants,
+import { categoryRuleService, categoryRuleKeys, useCategoryRules, useRuleMerchants,
   type CategoryRuleDto, type CreateCategoryRuleInput } from '@/entities/category-rule';
+import { useCategoryCatalog } from '@/entities/category';
 import { emptyRule, editRule, type RuleSuggestion } from './rule-editor';
 
 export function useRulesManager(isOpen: boolean, authenticated: boolean, suggestion?: RuleSuggestion) {
   const client = useQueryClient();
   const query = useCategoryRules(isOpen && authenticated);
-  const categories = useRuleCategories(isOpen && authenticated);
+  const catalog = useCategoryCatalog(isOpen && authenticated);
   const [search, setSearch] = useState('');
   const merchants = useRuleMerchants(isOpen && authenticated, search);
   const suggestedMerchant = useRuleMerchants(isOpen && authenticated && Boolean(suggestion), '', suggestion?.transactionId);
   const [draftState, setDraft] = useState<CreateCategoryRuleInput>(() => emptyRule(suggestion?.category));
-  const draft = { ...draftState, category: draftState.category || categories.data?.[0]?.label || '',
-    merchantKey: draftState.merchantKey ?? suggestedMerchant.data?.[0]?.key };
+  const draft = {
+    ...draftState,
+    category: draftState.category || catalog.data?.[0]?.label || '',
+    merchantKey: draftState.merchantKey ?? suggestedMerchant.data?.[0]?.key,
+  };
   const [editing, setEditing] = useState<CategoryRuleDto | null>(null);
   const [error, setError] = useState('');
   const mutation = useMutation({
@@ -48,11 +52,11 @@ export function useRulesManager(isOpen: boolean, authenticated: boolean, suggest
     .filter((item, index, rows) => rows.findIndex((other) => other.key === item.key) === index);
   if (editing?.matchType === 'MERCHANT' && !choices.some((item) => item.key === editing.targetKey)) choices.unshift({ key: editing.targetKey, label: editing.pattern });
   return {
-    rules: query.data || [], categories: categories.data || [], merchants: choices,
-    loading: query.isLoading || categories.isLoading, search, setSearch, draft, setDraft, editing,
-    error: error || query.error?.message || categories.error?.message || merchants.error?.message || suggestedMerchant.error?.message,
+    rules: query.data || [], merchants: choices,
+    loading: query.isLoading, search, setSearch, draft, setDraft, editing,
+    error: error || query.error?.message || merchants.error?.message || suggestedMerchant.error?.message,
     pending: mutation.isPending, save, act,
     edit: (rule: CategoryRuleDto) => { setEditing(rule); setDraft(editRule(rule)); setError(''); },
-    reset: () => { setEditing(null); setDraft(emptyRule(categories.data?.[0]?.label)); setError(''); },
+    reset: () => { setEditing(null); setDraft(emptyRule(catalog.data?.[0]?.label)); setError(''); },
   };
 }

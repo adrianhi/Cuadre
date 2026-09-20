@@ -11,7 +11,7 @@ import {
   Input
 } from '@/shared/ui';
 import type { Transaction } from '@/entities/transaction';
-import { COMMON_CATEGORIES } from '@/shared/config/financial-options';
+import { CategoryPicker } from '@/entities/category';
 import { InternalTransferControl } from './InternalTransferControl';
 import { TransactionEditSummary } from './TransactionEditSummary';
 
@@ -141,17 +141,7 @@ export const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
           {/* Category Selector */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold">Categoría</label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            >
-              {COMMON_CATEGORIES.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
+            <CategoryPicker value={category} onValueChange={setCategory} ariaLabel="Categoría del movimiento" />
           </div>
 
           <InternalTransferControl

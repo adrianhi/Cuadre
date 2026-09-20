@@ -1,5 +1,6 @@
-import { AlertCircle } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/shared/ui';
+import { useState, type ReactNode } from 'react';
+import { AlertCircle, Bell, Landmark, ShieldCheck, WandSparkles } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui';
 import { useAccountSettings } from '../model/useAccountSettings';
 import { AccountConnectionsSection } from './AccountConnectionsSection';
 import { AccountPrivacySections } from './AccountPrivacySections';
@@ -17,6 +18,8 @@ interface AccountSettingsModalProps {
   onOpenRules: () => void;
   onOpenExport: () => void;
   onLock: () => void;
+  onOpenIncomeSettings?: () => void;
+  categoryManagement?: ReactNode;
 }
 
 export function AccountSettingsModal({
@@ -30,7 +33,10 @@ export function AccountSettingsModal({
   onOpenRules,
   onOpenExport,
   onLock,
+  onOpenIncomeSettings,
+  categoryManagement,
 }: AccountSettingsModalProps) {
+  const [activeTab, setActiveTab] = useState('connections');
   const model = useAccountSettings(isOpen, Boolean(authToken), onAccountDeleted);
   const mustSelectBanks = model.connections.some(
     (connection) => connection.status === 'ACTIVE' && connection.requiresBankSelection
@@ -38,7 +44,7 @@ export function AccountSettingsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && !mustSelectBanks && onClose()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
+      <DialogContent className="max-h-[92dvh] overflow-hidden sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>Cuenta y preferencias</DialogTitle>
           <DialogDescription>
@@ -61,10 +67,29 @@ export function AccountSettingsModal({
           </div>
         )}
 
-        <AccountConnectionsSection model={model} />
-        {!mustSelectBanks && <AccountEmailNotificationsSection model={model} />}
-        {!mustSelectBanks && <AccountToolsSection darkMode={darkMode} setDarkMode={setDarkMode} onRepeatTour={onRepeatTour} onOpenRules={onOpenRules} onOpenExport={onOpenExport} onLock={onLock} />}
-        <AccountPrivacySections model={model} />
+        <Tabs value={mustSelectBanks ? 'connections' : activeTab} onValueChange={(value) => !mustSelectBanks && setActiveTab(value)}
+          className="flex min-h-0 flex-1 flex-col gap-4 md:grid md:grid-cols-[13rem_1fr]">
+          <TabsList className="-mx-1 shrink-0 gap-1 overflow-x-auto px-1 pb-1 md:mx-0 md:flex-col md:items-stretch md:overflow-visible md:border-r md:pr-4">
+            <TabsTrigger value="connections" className="shrink-0"><Landmark className="h-4 w-4" />Bancos y Gmail</TabsTrigger>
+            <TabsTrigger value="automation" disabled={mustSelectBanks} className="shrink-0"><WandSparkles className="h-4 w-4" />Reglas y automatización</TabsTrigger>
+            <TabsTrigger value="notifications" disabled={mustSelectBanks} className="shrink-0"><Bell className="h-4 w-4" />Notificaciones</TabsTrigger>
+            <TabsTrigger value="security" disabled={mustSelectBanks} className="shrink-0"><ShieldCheck className="h-4 w-4" />Seguridad y datos</TabsTrigger>
+          </TabsList>
+          <div className="min-h-0 overflow-y-auto pr-1 md:max-h-[68dvh]">
+            <TabsContent value="connections"><AccountConnectionsSection model={model} /></TabsContent>
+            <TabsContent value="automation" className="space-y-4">
+              <AccountToolsSection mode="automation" darkMode={darkMode} setDarkMode={setDarkMode} onRepeatTour={onRepeatTour}
+                onOpenRules={onOpenRules} onOpenExport={onOpenExport} onLock={onLock} onOpenIncomeSettings={onOpenIncomeSettings} />
+              {categoryManagement}
+            </TabsContent>
+            <TabsContent value="notifications"><AccountEmailNotificationsSection model={model} /></TabsContent>
+            <TabsContent value="security" className="space-y-4">
+              <AccountToolsSection mode="account" darkMode={darkMode} setDarkMode={setDarkMode} onRepeatTour={onRepeatTour}
+                onOpenRules={onOpenRules} onOpenExport={onOpenExport} onLock={onLock} />
+              <AccountPrivacySections model={model} />
+            </TabsContent>
+          </div>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );

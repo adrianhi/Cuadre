@@ -13,6 +13,7 @@ import recurringRoutes from './recurring.routes';
 import paydayRitualRoutes from './payday-ritual.routes';
 import engagementRoutes from './engagement.routes';
 import proactiveRoutes from './proactive.routes';
+import categoryCatalogRoutes from './category-catalog.routes';
 import { appContainer } from '../app-container';
 import { asyncHandler } from '../shared/http/async-handler';
 
@@ -38,5 +39,6 @@ router.use('/v1', recurringRoutes);
 router.use('/v1', paydayRitualRoutes);
 router.use('/v1', engagementRoutes);
 router.use('/v1', proactiveRoutes);
+router.use('/v1', categoryCatalogRoutes);
 
 export default router;

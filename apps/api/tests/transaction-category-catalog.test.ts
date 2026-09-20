@@ -17,4 +17,10 @@ describe('transaction category catalogs', () => {
     const categories = await new ListTransactionCategories(source).list('workspace');
     expect(categories.map((item) => item.label)).toContain('Transferencias Propias');
   });
+
+  it('adds active workspace categories to rules and budgets', async () => {
+    const custom = { activeLabels: async () => ['Gimnasio'], archivedKeys: async () => [] };
+    expect((await new ListExpenseCategories(source, custom).list('workspace')).map((item) => item.label)).toContain('Gimnasio');
+    expect((await new ListTransactionCategories(source, custom).list('workspace')).map((item) => item.label)).toContain('Gimnasio');
+  });
 });
