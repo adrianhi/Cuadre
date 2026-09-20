@@ -39,6 +39,12 @@ export const coroService = {
     return parseResponse(coroPublicDetailSchema, response.data?.data);
   },
   async addParticipant(id: string, name: string) { await httpClient.post(`/coro/${id}/participants`, { name }); },
+  async updateParticipant(id: string, participantId: string, name: string) {
+    await httpClient.patch(`/coro/${id}/participants/${participantId}`, { name });
+  },
+  async removeParticipant(id: string, participantId: string) {
+    await httpClient.delete(`/coro/${id}/participants/${participantId}`);
+  },
   async releaseClaim(id: string, participantId: string) { await httpClient.post(`/coro/${id}/participants/${participantId}/release-claim`); },
   async updateOwnerPayment(id: string, paymentDestination: CoroPaymentDestination | null) {
     const response = await httpClient.patch(`/coro/${id}/participants/me`, { paymentDestination });
@@ -49,6 +55,10 @@ export const coroService = {
     return parseResponse(coroCandidateTransactionSchema.array(), response.data?.data);
   },
   async linkTransaction(id: string, input: LinkCoroTransactionInput) { await httpClient.post(`/coro/${id}/link-transaction`, input); },
+  async createOwnerExpense(id: string, input: CreateCoroExpenseInput) {
+    const response = await httpClient.post(`/coro/${id}/expenses`, input);
+    return parseResponse(coroPublicDetailSchema, response.data?.data);
+  },
   async removeOwnerExpense(id: string, expenseId: string) { await httpClient.delete(`/coro/${id}/expenses/${expenseId}`); },
   async confirmOwnerSettlement(id: string, settlementId: string) {
     const response = await httpClient.post(`/coro/${id}/settlements/${settlementId}/confirm`);

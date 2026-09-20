@@ -11,7 +11,6 @@ import { ProductTour, ProductTourInvite } from '@/features/product-guide';
 import { ExportModal } from '@/features/export-center';
 import { CategoryManagerPanel } from '@/features/manage-categories';
 import { IncomeStreamsSettingsModal } from '@/features/income-streams';
-import { CoroHubModal } from '@/features/coro-hub';
 
 interface DashboardModalsProps {
   authToken: string;
@@ -57,8 +56,7 @@ interface DashboardModalsProps {
     transactionType?: string;
     search?: string;
   };
-  isCoroOpen: boolean;
-  setIsCoroOpen: (open: boolean) => void;
+  onOpenCoro: () => void;
 }
 
 export const DashboardModals: React.FC<DashboardModalsProps> = ({
@@ -93,8 +91,7 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
   currentPeriod,
   currency,
   filters,
-  isCoroOpen,
-  setIsCoroOpen,
+  onOpenCoro,
 }) => {
   const [ruleSuggestion, setRuleSuggestion] = useState<RuleSuggestion>();
   const [incomeSettingsOpen, setIncomeSettingsOpen] = useState(false);
@@ -149,6 +146,7 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
         onOpenRules={() => { setIsSettingsOpen(false); setIsRulesModalOpen(true); }}
         onOpenExport={() => { setIsSettingsOpen(false); setIsExportModalOpen(true); }}
         onOpenIncomeSettings={() => { setIsSettingsOpen(false); setIncomeSettingsOpen(true); }}
+        onOpenCoro={() => { setIsSettingsOpen(false); onOpenCoro(); }}
         categoryManagement={<CategoryManagerPanel enabled={isSettingsOpen && !requiresBankSelection} />}
         onLock={onLock}
       />
@@ -179,7 +177,6 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
         initialCurrency={currency}
         initialFilters={filters}
       />
-      <CoroHubModal open={isCoroOpen} onOpenChange={setIsCoroOpen} />
     </>
   );
 };

@@ -99,6 +99,57 @@ export class PrismaCoroGroupStore {
     if (!result.count) throw new AppError(404, 'CORO_PARTICIPANT_NOT_FOUND', 'Participante no encontrado.');
   }
 
+  async updateParticipant(workspaceId: string, id: string, participantId: string, name: string) {
+    const group = await this.owned(workspaceId, id);
+    if (group.status !== 'ACTIVE') throw new AppError(409, 'CORO_LOCKED', 'Este coro ya no admite cambios.');
+    const trimmed = name.trim();
+    if (!trimmed) throw new AppError(400, 'INVALID_NAME', 'El nombre es obligatorio.');
+    const existing = group.participants.find((p) => p.id === participantId);
+    if (!existing) throw new AppError(404, 'CORO_PARTICIPANT_NOT_FOUND', 'Participante no encontrado.');
+    try {
+      return await prisma.coroParticipant.update({
+        where: { id: participantId },
+        data: { name: trimmed, normalizedName: normalizeCoroName(trimmed) },
+        select: { id: true, name: true, isOwner: true },
+      });
+    } catch {
+      throw new AppError(409, 'CORO_PARTICIPANT_EXISTS', 'Ya existe un participante con ese nombre.');
+    }
+  }
+
+  async removeParticipant(workspaceId: string, id: string, participantId: string) {
+    const group = await this.owned(workspaceId, id);
+    if (group.status !== 'ACTIVE') throw new AppError(409, 'CORO_LOCKED', 'No se pueden eliminar participantes de un coro cerrado o archivado.');
+    const target = group.participants.find((p) => p.id === participantId);
+    if (!target) throw new AppError(404, 'CORO_PARTICIPANT_NOT_FOUND', 'Participante no encontrado.');
+    if (target.isOwner) throw new AppError(400, 'CANNOT_REMOVE_OWNER', 'El anfitrión del coro no puede ser eliminado.');
+
+    const activeExpenses = await prisma.coroExpense.findFirst({
+      where: {
+        coroGroupId: id, deletedAt: null,
+        OR: [{ paidById: participantId }, { createdByParticipantId: participantId }, { splits: { some: { participantId } } }],
+      },
+      select: { id: true },
+    });
+    if (activeExpenses) throw new AppError(409, 'PARTICIPANT_HAS_EXPENSES', 'No puedes eliminar a este participante porque tiene gastos o divisiones asociadas.');
+
+    const confirmedSettlements = await prisma.coroSettlement.findFirst({
+      where: {
+        coroGroupId: id, status: { in: ['MARKED_PAID', 'CONFIRMED'] },
+        OR: [{ fromParticipantId: participantId }, { toParticipantId: participantId }],
+      },
+      select: { id: true },
+    });
+    if (confirmedSettlements) throw new AppError(409, 'PARTICIPANT_HAS_SETTLEMENTS', 'No puedes eliminar a un participante con transferencias confirmadas o marcadas como pagadas.');
+
+    await prisma.$transaction(async (tx) => {
+      await tx.coroSettlement.deleteMany({ where: { coroGroupId: id, OR: [{ fromParticipantId: participantId }, { toParticipantId: participantId }] } });
+      await tx.coroExpenseSplit.deleteMany({ where: { participantId } });
+      await tx.coroExpense.deleteMany({ where: { coroGroupId: id, deletedAt: { not: null }, OR: [{ paidById: participantId }, { createdByParticipantId: participantId }] } });
+      await tx.coroParticipant.delete({ where: { id: participantId } });
+    });
+  }
+
   async claim(slug: string, input: ClaimCoroParticipantInput) {
     const credentials = createParticipantToken();
     try {

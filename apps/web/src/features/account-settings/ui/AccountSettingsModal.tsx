@@ -19,6 +19,7 @@ interface AccountSettingsModalProps {
   onOpenExport: () => void;
   onLock: () => void;
   onOpenIncomeSettings?: () => void;
+  onOpenCoro?: () => void;
   categoryManagement?: ReactNode;
 }
 
@@ -34,6 +35,7 @@ export function AccountSettingsModal({
   onOpenExport,
   onLock,
   onOpenIncomeSettings,
+  onOpenCoro,
   categoryManagement,
 }: AccountSettingsModalProps) {
   const [activeTab, setActiveTab] = useState('connections');
@@ -44,7 +46,7 @@ export function AccountSettingsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && !mustSelectBanks && onClose()}>
-      <DialogContent className="w-[calc(100vw-1.25rem)] max-h-[92dvh] p-4 sm:p-6 overflow-hidden sm:max-w-4xl rounded-2xl sm:rounded-3xl flex flex-col gap-3 sm:gap-4">
+      <DialogContent className="w-[calc(100vw-1.25rem)] max-w-[calc(100vw-1.25rem)] max-h-[92dvh] p-4 sm:p-6 overflow-hidden sm:max-w-4xl rounded-2xl sm:rounded-3xl flex flex-col gap-3 sm:gap-4">
         <DialogHeader className="text-left pr-8 sm:pr-0">
           <DialogTitle className="text-base sm:text-lg font-bold">Cuenta y preferencias</DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
@@ -119,7 +121,7 @@ export function AccountSettingsModal({
             <TabsContent value="notifications"><AccountEmailNotificationsSection model={model} /></TabsContent>
             <TabsContent value="security" className="space-y-4">
               <AccountToolsSection mode="account" darkMode={darkMode} setDarkMode={setDarkMode} onRepeatTour={onRepeatTour}
-                onOpenRules={onOpenRules} onOpenExport={onOpenExport} onLock={onLock} />
+                onOpenRules={onOpenRules} onOpenExport={onOpenExport} onOpenCoro={onOpenCoro} onLock={onLock} />
               <AccountPrivacySections model={model} />
             </TabsContent>
           </div>

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { FileDown } from 'lucide-react';
 import type { ProductGuideState } from '@bills/contracts';
 import type { Transaction } from '@/entities/transaction';
@@ -14,6 +14,7 @@ import { HomeSection } from './sections/HomeSection';
 import { TransactionsSection } from './sections/TransactionsSection';
 import { AnalyticsSection } from './sections/AnalyticsSection';
 import { BudgetSection } from './sections/BudgetSection';
+import { CoroHubPage } from '@/features/coro-hub';
 
 interface DashboardPageProps {
   authToken: string; userEmail?: string | null;
@@ -32,6 +33,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   const shell = useDashboardShell(productGuide);
   const {
     activeSection,
+    isCoroRoute,
     selectSection,
     navigateForTour,
     connectionsQuery,
@@ -57,7 +59,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
     editingTransaction, setEditingTransaction, onSaveTransaction, onDeleteTransaction,
     isRulesModalOpen, setIsRulesModalOpen, isQuickAddOpen, setIsQuickAddOpen,
   } = model;
-  const [deletingTransaction, setDeletingTransaction] = useState<Transaction | null>(null); const [isCoroOpen, setIsCoroOpen] = useState(false);
+  const [deletingTransaction, setDeletingTransaction] = useState<Transaction | null>(null);
+  const navigate = useNavigate();
+  const handleOpenCoro = (coroId?: string) => {
+    navigate(coroId ? `/app/coro/${encodeURIComponent(coroId)}` : '/app/coro');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
   const [, setSearchParams] = useSearchParams();
   const openBudgetTab = (tab?: string) => {
     setSearchParams((prev) => {
@@ -89,25 +96,28 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   return (
     <div className="min-h-screen bg-background text-foreground antialiased">
       <DashboardSidebar
-        activeSection={activeSection}
+        activeSection={isCoroRoute ? null : activeSection}
+        coroActive={isCoroRoute}
         onSelectSection={selectSection}
         onQuickAdd={() => setIsQuickAddOpen(true)}
         activeFiltersCount={activeFiltersCount}
-        onOpenRules={() => setIsRulesModalOpen(true)} onOpenCoro={() => setIsCoroOpen(true)} onOpenExport={() => setIsExportModalOpen(true)}
+        onOpenRules={() => setIsRulesModalOpen(true)} onOpenCoro={() => handleOpenCoro()} onOpenExport={() => setIsExportModalOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)} userEmail={userEmail} connection={primaryConnection}
       />
       <Navbar
-        title={DASHBOARD_SECTION_TITLES[activeSection]}
+        title={isCoroRoute ? 'Modo Coro' : DASHBOARD_SECTION_TITLES[activeSection]}
         hideBalances={hideBalances}
         setHideBalances={setHideBalances}
         onRefresh={onRefresh}
         onOpenSettings={() => setIsSettingsOpen(true)}
-        onOpenCoro={() => setIsCoroOpen(true)}
+        onOpenCoro={() => handleOpenCoro()}
+        coroActive={isCoroRoute}
         refreshing={refreshing || refreshingStats}
         connection={primaryConnection}
       />
       <main className="mx-auto max-w-7xl space-y-6 px-4 py-5 pb-[calc(9rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-8 lg:ml-64 lg:pb-10">
-        {activeSection === 'home' && (
+        {isCoroRoute && <CoroHubPage />}
+        {!isCoroRoute && activeSection === 'home' && (
           <HomeSection
             periodToolbar={periodToolbarNode}
             primaryConnection={primaryConnection}
@@ -130,47 +140,30 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
             syncingConnection={isSyncingConnection}
             onOpenBudget={() => openBudgetTab()}
             onOpenRecurring={() => openBudgetTab('recurring')}
+            onOpenCoro={handleOpenCoro}
           />
         )}
-        {activeSection === 'transactions' && (
+        {!isCoroRoute && activeSection === 'transactions' && (
           <TransactionsSection
             periodToolbar={periodToolbarNode}
-            transactions={transactions}
-            totalTransactions={totalTransactions}
-            page={page}
-            setPage={setPage}
-            limit={limit}
-            search={search}
-            setSearch={setSearch}
-            categoryFilter={categoryFilter}
-            setCategoryFilter={setCategoryFilter}
-            statusFilter={statusFilter}
-            setStatusFilter={setStatusFilter}
-            organizationFilter={organizationFilter}
-            setOrganizationFilter={setOrganizationFilter}
-            typeFilter={typeFilter}
-            setTypeFilter={setTypeFilter}
-            onResetFilters={onResetFilters}
-            onEdit={setEditingTransaction}
-            onDelete={setDeletingTransaction}
-            onExport={() => setIsExportModalOpen(true)}
-            loading={loading}
-            refreshing={refreshing}
-            error={error instanceof Error ? error : null}
-            onRetry={onRefresh}
-            hideBalances={hideBalances}
-            onOpenConnections={() => setIsSettingsOpen(true)}
-            onAddManual={() => setIsQuickAddOpen(true)}
+            transactions={transactions} totalTransactions={totalTransactions}
+            page={page} setPage={setPage} limit={limit} search={search} setSearch={setSearch}
+            categoryFilter={categoryFilter} setCategoryFilter={setCategoryFilter}
+            statusFilter={statusFilter} setStatusFilter={setStatusFilter}
+            organizationFilter={organizationFilter} setOrganizationFilter={setOrganizationFilter}
+            typeFilter={typeFilter} setTypeFilter={setTypeFilter}
+            onResetFilters={onResetFilters} onEdit={setEditingTransaction} onDelete={setDeletingTransaction}
+            onExport={() => setIsExportModalOpen(true)} loading={loading} refreshing={refreshing}
+            error={error instanceof Error ? error : null} onRetry={onRefresh} hideBalances={hideBalances}
+            onOpenConnections={() => setIsSettingsOpen(true)} onAddManual={() => setIsQuickAddOpen(true)}
           />
         )}
-        {activeSection === 'analytics' && (
+        {!isCoroRoute && activeSection === 'analytics' && (
           <AnalyticsSection
             periodToolbar={(
               <PeriodToolbar
-                currentPeriod={currentPeriod}
-                onApplyPeriod={onApplyPeriod}
-                currency={currency}
-                setCurrency={setCurrency}
+                currentPeriod={currentPeriod} onApplyPeriod={onApplyPeriod}
+                currency={currency} setCurrency={setCurrency}
                 action={
                   <button
                     type="button"
@@ -184,64 +177,38 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                 }
               />
             )}
-            currentPeriod={currentPeriod}
-            stats={stats}
-            statsError={statsError}
-            loadingStats={loadingStats}
-            currency={currency}
-            hideBalances={hideBalances}
-            onRefresh={onRefresh}
+            currentPeriod={currentPeriod} stats={stats} statsError={statsError}
+            loadingStats={loadingStats} currency={currency} hideBalances={hideBalances} onRefresh={onRefresh}
           />
         )}
-        {activeSection === 'budget' && (
+        {!isCoroRoute && activeSection === 'budget' && (
           <BudgetSection
-            periodToolbar={periodToolbarNode}
-            currentPeriod={currentPeriod}
-            currency={currency}
-            hideBalances={hideBalances}
+            periodToolbar={periodToolbarNode} currentPeriod={currentPeriod}
+            currency={currency} hideBalances={hideBalances}
           />
         )}
       </main>
       <BottomNav
-        activeSection={activeSection}
-        onSelectSection={selectSection}
-        onQuickAdd={() => setIsQuickAddOpen(true)}
-        activeFiltersCount={activeFiltersCount}
+        activeSection={isCoroRoute ? null : activeSection} onSelectSection={selectSection}
+        onQuickAdd={() => setIsQuickAddOpen(true)} activeFiltersCount={activeFiltersCount}
       />
 
       <DashboardModals
-        authToken={authToken}
-        activeSection={activeSection}
-        onNavigate={navigateForTour}
-        isQuickAddOpen={isQuickAddOpen}
-        setIsQuickAddOpen={setIsQuickAddOpen}
-        onRefresh={onRefresh}
-        editingTransaction={editingTransaction}
-        setEditingTransaction={setEditingTransaction}
-        deletingTransaction={deletingTransaction}
-        setDeletingTransaction={setDeletingTransaction}
-        onSaveTransaction={onSaveTransaction}
-        onDeleteTransaction={onDeleteTransaction}
-        isRulesModalOpen={isRulesModalOpen}
-        setIsRulesModalOpen={setIsRulesModalOpen}
-        isSettingsOpen={isSettingsOpen}
-        setIsSettingsOpen={setIsSettingsOpen}
-        requiresBankSelection={requiresBankSelection}
-        onAccountDeleted={onAccountDeleted}
-        darkMode={darkMode}
-        setDarkMode={setDarkMode}
-        onLock={onLock}
-        isTourInviteOpen={isTourInviteOpen}
-        setIsTourInviteOpen={setIsTourInviteOpen}
-        isTourOpen={isTourOpen}
-        setIsTourOpen={setIsTourOpen}
-        onProductGuideChange={onProductGuideChange}
-        isExportModalOpen={isExportModalOpen}
-        setIsExportModalOpen={setIsExportModalOpen}
-        currentPeriod={currentPeriod}
-        currency={currency}
+        authToken={authToken} activeSection={activeSection} onNavigate={navigateForTour}
+        isQuickAddOpen={isQuickAddOpen} setIsQuickAddOpen={setIsQuickAddOpen} onRefresh={onRefresh}
+        editingTransaction={editingTransaction} setEditingTransaction={setEditingTransaction}
+        deletingTransaction={deletingTransaction} setDeletingTransaction={setDeletingTransaction}
+        onSaveTransaction={onSaveTransaction} onDeleteTransaction={onDeleteTransaction}
+        isRulesModalOpen={isRulesModalOpen} setIsRulesModalOpen={setIsRulesModalOpen}
+        isSettingsOpen={isSettingsOpen} setIsSettingsOpen={setIsSettingsOpen}
+        requiresBankSelection={requiresBankSelection} onAccountDeleted={onAccountDeleted}
+        darkMode={darkMode} setDarkMode={setDarkMode} onLock={onLock}
+        isTourInviteOpen={isTourInviteOpen} setIsTourInviteOpen={setIsTourInviteOpen}
+        isTourOpen={isTourOpen} setIsTourOpen={setIsTourOpen} onProductGuideChange={onProductGuideChange}
+        isExportModalOpen={isExportModalOpen} setIsExportModalOpen={setIsExportModalOpen}
+        currentPeriod={currentPeriod} currency={currency}
         filters={activeSection === 'transactions' ? currentFilters : {}}
-        isCoroOpen={isCoroOpen} setIsCoroOpen={setIsCoroOpen}
+        onOpenCoro={() => handleOpenCoro()}
       />
     </div>
   );

@@ -91,6 +91,7 @@ export const coroGroupSummarySchema = z.object({
 export const coroCandidateTransactionSchema = z.object({
   id: z.string(), merchant: z.string(), amount: z.number(), currency: coroCurrencySchema,
   category: z.string(), transactionDate: z.string().datetime(), institutionCode: z.string(),
+  cardLast4: z.string().nullable().optional(), transactionType: z.string().optional(),
 });
 
 export const claimCoroResultSchema = z.object({
@@ -115,6 +116,10 @@ export const claimCoroParticipantInputSchema = z.object({
 }).refine((value) => value.participantId || value.name, 'Selecciona o crea un participante');
 
 export const createCoroParticipantInputSchema = z.object({
+  name: z.string().trim().min(1).max(80),
+});
+
+export const updateCoroParticipantInputSchema = z.object({
   name: z.string().trim().min(1).max(80),
 });
 
@@ -157,6 +162,8 @@ export type CoroCandidateTransaction = z.infer<typeof coroCandidateTransactionSc
 export type CreateCoroGroupInput = z.infer<typeof createCoroGroupInputSchema>;
 export type UpdateCoroGroupInput = z.infer<typeof updateCoroGroupInputSchema>;
 export type ClaimCoroParticipantInput = z.infer<typeof claimCoroParticipantInputSchema>;
+export type CreateCoroParticipantInput = z.infer<typeof createCoroParticipantInputSchema>;
+export type UpdateCoroParticipantInput = z.infer<typeof updateCoroParticipantInputSchema>;
 export type CreateCoroExpenseInput = z.infer<typeof createCoroExpenseInputSchema>;
 export type UpdateCoroExpenseInput = z.infer<typeof updateCoroExpenseInputSchema>;
 export type LinkCoroTransactionInput = z.infer<typeof linkCoroTransactionInputSchema>;

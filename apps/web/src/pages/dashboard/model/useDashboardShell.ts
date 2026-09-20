@@ -25,6 +25,7 @@ function sectionFromPath(pathname: string): AppSection | null {
 export function useDashboardShell(productGuide: ProductGuideState) {
   const location = useLocation();
   const navigate = useNavigate();
+  const isCoroRoute = /^\/app\/coro(?:\/|$)/.test(location.pathname);
   const activeSection = sectionFromPath(location.pathname) ?? 'home';
   const [isSettingsOpen, setIsSettingsOpen] = useState(
     () => new URLSearchParams(window.location.search).has('settings')
@@ -105,10 +106,10 @@ export function useDashboardShell(productGuide: ProductGuideState) {
       navigate('/app/analytics', { replace: true });
       return;
     }
-    if (!sectionFromPath(location.pathname)) {
+    if (!sectionFromPath(location.pathname) && !isCoroRoute) {
       navigate('/app/home', { replace: true });
     }
-  }, [location.pathname, navigate]);
+  }, [isCoroRoute, location.pathname, navigate]);
 
   const selectSection = useCallback((
     section: AppSection,
@@ -127,6 +128,7 @@ export function useDashboardShell(productGuide: ProductGuideState) {
 
   return {
     activeSection,
+    isCoroRoute,
     selectSection,
     navigateForTour,
     connectionsQuery,

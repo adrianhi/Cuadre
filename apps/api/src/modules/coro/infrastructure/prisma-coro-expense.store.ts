@@ -66,6 +66,30 @@ export class PrismaCoroExpenseStore {
     return this.groups.publicDetail(slug, token);
   }
 
+  async createOwner(workspaceId: string, profileId: string, groupId: string, input: CreateCoroExpenseInput) {
+    const group = await prisma.coroGroup.findFirst({
+      where: { id: groupId, workspaceId }, include: { participants: true },
+    });
+    if (!group) throw new AppError(404, 'CORO_NOT_FOUND', 'Coro no encontrado.');
+    if (group.status !== 'ACTIVE') throw new AppError(409, 'CORO_LOCKED', 'Este coro ya no admite cambios.');
+    const owner = group.participants.find((item) => item.profileId === profileId && item.isOwner);
+    if (!owner) throw new AppError(403, 'CORO_OWNER_REQUIRED', 'Anfitrión no encontrado.');
+    this.validateParticipants(group.participants, input.paidById, input.splitParticipantIds);
+    const count = await prisma.coroExpense.count({ where: { coroGroupId: groupId, deletedAt: null } });
+    if (count >= MAX_EXPENSES) throw new AppError(409, 'CORO_EXPENSE_LIMIT', 'El coro alcanzó 1,000 gastos.');
+    await this.assertNoDuplicate(groupId, input, group.currency);
+    const splits = splitAmountCents(Math.round(input.amount * 100), input.splitParticipantIds);
+    const created = await prisma.coroExpense.create({ data: {
+      coroGroupId: groupId, paidById: input.paidById, createdByParticipantId: owner.id,
+      title: input.title, amount: new Prisma.Decimal(input.amount), currency: group.currency,
+      category: input.category, expenseDate: new Date(input.expenseDate), notes: input.notes ?? null,
+      splits: { create: splits.map((item) => ({ participantId: item.participantId,
+        assignedAmount: new Prisma.Decimal(item.amountCents).div(100) })) },
+    } });
+    logger.info('coro_owner_expense_created', { workspaceId, coroGroupId: groupId, expenseId: created.id });
+    return this.groups.detail(workspaceId, profileId, groupId);
+  }
+
   async updatePublic(slug: string, token: string, expenseId: string, input: UpdateCoroExpenseInput) {
     const { group, viewer } = await this.publicContext(slug, token);
     const existing = await prisma.coroExpense.findFirst({
@@ -143,7 +167,7 @@ export class PrismaCoroExpenseStore {
       workspaceId, deletedAt: null, statusCode: 'APPROVED', financialRole: 'EXPENSE', currency: group.currency,
       coroExpense: null, transactionDate: { gte: new Date(Date.now() - 90 * 86_400_000) },
     }, orderBy: { transactionDate: 'desc' }, take: 50,
-    select: { id: true, merchant: true, amount: true, currency: true, category: true, transactionDate: true, institutionCode: true } });
+    select: { id: true, merchant: true, amount: true, currency: true, category: true, transactionDate: true, institutionCode: true, cardLast4: true, transactionType: true } });
   }
 
   async link(workspaceId: string, profileId: string, groupId: string, input: LinkCoroTransactionInput) {

@@ -12,6 +12,7 @@ import { useSafeToSpend } from "@/entities/budget";
 import { SafeToSpendDial } from "@/widgets/safe-to-spend";
 import { usePaydayRitual } from "@/entities/payday-ritual";
 import { useCompletePaydayRitual } from "@/features/complete-payday-ritual";
+import { CoroPromoCard } from "@/features/coro-hub";
 import { PaydayRitualCard } from "@/widgets/payday-ritual";
 import { useTrackProductView } from "@/features/track-engagement";
 import {
@@ -49,6 +50,7 @@ interface HomeSectionProps {
   syncingConnection?: boolean;
   onOpenBudget: () => void;
   onOpenRecurring?: () => void;
+  onOpenCoro?: (coroId?: string) => void;
 }
 
 export const HomeSection: React.FC<HomeSectionProps> = ({
@@ -73,6 +75,7 @@ export const HomeSection: React.FC<HomeSectionProps> = ({
   syncingConnection,
   onOpenBudget,
   onOpenRecurring,
+  onOpenCoro,
 }) => {
   const safeToSpend = useSafeToSpend(currency === 'USD' ? 'USD' : 'DOP');
   const activeCurrency = currency === 'USD' ? 'USD' : 'DOP';
@@ -111,6 +114,8 @@ export const HomeSection: React.FC<HomeSectionProps> = ({
         hideBalances={hideBalances}
         onManageBudget={onOpenBudget}
       />
+
+      {onOpenCoro && <CoroPromoCard onOpenCoro={onOpenCoro} />}
 
       <ConnectionHealthCard
         connection={primaryConnection}

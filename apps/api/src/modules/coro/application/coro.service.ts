@@ -13,6 +13,8 @@ interface GroupStore {
   publicDetail(slug: string, token?: string): Promise<unknown>;
   update(workspaceId: string, id: string, input: UpdateCoroGroupInput): Promise<unknown>;
   addParticipant(workspaceId: string, id: string, name: string): Promise<unknown>;
+  updateParticipant(workspaceId: string, id: string, participantId: string, name: string): Promise<unknown>;
+  removeParticipant(workspaceId: string, id: string, participantId: string): Promise<void>;
   releaseClaim(workspaceId: string, id: string, participantId: string): Promise<void>;
   claim(slug: string, input: ClaimCoroParticipantInput): Promise<unknown>;
   updatePayment(slug: string, token: string, payment: CoroPaymentDestination | null): Promise<unknown>;
@@ -20,6 +22,7 @@ interface GroupStore {
 }
 interface ExpenseStore {
   create(slug: string, token: string, input: CreateCoroExpenseInput): Promise<unknown>;
+  createOwner(workspaceId: string, profileId: string, groupId: string, input: CreateCoroExpenseInput): Promise<unknown>;
   updatePublic(slug: string, token: string, expenseId: string, input: UpdateCoroExpenseInput): Promise<unknown>;
   removePublic(slug: string, token: string, expenseId: string): Promise<unknown>;
   removeOwner(workspaceId: string, groupId: string, expenseId: string): Promise<void>;
@@ -46,9 +49,12 @@ export class CoroService {
   detail(actor: CoroActor, id: string) { this.owner(actor); return this.groups.detail(actor.workspaceId, actor.userId, id); }
   update(actor: CoroActor, id: string, input: UpdateCoroGroupInput) { this.owner(actor); return this.groups.update(actor.workspaceId, id, input); }
   addParticipant(actor: CoroActor, id: string, name: string) { this.owner(actor); return this.groups.addParticipant(actor.workspaceId, id, name); }
+  updateParticipant(actor: CoroActor, id: string, participantId: string, name: string) { this.owner(actor); return this.groups.updateParticipant(actor.workspaceId, id, participantId, name); }
+  removeParticipant(actor: CoroActor, id: string, participantId: string) { this.owner(actor); return this.groups.removeParticipant(actor.workspaceId, id, participantId); }
   releaseClaim(actor: CoroActor, id: string, participantId: string) { this.owner(actor); return this.groups.releaseClaim(actor.workspaceId, id, participantId); }
   candidates(actor: CoroActor, id: string) { this.owner(actor); return this.expenses.candidates(actor.workspaceId, id); }
   link(actor: CoroActor, id: string, input: LinkCoroTransactionInput) { this.owner(actor); return this.expenses.link(actor.workspaceId, actor.userId, id, input); }
+  createOwnerExpense(actor: CoroActor, id: string, input: CreateCoroExpenseInput) { this.owner(actor); return this.expenses.createOwner(actor.workspaceId, actor.userId, id, input); }
   removeOwnerExpense(actor: CoroActor, id: string, expenseId: string) { this.owner(actor); return this.expenses.removeOwner(actor.workspaceId, id, expenseId); }
   updateOwnerExpense(actor: CoroActor, id: string, expenseId: string, input: UpdateCoroExpenseInput) { this.owner(actor); return this.expenses.updateOwner(actor.workspaceId, id, expenseId, input); }
   lock(actor: CoroActor, id: string) { this.owner(actor); return this.settlements.lock(actor.workspaceId, actor.userId, id); }

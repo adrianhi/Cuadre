@@ -1,10 +1,11 @@
-import { Download, HelpCircle, Landmark, Lock, Moon, SlidersHorizontal, Sun } from 'lucide-react';
+import { Download, HelpCircle, Landmark, Lock, Moon, SlidersHorizontal, Sun, Users } from 'lucide-react';
 import { Button } from '@/shared/ui';
 
 export function AccountToolsSection(props: {
   darkMode: boolean; setDarkMode: (value: boolean) => void;
   onRepeatTour: () => void; onOpenRules: () => void; onOpenExport: () => void; onLock: () => void;
   onOpenIncomeSettings?: () => void;
+  onOpenCoro?: () => void;
   mode?: 'automation' | 'account';
 }) {
   const automationTools = [
@@ -12,6 +13,7 @@ export function AccountToolsSection(props: {
     ...(props.onOpenIncomeSettings ? [{ label: 'Perfil de ingresos', description: 'Ajusta tu ritmo semanal, quincenal o mensual.', icon: Landmark, action: props.onOpenIncomeSettings }] : []),
   ];
   const accountTools = [
+    ...(props.onOpenCoro ? [{ label: 'Modo Coro', description: 'Gastos compartidos, viajes y cuadre automático.', icon: Users, action: props.onOpenCoro }] : []),
     { label: 'Exportar datos', description: 'Crea reportes o descarga tu cuenta completa.', icon: Download, action: props.onOpenExport },
     { label: 'Repetir recorrido', description: 'Vuelve a conocer las funciones principales.', icon: HelpCircle, action: props.onRepeatTour },
   ];

@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import {
   claimCoroParticipantInputSchema, createCoroExpenseInputSchema, createCoroGroupInputSchema,
   createCoroParticipantInputSchema, linkCoroTransactionInputSchema, updateCoroExpenseInputSchema,
-  updateCoroGroupInputSchema, updateCoroPaymentInputSchema,
+  updateCoroGroupInputSchema, updateCoroParticipantInputSchema, updateCoroPaymentInputSchema,
 } from '@bills/contracts';
 import { AppError } from '../../../errors/app-error';
 import { requestContext } from '../../../shared/application/request-context';
@@ -34,6 +34,13 @@ export class CoroController {
     await this.service.releaseClaim(requestContext(req).actor, String(req.params.id), String(req.params.participantId));
     data(res, { released: true });
   };
+  updateParticipant = async (req: Request, res: Response) => data(res,
+    await this.service.updateParticipant(requestContext(req).actor, String(req.params.id), String(req.params.participantId),
+      updateCoroParticipantInputSchema.parse(req.body).name));
+  removeParticipant = async (req: Request, res: Response) => {
+    await this.service.removeParticipant(requestContext(req).actor, String(req.params.id), String(req.params.participantId));
+    data(res, { deleted: true });
+  };
   lock = async (req: Request, res: Response) => data(res,
     await this.service.lock(requestContext(req).actor, String(req.params.id)));
   archive = async (req: Request, res: Response) => data(res,
@@ -46,6 +53,8 @@ export class CoroController {
     await this.service.link(requestContext(req).actor, String(req.params.id), linkCoroTransactionInputSchema.parse(req.body));
     data(res, { linked: true }, 201);
   };
+  createOwnerExpense = async (req: Request, res: Response) => data(res,
+    await this.service.createOwnerExpense(requestContext(req).actor, String(req.params.id), createCoroExpenseInputSchema.parse(req.body)), 201);
   removeOwnerExpense = async (req: Request, res: Response) => {
     await this.service.removeOwnerExpense(requestContext(req).actor, String(req.params.id), String(req.params.expenseId));
     data(res, { deleted: true });

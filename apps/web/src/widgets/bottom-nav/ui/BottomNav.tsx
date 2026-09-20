@@ -2,7 +2,7 @@ import { Plus } from 'lucide-react';
 import { APP_SECTIONS, type AppSection } from '../model/navigation';
 
 interface BottomNavProps {
-  activeSection: AppSection;
+  activeSection: AppSection | null;
   onSelectSection: (section: AppSection) => void;
   onQuickAdd: () => void;
   activeFiltersCount?: number;

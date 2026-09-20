@@ -1,11 +1,12 @@
 import React from 'react';
-import { Download, PartyPopper, Plus, Settings, SlidersHorizontal } from 'lucide-react';
+import { Download, Plus, Settings, SlidersHorizontal, Users } from 'lucide-react';
 import { APP_SECTIONS, type AppSection } from '@/widgets/bottom-nav';
 import { Button } from '@/shared/ui';
 import { ConnectionStatusBadge, type InboxConnection } from '@/entities/connection';
 
 interface DashboardSidebarProps {
-  activeSection: AppSection;
+  activeSection: AppSection | null;
+  coroActive?: boolean;
   onSelectSection: (section: AppSection) => void;
   onQuickAdd: () => void;
   activeFiltersCount?: number;
@@ -19,6 +20,7 @@ interface DashboardSidebarProps {
 
 export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   activeSection,
+  coroActive = false,
   onSelectSection,
   onQuickAdd,
   activeFiltersCount = 0,
@@ -69,7 +71,17 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
         <div className="mt-5 border-t pt-4">
           <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Herramientas</p>
           <button type="button" onClick={onOpenRules} className="flex min-h-10 w-full items-center gap-3 rounded-xl px-3 text-sm font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground"><SlidersHorizontal className="h-4 w-4" />Reglas de categorías</button>
-          <button type="button" onClick={onOpenCoro} className="flex min-h-10 w-full items-center gap-3 rounded-xl px-3 text-sm font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground"><PartyPopper className="h-4 w-4" />Modo Coro</button>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onOpenCoro}
+            aria-current={coroActive ? 'page' : undefined}
+            className={`min-h-10 w-full justify-start gap-3 rounded-xl px-3 text-sm font-semibold ${
+              coroActive ? 'bg-primary/10 text-primary' : 'text-muted-foreground'
+            }`}
+          >
+            <Users className="h-4 w-4" />Modo Coro
+          </Button>
           <button type="button" onClick={onOpenExport} className="flex min-h-10 w-full items-center gap-3 rounded-xl px-3 text-sm font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground"><Download className="h-4 w-4" />Exportar</button>
         </div>
       </nav>
