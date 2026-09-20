@@ -1,17 +1,19 @@
 import { useState } from 'react';
-import { ChevronDown, Link2, Plus, Trash2 } from 'lucide-react';
-import type { CoroPublicDetail } from '@/entities/coro';
+import { ChevronDown, Link2, Pencil, Plus, Trash2 } from 'lucide-react';
+import type { CoroExpense, CoroPublicDetail } from '@/entities/coro';
 import { coroService } from '@/entities/coro';
 import { formatCurrency } from '@/shared/lib';
 import { Button, toast } from '@/shared/ui';
 import { CoroCandidatesDialog } from './CoroCandidatesDialog';
 import { CoroConfirmDialog } from './CoroConfirmDialog';
+import { CoroEditExpenseDialog } from './CoroEditExpenseDialog';
 import { CoroManualExpenseDialog } from './CoroManualExpenseDialog';
 
 export function CoroExpensesTab({ detail, onRefresh }: { detail: CoroPublicDetail; onRefresh: () => Promise<void> }) {
   const [linkOpen, setLinkOpen] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
   const [manualTitle, setManualTitle] = useState('');
+  const [editingExpense, setEditingExpense] = useState<CoroExpense | null>(null);
   const [deletingId, setDeletingId] = useState<string>();
   const [pending, setPending] = useState(false);
   const [expandedExpenseId, setExpandedExpenseId] = useState<string | null>(null);
@@ -96,7 +98,17 @@ export function CoroExpensesTab({ detail, onRefresh }: { detail: CoroPublicDetai
                 <div className="flex items-center gap-2 shrink-0">
                   <strong className="text-sm font-black text-foreground">{formatCurrency(item.amount, detail.currency)}</strong>
                   <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isExpanded ? 'rotate-180 text-primary' : ''}`} />
-                  {active && (
+                  {active && item.canEdit && (
+                    <Button
+                      size="icon" variant="ghost"
+                      onClick={(e) => { e.stopPropagation(); setEditingExpense(item); }}
+                      className="h-8 w-8 text-muted-foreground hover:text-foreground shrink-0"
+                      aria-label={`Editar ${item.title}`}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {active && item.canEdit && (
                     <Button
                       size="icon" variant="ghost"
                       onClick={(e) => { e.stopPropagation(); setDeletingId(item.id); }}
@@ -157,6 +169,18 @@ export function CoroExpensesTab({ detail, onRefresh }: { detail: CoroPublicDetai
         title="Eliminar gasto" description="El gasto dejará de formar parte del cuadre. Esta acción no modifica la transacción bancaria original."
         confirmLabel="Eliminar gasto" destructive pending={pending} onConfirm={remove}
       />
+
+      {editingExpense && (
+        <CoroEditExpenseDialog
+          open={Boolean(editingExpense)}
+          onOpenChange={(open) => { if (!open) setEditingExpense(null); }}
+          coroId={detail.id}
+          currency={detail.currency}
+          expense={editingExpense}
+          participants={detail.participants}
+          onSuccess={onRefresh}
+        />
+      )}
     </div>
   );
 }

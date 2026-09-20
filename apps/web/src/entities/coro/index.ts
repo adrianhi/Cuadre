@@ -3,4 +3,5 @@ export { getCoroToken, saveCoroToken, clearCoroToken } from './model/token-stora
 export type {
   CoroPublicDetail, CoroParticipant, CoroExpense, CoroTransferSuggestion,
   CoroPaymentDestination, CoroGroupSummary, CreateCoroExpenseInput,
+  UpdateCoroExpenseInput, UpdateCoroGroupInput,
 } from '@bills/contracts';

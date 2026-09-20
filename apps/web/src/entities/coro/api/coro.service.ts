@@ -3,6 +3,7 @@ import {
   claimCoroResultSchema, coroCandidateTransactionSchema, coroGroupSummarySchema, coroPublicDetailSchema,
   type ClaimCoroParticipantInput, type CoroPaymentDestination, type CreateCoroExpenseInput,
   type CreateCoroGroupInput, type LinkCoroTransactionInput, type UpdateCoroExpenseInput,
+  type UpdateCoroGroupInput,
 } from '@bills/contracts';
 import { httpClient, normalizeApiError, parseResponse } from '@/shared/api';
 
@@ -28,6 +29,10 @@ export const coroService = {
   },
   async detail(id: string) {
     const response = await httpClient.get(`/coro/${id}`);
+    return parseResponse(coroPublicDetailSchema, response.data?.data);
+  },
+  async update(id: string, input: UpdateCoroGroupInput) {
+    const response = await httpClient.patch(`/coro/${id}`, input);
     return parseResponse(coroPublicDetailSchema, response.data?.data);
   },
   async lock(id: string) {
@@ -60,6 +65,9 @@ export const coroService = {
     return parseResponse(coroPublicDetailSchema, response.data?.data);
   },
   async removeOwnerExpense(id: string, expenseId: string) { await httpClient.delete(`/coro/${id}/expenses/${expenseId}`); },
+  async updateOwnerExpense(id: string, expenseId: string, input: UpdateCoroExpenseInput) {
+    await httpClient.patch(`/coro/${id}/expenses/${expenseId}`, input);
+  },
   async confirmOwnerSettlement(id: string, settlementId: string) {
     const response = await httpClient.post(`/coro/${id}/settlements/${settlementId}/confirm`);
     return parseResponse(coroPublicDetailSchema, response.data?.data);
