@@ -2,7 +2,10 @@ import { useState } from 'react';
 import type { CreateCoroExpenseInput } from '@bills/contracts';
 import type { CoroExpense, CoroParticipant } from '@/entities/coro';
 import { ApiClientError } from '@/shared/api';
-import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Input } from '@/shared/ui';
+import {
+  Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Input,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/shared/ui';
 
 interface Props {
   open: boolean; onOpenChange: (open: boolean) => void;
@@ -44,11 +47,13 @@ export function CoroExpenseDialog({ open, onOpenChange, participants, viewerId, 
           </div>}
           <label className="block text-sm font-semibold">Concepto<Input className="mt-1" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Cena, gasolina, alojamiento…" /></label>
           <label className="block text-sm font-semibold">Monto ({currency})<Input className="mt-1" type="number" min="0.01" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} /></label>
-          <label className="block text-sm font-semibold">Quién pagó<select className="mt-1 h-10 w-full rounded-md border bg-background px-3" value={paidById} onChange={(e) => setPaidById(e.target.value)}>
-            {participants.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+          <label className="block text-sm font-semibold">Quién pagó<Select value={paidById} onValueChange={setPaidById}>
+            <SelectTrigger className="mt-1 h-10" aria-label="Quién pagó"><SelectValue /></SelectTrigger>
+            <SelectContent>{participants.map((item) => <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>)}</SelectContent>
+          </Select></label>
           <label className="block text-sm font-semibold">Fecha<Input className="mt-1" type="datetime-local" value={date} onChange={(e) => setDate(e.target.value)} /></label>
           <fieldset><legend className="text-sm font-semibold">Dividir entre</legend><div className="mt-2 grid grid-cols-2 gap-2">
-            {participants.map((item) => <label key={item.id} className="flex items-center gap-2 rounded-xl border p-2 text-sm"><input type="checkbox" checked={selected.includes(item.id)} onChange={() => setSelected((current) => current.includes(item.id) ? current.filter((id) => id !== item.id) : [...current, item.id])} />{item.name}</label>)}
+            {participants.map((item) => <label key={item.id} className="flex items-center gap-2 rounded-xl border p-2 text-sm"><Input className="h-4 w-4 shrink-0 px-0 py-0 shadow-none" type="checkbox" checked={selected.includes(item.id)} onChange={() => setSelected((current) => current.includes(item.id) ? current.filter((id) => id !== item.id) : [...current, item.id])} />{item.name}</label>)}
           </div></fieldset>
         </div>
         <DialogFooter><Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button><Button disabled={saving || !title.trim() || Number(amount) <= 0 || !selected.length} onClick={() => void submit()}>{saving ? 'Guardando…' : initial ? 'Guardar cambios' : 'Guardar gasto'}</Button></DialogFooter>

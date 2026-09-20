@@ -39,7 +39,8 @@ test('an invited participant claims an identity and adds a shared expense', asyn
 
   await page.goto('/coro/terrenas-public-test');
   await expect(page.getByRole('heading', { name: '🏖️ Las Terrenas' })).toBeVisible();
-  await page.locator('select').first().selectOption(guestId);
+  await page.getByRole('combobox', { name: 'Seleccionar identidad' }).click();
+  await page.getByRole('option', { name: 'Pedro' }).click();
   await page.getByRole('button', { name: 'Soy yo' }).click();
   await page.getByRole('button', { name: 'Agregar gasto' }).click();
   await page.getByPlaceholder('Cena, gasolina, alojamiento…').fill('Cena');

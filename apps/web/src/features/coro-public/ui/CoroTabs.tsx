@@ -2,7 +2,10 @@ import { useState } from 'react';
 import { Check, Copy, Pencil, Trash2, Users } from 'lucide-react';
 import type { CoroPaymentDestination, CoroPublicDetail } from '@/entities/coro';
 import { formatCurrency, formatRelativeDate } from '@/shared/lib';
-import { Button, Input, Tabs, TabsContent, TabsList, TabsTrigger, toast } from '@/shared/ui';
+import {
+  Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Tabs, TabsContent, TabsList, TabsTrigger, toast,
+} from '@/shared/ui';
 
 interface Props {
   detail: CoroPublicDetail;
@@ -41,13 +44,18 @@ function PaymentEditor({ current, onSave }: { current?: CoroPaymentDestination |
   };
   return <div className="mt-5 space-y-3 rounded-2xl border p-4">
     <p className="font-bold">Mis datos para cobrar</p>
-    <select className="h-10 w-full rounded-md border bg-background px-3 text-sm" value={kind} onChange={(e) => setKind(e.target.value as 'BANK' | 'QIK')}>
-      <option value="BANK">Cuenta bancaria</option><option value="QIK">Qik</option>
-    </select>
-    {kind === 'BANK' && <select className="h-10 w-full rounded-md border bg-background px-3 text-sm" value={bank} onChange={(e) => setBank(e.target.value as typeof bank)}>
-      <option value="POPULAR">Popular</option><option value="BHD">BHD</option><option value="BANRESERVAS">Banreservas</option>
-    </select>}
-    {kind === 'BANK' && <select className="h-10 w-full rounded-md border bg-background px-3 text-sm" value={accountType} onChange={(e) => setAccountType(e.target.value as typeof accountType)}><option value="SAVINGS">Ahorros</option><option value="CHECKING">Corriente</option></select>}
+    <Select value={kind} onValueChange={(value) => setKind(value as 'BANK' | 'QIK')}>
+      <SelectTrigger className="h-10" aria-label="Tipo de cuenta para cobrar"><SelectValue /></SelectTrigger>
+      <SelectContent><SelectItem value="BANK">Cuenta bancaria</SelectItem><SelectItem value="QIK">Qik</SelectItem></SelectContent>
+    </Select>
+    {kind === 'BANK' && <Select value={bank} onValueChange={(value) => setBank(value as typeof bank)}>
+      <SelectTrigger className="h-10" aria-label="Banco"><SelectValue /></SelectTrigger>
+      <SelectContent><SelectItem value="POPULAR">Popular</SelectItem><SelectItem value="BHD">BHD</SelectItem><SelectItem value="BANRESERVAS">Banreservas</SelectItem></SelectContent>
+    </Select>}
+    {kind === 'BANK' && <Select value={accountType} onValueChange={(value) => setAccountType(value as typeof accountType)}>
+      <SelectTrigger className="h-10" aria-label="Tipo de cuenta bancaria"><SelectValue /></SelectTrigger>
+      <SelectContent><SelectItem value="SAVINGS">Ahorros</SelectItem><SelectItem value="CHECKING">Corriente</SelectItem></SelectContent>
+    </Select>}
     <Input value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder={kind === 'QIK' ? '8095551234' : 'Número de cuenta'} />
     <Input value={holder} onChange={(e) => setHolder(e.target.value)} placeholder="Nombre del titular" />
     <Button size="sm" disabled={saving || !identifier.trim() || !holder.trim()} onClick={() => void save()}>{saving ? 'Guardando…' : 'Guardar datos'}</Button>

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import type { CoroParticipant } from '@/entities/coro';
-import { Button, Input } from '@/shared/ui';
+import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui';
+
+const NEW_PARTICIPANT_VALUE = '__new_participant__';
 
 interface Props {
   participants: CoroParticipant[];
@@ -18,14 +20,19 @@ export function CoroClaimCard({ participants, pending, onClaim }: Props) {
       <p className="font-bold">¿Quién eres tú?</p>
       <p className="mt-1 text-sm text-muted-foreground">Elige tu nombre o crea uno para registrar gastos.</p>
       <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
-        <select value={participantId} onChange={(event) => {
-          setParticipantId(event.target.value);
-          const item = available.find((value) => value.id === event.target.value);
+        <Select value={participantId || NEW_PARTICIPANT_VALUE} onValueChange={(value) => {
+          const nextId = value === NEW_PARTICIPANT_VALUE ? '' : value;
+          setParticipantId(nextId);
+          const item = available.find((participant) => participant.id === nextId);
           if (item) setName(item.name);
-        }} className="h-10 rounded-xl border bg-background px-3 text-sm">
-          <option value="">Nombre nuevo</option>
-          {available.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-        </select>
+          else setName('');
+        }}>
+          <SelectTrigger className="h-10" aria-label="Seleccionar identidad"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value={NEW_PARTICIPANT_VALUE}>Nombre nuevo</SelectItem>
+            {available.map((item) => <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>)}
+          </SelectContent>
+        </Select>
         <Input value={name} onChange={(event) => { setName(event.target.value); if (selected && event.target.value !== selected.name) setParticipantId(''); }}
           placeholder="Tu nombre" className="h-10 rounded-xl" maxLength={80} />
         <Button disabled={pending || !name.trim()} onClick={() => onClaim({ participantId: participantId || undefined, name: name.trim() })}>
