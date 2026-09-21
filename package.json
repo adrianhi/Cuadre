@@ -17,7 +17,7 @@
     "web": "npm run dev:web",
     "landing": "npm run dev:landing",
     "api": "npm run dev:api",
-    "dev:web": "npm run dev:web -- --host",
+    "dev:web": "npm run dev --prefix apps/web",
     "dev:landing": "npm --prefix apps/landing run dev",
     "dev:api": "npm run dev --prefix apps/api",
     "build:landing": "npm --prefix apps/landing run build",
