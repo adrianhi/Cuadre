@@ -1,6 +1,9 @@
+require('dotenv').config();
+require('dotenv').config({ path: require('path').resolve(__dirname, '../.env.production') });
 const { PrismaClient } = require('@prisma/client');
 
-const prodDirectUrl = process.env.DIRECT_URL || process.env.DATABASE_URL || 'postgresql://postgres.fxijnufrdixjvizeynir:billsPasswordSecur@aws-0-us-west-2.pooler.supabase.com:5432/postgres';
+const prodDirectUrl = process.env.DIRECT_URL || process.env.DATABASE_URL;
+if (!prodDirectUrl) throw new Error('DIRECT_URL o DATABASE_URL requerida en el entorno');
 
 const prisma = new PrismaClient({
   datasources: {
