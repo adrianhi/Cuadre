@@ -37,6 +37,10 @@ test('creates categories inline, excludes analytics slices and exposes modular s
 
   await page.goto('/app/home');
   await page.getByRole('button', { name: 'Nuevo movimiento' }).filter({ visible: true }).first().click();
+  const actionSheetOption = page.getByRole('dialog', { name: 'Acciones rápidas' }).getByRole('button', { name: 'Nuevo movimiento' });
+  if (await actionSheetOption.isVisible()) {
+    await actionSheetOption.click();
+  }
   await page.getByRole('button', { name: 'Nueva categoría…' }).click();
   await page.getByLabel('Nombre').fill('Gimnasio');
   await page.getByLabel('Emoji opcional').fill('🏋️');

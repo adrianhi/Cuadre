@@ -73,46 +73,48 @@ export const TransactionsSection: React.FC<TransactionsSectionProps> = ({
   }
 
   return (
-    <>
+    <div className="w-full space-y-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <h2 className="text-xl font-bold tracking-tight sm:text-2xl">
+          <h2 className="text-xl font-bold tracking-tight sm:text-2xl 2xl:text-3xl">
             Todos tus movimientos
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-muted-foreground 2xl:text-base">
             Busca, filtra y corrige desde un solo lugar.
           </p>
         </div>
         {periodToolbar}
       </div>
-      <TransactionTable
-        transactions={transactions}
-        total={totalTransactions}
-        page={page}
-        setPage={setPage}
-        limit={limit}
-        search={search}
-        setSearch={setSearch}
-        categoryFilter={categoryFilter}
-        setCategoryFilter={setCategoryFilter}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-        organizationFilter={organizationFilter}
-        setOrganizationFilter={setOrganizationFilter}
-        typeFilter={typeFilter}
-        setTypeFilter={setTypeFilter}
-        onResetFilters={onResetFilters}
-        onEdit={onEdit}
-        onDelete={onDelete}
-        onExport={onExport}
-        loading={loading}
-        refreshing={refreshing}
-        error={error}
-        onRetry={onRetry}
-        hideBalances={hideBalances}
-        onOpenConnections={onOpenConnections}
-        onAddManual={onAddManual}
-      />
-    </>
+      <div className="w-full">
+        <TransactionTable
+          transactions={transactions}
+          total={totalTransactions}
+          page={page}
+          setPage={setPage}
+          limit={limit}
+          search={search}
+          setSearch={setSearch}
+          categoryFilter={categoryFilter}
+          setCategoryFilter={setCategoryFilter}
+          statusFilter={statusFilter}
+          setStatusFilter={setStatusFilter}
+          organizationFilter={organizationFilter}
+          setOrganizationFilter={setOrganizationFilter}
+          typeFilter={typeFilter}
+          setTypeFilter={setTypeFilter}
+          onResetFilters={onResetFilters}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onExport={onExport}
+          loading={loading}
+          refreshing={refreshing}
+          error={error}
+          onRetry={onRetry}
+          hideBalances={hideBalances}
+          onOpenConnections={onOpenConnections}
+          onAddManual={onAddManual}
+        />
+      </div>
+    </div>
   );
 };

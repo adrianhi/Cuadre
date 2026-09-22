@@ -29,10 +29,10 @@ export function Navbar({
 
   return (
     <header
-      className="sticky top-0 z-30 border-b bg-background/90 backdrop-blur-xl pt-[env(safe-area-inset-top)] transition-colors lg:pl-64"
+      className="sticky top-0 z-30 border-b bg-background/90 backdrop-blur-xl pt-[env(safe-area-inset-top)] transition-colors"
       data-product-tour-occluder="top-navigation"
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
+      <div className="mx-auto flex h-16 w-full max-w-7xl 2xl:max-w-[1600px] 3xl:max-w-[1880px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 2xl:px-12">
         <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 text-base font-black text-white shadow-sm lg:hidden">
             C.

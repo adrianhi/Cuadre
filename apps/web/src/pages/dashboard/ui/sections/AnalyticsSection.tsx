@@ -49,13 +49,13 @@ export const AnalyticsSection: React.FC<AnalyticsSectionProps> = ({
   }
 
   return (
-    <>
+    <div className="w-full space-y-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <h2 className="text-xl font-bold tracking-tight sm:text-2xl">
+          <h2 className="text-xl font-bold tracking-tight sm:text-2xl 2xl:text-3xl">
             Entiende tus hábitos
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-muted-foreground 2xl:text-base">
             Tendencias y categorías para tomar mejores decisiones.
           </p>
         </div>
@@ -70,7 +70,7 @@ export const AnalyticsSection: React.FC<AnalyticsSectionProps> = ({
         </Card>
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 2xl:gap-6">
             <React.Suspense
               fallback={
                 <>
@@ -86,16 +86,18 @@ export const AnalyticsSection: React.FC<AnalyticsSectionProps> = ({
               <DailySpendingChart stats={stats} currency={currency} />
             </React.Suspense>
           </div>
-          {!loadingStats && (
-            <ComparisonDetails
-              stats={stats}
-              currency={currency}
-              hideBalances={hideBalances}
-            />
-          )}
-          <AnalyticsBudgetCard period={currentPeriod} currency={currency} hideBalances={hideBalances} />
+          <div className="grid grid-cols-1 gap-5 2xl:grid-cols-2 2xl:gap-6">
+            {!loadingStats && (
+              <ComparisonDetails
+                stats={stats}
+                currency={currency}
+                hideBalances={hideBalances}
+              />
+            )}
+            <AnalyticsBudgetCard period={currentPeriod} currency={currency} hideBalances={hideBalances} />
+          </div>
         </>
       )}
-    </>
+    </div>
   );
 };

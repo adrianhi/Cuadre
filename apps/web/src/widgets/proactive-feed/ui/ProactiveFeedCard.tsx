@@ -121,7 +121,7 @@ export function ProactiveFeedCard(props: ProactiveFeedCardProps) {
             <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-primary/15 text-primary">
               <Sparkles className="h-4 w-4" />
             </span>
-            <h3 className="text-sm font-bold tracking-tight text-foreground whitespace-nowrap">
+            <h3 className="truncate text-sm font-bold tracking-tight text-foreground">
               Tu copiloto hoy
             </h3>
           </div>
@@ -130,7 +130,7 @@ export function ProactiveFeedCard(props: ProactiveFeedCardProps) {
               <Button
                 size="sm"
                 variant="ghost"
-                className="hidden sm:inline-flex h-7 gap-1 px-2 text-xs font-semibold text-primary hover:bg-primary/10"
+                className="hidden 3xl:inline-flex h-7 gap-1 px-2 text-xs font-semibold text-primary hover:bg-primary/10"
                 onClick={props.onOpenSimulator}
                 title="Simular impacto de un gasto antes de comprar"
               >
@@ -147,55 +147,42 @@ export function ProactiveFeedCard(props: ProactiveFeedCardProps) {
           {feed.actions.map((action: ProactiveActionDto) => (
             <div
               key={action.id}
-              className="group relative flex flex-col justify-between gap-3 rounded-xl border border-border/70 bg-card/80 p-3.5 transition-all hover:border-primary/40 sm:flex-row sm:items-center"
+              className="group relative rounded-xl border border-border/70 bg-card/80 p-3.5 transition-all hover:border-primary/40"
             >
-              <div className="flex items-start gap-3 min-w-0 flex-1">
+              {action.dismissible && (
+                <button
+                  type="button"
+                  onClick={() => props.onDismiss(action.id)}
+                  className="absolute top-3 right-3 rounded-lg p-1 text-muted-foreground/60 transition hover:bg-muted hover:text-foreground active:scale-95"
+                  aria-label="Descartar sugerencia"
+                  title="Descartar"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+
+              <div className="flex items-start gap-3 pr-7">
                 <ActionIcon kind={action.kind} priority={action.priority} />
-                <div className="min-w-0 flex-1 pr-1 sm:pr-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="text-xs sm:text-sm font-bold text-foreground">
-                      {action.title}
-                    </p>
-                    {action.dismissible && (
-                      <button
-                        type="button"
-                        onClick={() => props.onDismiss(action.id)}
-                        className="-mr-1 -mt-0.5 sm:hidden shrink-0 rounded-lg p-1 text-muted-foreground/60 transition hover:bg-muted hover:text-foreground active:scale-95"
-                        aria-label="Descartar sugerencia"
-                        title="Descartar"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    )}
-                  </div>
-                  <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-bold text-foreground">
+                    {action.title}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
                     {action.description}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-0.5 sm:pt-0 shrink-0">
+              <div className="mt-3 flex items-center justify-end">
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => handleActionClick(action)}
-                  className="h-8 w-full sm:w-auto justify-center gap-1.5 text-xs font-semibold text-primary hover:bg-primary/10 hover:text-primary border-primary/30"
+                  className="h-8 w-full sm:w-auto xl:w-full 3xl:w-auto justify-center gap-1.5 text-xs font-semibold text-primary hover:bg-primary/10 hover:text-primary border-primary/30"
                 >
                   {action.ctaLabel}
                   <ArrowRight className="h-3 w-3" />
                 </Button>
-
-                {action.dismissible && (
-                  <button
-                    type="button"
-                    onClick={() => props.onDismiss(action.id)}
-                    className="hidden sm:inline-flex shrink-0 rounded-lg p-1 text-muted-foreground/60 transition hover:bg-muted hover:text-foreground active:scale-95"
-                    aria-label="Descartar sugerencia"
-                    title="Descartar"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                )}
               </div>
             </div>
           ))}

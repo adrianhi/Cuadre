@@ -57,8 +57,8 @@ export function QuickActionRail({
   ];
 
   return (
-    <div className="relative -mx-4 sm:-mx-6 px-4 sm:px-6">
-      <div className="flex gap-2.5 overflow-x-auto pb-1 pt-1 no-scrollbar snap-x snap-mandatory">
+    <div className="relative -mx-4 px-4 sm:-mx-6 sm:px-6 xl:mx-0 xl:px-0">
+      <div className="flex gap-2.5 overflow-x-auto pb-1 pt-1 no-scrollbar snap-x snap-mandatory xl:grid xl:grid-cols-4 xl:gap-3 xl:overflow-visible xl:p-0">
         {actions.map((action) => {
           const Icon = action.icon;
           return (
@@ -66,26 +66,26 @@ export function QuickActionRail({
               key={action.id}
               type="button"
               onClick={action.onClick}
-              className="group flex shrink-0 items-center gap-2.5 rounded-2xl border border-border/70 bg-card p-2.5 pr-4 text-left shadow-sm transition-all hover:border-primary/40 hover:bg-muted/30 active:scale-[0.98] snap-start"
+              className="group flex shrink-0 items-center gap-2.5 rounded-2xl border border-border/70 bg-card p-2.5 pr-4 text-left shadow-sm transition-all hover:border-primary/40 hover:bg-muted/30 active:scale-[0.98] snap-start xl:w-full xl:shrink"
             >
               <span className={`relative grid h-9 w-9 shrink-0 place-items-center rounded-xl ${action.iconBg} transition group-hover:scale-105`}>
                 <Icon className="h-4 w-4" />
                 {action.hasIndicator && (
-                  <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-card" />
+                  <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-card" />
                 )}
               </span>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
-                  <p className="text-xs font-bold text-foreground leading-snug truncate">
+                  <p className="truncate text-xs font-bold leading-snug text-foreground">
                     {action.title}
                   </p>
                   {action.badgeText && (
-                    <Badge variant="success" className="rounded px-1 py-0.2 text-[9px] font-bold border-0">
+                    <Badge variant="success" className="shrink-0 rounded border-0 px-1 py-0.2 text-[9px] font-bold">
                       {action.badgeText}
                     </Badge>
                   )}
                 </div>
-                <p className="text-[11px] text-muted-foreground leading-tight truncate">
+                <p className="truncate text-[11px] leading-tight text-muted-foreground">
                   {action.subtitle}
                 </p>
               </div>

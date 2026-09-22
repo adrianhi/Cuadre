@@ -171,8 +171,8 @@ test('keeps a single page scroll and four primary sections at 390px', async ({ p
   const bottomNav = page.getByRole('navigation', { name: 'Navegación principal' }).filter({ visible: true });
   await expect(bottomNav.getByRole('button', { name: 'Inicio' })).toBeVisible();
   await expect(bottomNav.getByRole('button', { name: 'Movimientos' })).toBeVisible();
-  await expect(bottomNav.getByRole('button', { name: 'Presupuesto' })).toBeVisible();
-  await expect(bottomNav.getByRole('button', { name: 'Analítica' })).toBeVisible();
+  await expect(bottomNav.getByRole('button', { name: 'Control' })).toBeVisible();
+  await expect(bottomNav.getByRole('button', { name: 'Hub' })).toBeVisible();
   await expect(bottomNav.getByRole('button', { name: 'Modo Coro' })).toHaveCount(0);
   await page.getByRole('tab', { name: 'Gastos' }).click();
   await page.getByRole('button', { name: 'Vincular tarjeta' }).click();

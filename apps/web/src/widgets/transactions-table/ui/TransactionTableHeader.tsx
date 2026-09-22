@@ -41,7 +41,7 @@ export const TransactionTableHeader = ({ total, filters, onFilterChange, onReset
           <p className="mt-0.5 text-xs text-muted-foreground">Consulta, filtra y clasifica movimientos financieros</p>
         </div>
         <div className="flex w-full items-center gap-2 sm:w-auto">
-          <div className="relative flex-1 sm:w-60">
+          <div className="relative flex-1 sm:w-60 2xl:w-80">
             <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
             <Input placeholder="Buscar comercio, nota..." value={filters.search} onChange={(event) => onFilterChange('search', event.target.value)} className="h-9 pl-8 pr-8 text-xs" />
             {filters.search && <button type="button" onClick={() => onFilterChange('search', '')} className="absolute right-2.5 top-2.5 cursor-pointer text-muted-foreground hover:text-foreground"><X className="h-3.5 w-3.5" /></button>}
@@ -56,7 +56,7 @@ export const TransactionTableHeader = ({ total, filters, onFilterChange, onReset
         </div>
       </div>
 
-      <div className="-mx-4 flex items-center gap-1.5 overflow-x-auto px-4 py-2 sm:mx-0 sm:px-0">
+      <div className="-mx-4 flex items-center gap-1.5 overflow-x-auto px-4 py-2 sm:mx-0 sm:px-0 2xl:flex-wrap">
         <QuickChip active={!filters.organization && !filters.type && !filters.category} label="Todos" onClick={onReset} />
         <QuickChip active={filters.organization === 'BHD'} icon={<span className="h-2 w-2 rounded-full bg-emerald-500" />} label="BHD" onClick={() => toggle('organization', 'BHD')} />
         <QuickChip active={filters.organization === 'POPULAR'} icon={<span className="h-2 w-2 rounded-full bg-blue-500" />} label="Popular" onClick={() => toggle('organization', 'POPULAR')} />

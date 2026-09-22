@@ -96,81 +96,85 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         onOpenRules={() => setIsRulesModalOpen(true)} onOpenCoro={() => handleOpenCoro()} onOpenExport={() => setIsExportModalOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)} userEmail={userEmail} connection={primaryConnection}
       />
-      <Navbar
-        title={isCoroRoute ? 'Modo Coro' : DASHBOARD_SECTION_TITLES[activeSection]}
-        hideBalances={hideBalances}
-        setHideBalances={setHideBalances}
-        onRefresh={onRefresh}
-        onOpenSettings={() => setIsSettingsOpen(true)}
-        onOpenCoro={() => handleOpenCoro()}
-        coroActive={isCoroRoute}
-        refreshing={refreshing || refreshingStats}
-        connection={primaryConnection}
-      />
-      <main className="mx-auto max-w-7xl space-y-6 px-4 py-5 pb-[calc(9rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-8 lg:ml-64 lg:pb-10">
-        {isCoroRoute && <CoroHubPage />}
-        {!isCoroRoute && activeSection === 'home' && (
-          <HomeSection
-            periodToolbar={periodToolbarNode}
-            primaryConnection={primaryConnection}
-            connectionsLoading={connectionsQuery.isLoading}
-            connectionsFailed={connectionsQuery.isError}
-            onOpenConnections={() => setIsSettingsOpen(true)}
-            stats={stats}
-            currency={currency}
-            hideBalances={hideBalances}
-            onRefresh={onRefresh}
-            transactions={transactions}
-            loadingTransactions={loading}
-            onViewAllTransactions={() => selectSection('transactions')}
-            onSelectTransaction={setEditingTransaction}
-            onAddManual={() => setIsQuickAddOpen(true)}
-            onSyncConnection={primaryConnection ? () => handleSyncConnection(primaryConnection.id) : undefined}
-            syncingConnection={isSyncingConnection}
-            onOpenBudget={() => openBudgetTab()}
-            onOpenRecurring={() => openBudgetTab('recurring')}
-            onOpenCoro={handleOpenCoro}
-          />
-        )}
-        {!isCoroRoute && activeSection === 'transactions' && (
-          <TransactionsSection
-            periodToolbar={periodToolbarNode}
-            transactions={transactions} totalTransactions={totalTransactions}
-            page={page} setPage={setPage} limit={limit} search={search} setSearch={setSearch}
-            categoryFilter={categoryFilter} setCategoryFilter={setCategoryFilter}
-            statusFilter={statusFilter} setStatusFilter={setStatusFilter}
-            organizationFilter={organizationFilter} setOrganizationFilter={setOrganizationFilter}
-            typeFilter={typeFilter} setTypeFilter={setTypeFilter}
-            onResetFilters={onResetFilters} onEdit={setEditingTransaction} onDelete={setDeletingTransaction}
-            onExport={() => setIsExportModalOpen(true)} loading={loading} refreshing={refreshing}
-            error={error instanceof Error ? error : null} onRetry={onRefresh} hideBalances={hideBalances}
-            onOpenConnections={() => setIsSettingsOpen(true)} onAddManual={() => setIsQuickAddOpen(true)}
-          />
-        )}
-        {!isCoroRoute && activeSection === 'control' && (
-          <ControlSection
-            periodToolbar={periodToolbarNode}
-            currentPeriod={currentPeriod}
-            currency={currency}
-            hideBalances={hideBalances}
-            stats={stats}
-            statsError={statsError}
-            loadingStats={loadingStats}
-            onRefresh={onRefresh}
-            onOpenExport={() => setIsExportModalOpen(true)}
-          />
-        )}
-        {!isCoroRoute && activeSection === 'hub' && (
-          <HubSection
-            onOpenCoro={handleOpenCoro}
-            onOpenRules={() => setIsRulesModalOpen(true)}
-            onOpenConnections={() => setIsSettingsOpen(true)}
-            onOpenExport={() => setIsExportModalOpen(true)}
-            stats={stats}
-            currency={currency}
-          />
-        )}
-      </main>
+      <div className="flex min-h-screen min-w-0 w-full flex-col lg:pl-64">
+        <Navbar
+          title={isCoroRoute ? 'Modo Coro' : DASHBOARD_SECTION_TITLES[activeSection]}
+          hideBalances={hideBalances}
+          setHideBalances={setHideBalances}
+          onRefresh={onRefresh}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+          onOpenCoro={() => handleOpenCoro()}
+          coroActive={isCoroRoute}
+          refreshing={refreshing || refreshingStats}
+          connection={primaryConnection}
+        />
+        <main className="flex-1 min-w-0 w-full px-4 py-5 pb-[calc(9rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-8 lg:px-8 2xl:px-12 lg:pb-10">
+          <div className="mx-auto w-full min-w-0 max-w-7xl 2xl:max-w-[1600px] 3xl:max-w-[1880px] space-y-6">
+            {isCoroRoute && <CoroHubPage />}
+            {!isCoroRoute && activeSection === 'home' && (
+              <HomeSection
+                periodToolbar={periodToolbarNode}
+                primaryConnection={primaryConnection}
+                connectionsLoading={connectionsQuery.isLoading}
+                connectionsFailed={connectionsQuery.isError}
+                onOpenConnections={() => setIsSettingsOpen(true)}
+                stats={stats}
+                currency={currency}
+                hideBalances={hideBalances}
+                onRefresh={onRefresh}
+                transactions={transactions}
+                loadingTransactions={loading}
+                onViewAllTransactions={() => selectSection('transactions')}
+                onSelectTransaction={setEditingTransaction}
+                onAddManual={() => setIsQuickAddOpen(true)}
+                onSyncConnection={primaryConnection ? () => handleSyncConnection(primaryConnection.id) : undefined}
+                syncingConnection={isSyncingConnection}
+                onOpenBudget={() => openBudgetTab()}
+                onOpenRecurring={() => openBudgetTab('recurring')}
+                onOpenCoro={handleOpenCoro}
+              />
+            )}
+            {!isCoroRoute && activeSection === 'transactions' && (
+              <TransactionsSection
+                periodToolbar={periodToolbarNode}
+                transactions={transactions} totalTransactions={totalTransactions}
+                page={page} setPage={setPage} limit={limit} search={search} setSearch={setSearch}
+                categoryFilter={categoryFilter} setCategoryFilter={setCategoryFilter}
+                statusFilter={statusFilter} setStatusFilter={setStatusFilter}
+                organizationFilter={organizationFilter} setOrganizationFilter={setOrganizationFilter}
+                typeFilter={typeFilter} setTypeFilter={setTypeFilter}
+                onResetFilters={onResetFilters} onEdit={setEditingTransaction} onDelete={setDeletingTransaction}
+                onExport={() => setIsExportModalOpen(true)} loading={loading} refreshing={refreshing}
+                error={error instanceof Error ? error : null} onRetry={onRefresh} hideBalances={hideBalances}
+                onOpenConnections={() => setIsSettingsOpen(true)} onAddManual={() => setIsQuickAddOpen(true)}
+              />
+            )}
+            {!isCoroRoute && activeSection === 'control' && (
+              <ControlSection
+                periodToolbar={periodToolbarNode}
+                currentPeriod={currentPeriod}
+                currency={currency}
+                hideBalances={hideBalances}
+                stats={stats}
+                statsError={statsError}
+                loadingStats={loadingStats}
+                onRefresh={onRefresh}
+                onOpenExport={() => setIsExportModalOpen(true)}
+              />
+            )}
+            {!isCoroRoute && activeSection === 'hub' && (
+              <HubSection
+                onOpenCoro={handleOpenCoro}
+                onOpenRules={() => setIsRulesModalOpen(true)}
+                onOpenConnections={() => setIsSettingsOpen(true)}
+                onOpenExport={() => setIsExportModalOpen(true)}
+                stats={stats}
+                currency={currency}
+              />
+            )}
+          </div>
+        </main>
+      </div>
       <BottomNav
         activeSection={isCoroRoute ? null : activeSection}
         onSelectSection={selectSection}
