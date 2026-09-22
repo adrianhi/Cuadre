@@ -76,7 +76,7 @@ Debe mostrar:
 
 ## 4. Matriz de Variables de Entorno en Render
 
-Copia y pega las siguientes variables en la pestaña **Environment** de tu servicio en Render (basadas en [`.env.production.example`](../.env.production.example)):
+Copia y pega las siguientes variables en la pestaña **Environment** de tu servicio en Render (basadas en [`.env.example`](../.env.example)):
 
 | Variable | Valor / Ejemplo | Descripción |
 | :--- | :--- | :--- |

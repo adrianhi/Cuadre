@@ -15,9 +15,11 @@ const path = require('path');
 const { PrismaClient } = require('@prisma/client');
 const dotenv = require('dotenv');
 
-// Load environment files
+// Load environment files (.env as base, .env.production takes precedence if present)
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
-dotenv.config({ path: path.resolve(process.cwd(), '.env.production') });
+if (fs.existsSync(path.resolve(process.cwd(), '.env.production'))) {
+  dotenv.config({ path: path.resolve(process.cwd(), '.env.production'), override: true });
+}
 
 const rootDir = process.cwd();
 const results = {
