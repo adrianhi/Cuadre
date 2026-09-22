@@ -34,3 +34,13 @@ export {
 } from './ui/CardTrafficLightModal';
 
 export { CardTrafficLightWidget } from './ui/CardTrafficLightWidget';
+export { CardCutDateSelector, type CardCutDateSelectorProps } from './ui/CardCutDateSelector';
+export {
+  deduceClosingDayFromDueDay,
+  getBankDefaultGraceDays,
+  getBankCommonCuts,
+  COMMON_BANK_CUTS,
+  DEFAULT_GRACE_DAYS,
+  DOMINICAN_DUE_CHIPS,
+  type DeducedClosingDayResult,
+} from './model/closing-date-solver';

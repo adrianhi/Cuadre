@@ -11,7 +11,9 @@ import {
   SelectValue,
 } from '@/shared/ui';
 import { SUPPORTED_BANKS } from '../model/bank-theme';
+import { getBankDefaultGraceDays } from '../model/closing-date-solver';
 import { useCreditCardForm } from '../model/useCreditCardForm';
+import { CardCutDateSelector } from './CardCutDateSelector';
 
 interface CardFormSectionProps {
   cardToEdit?: CreditCard | null;
@@ -59,7 +61,10 @@ export function CardFormSection({
             <label className="text-xs font-semibold text-foreground">Banco / Emisor</label>
             <Select
               value={values.institutionCode}
-              onValueChange={(val) => setField('institutionCode', val)}
+              onValueChange={(val) => {
+                setField('institutionCode', val);
+                setField('graceDays', getBankDefaultGraceDays(val));
+              }}
             >
               <SelectTrigger className="h-10 rounded-xl">
                 <SelectValue placeholder="Selecciona el banco" />
@@ -88,7 +93,7 @@ export function CardFormSection({
           </div>
 
           {/* Últimos 4 dígitos */}
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 sm:col-span-2">
             <label className="text-xs font-semibold text-foreground">Últimos 4 dígitos</label>
             <Input
               type="text"
@@ -101,35 +106,16 @@ export function CardFormSection({
             {errors.cardLast4 && <p className="text-[11px] text-destructive">{errors.cardLast4}</p>}
           </div>
 
-          {/* Día de corte */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-foreground">Día de corte (1 - 31)</label>
-            <Input
-              type="number"
-              min={1}
-              max={31}
-              value={values.closingDay}
-              onChange={(e) => setField('closingDay', Number(e.target.value))}
-              className="h-10 rounded-xl"
-            />
-            {errors.closingDay && <p className="text-[11px] text-destructive">{errors.closingDay}</p>}
-          </div>
-
-          {/* Días de gracia */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-foreground">
-              Días de gracia <span className="text-[11px] text-muted-foreground font-normal">(def: 22)</span>
-            </label>
-            <Input
-              type="number"
-              min={0}
-              max={60}
-              value={values.graceDays}
-              onChange={(e) => setField('graceDays', Number(e.target.value))}
-              className="h-10 rounded-xl"
-            />
-            {errors.graceDays && <p className="text-[11px] text-destructive">{errors.graceDays}</p>}
-          </div>
+          {/* Selector interactivo de fecha de corte con pregunta inversa */}
+          <CardCutDateSelector
+            institutionCode={values.institutionCode}
+            closingDay={values.closingDay}
+            graceDays={values.graceDays}
+            onClosingDayChange={(day) => setField('closingDay', day)}
+            onGraceDaysChange={(days) => setField('graceDays', days)}
+            closingDayError={errors.closingDay}
+            graceDaysError={errors.graceDays}
+          />
         </div>
 
         {/* Buttons */}
