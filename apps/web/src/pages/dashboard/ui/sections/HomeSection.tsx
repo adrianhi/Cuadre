@@ -95,49 +95,55 @@ export const HomeSection: React.FC<HomeSectionProps> = ({
         {periodToolbar}
       </div>
 
-      <SafeToSpendDial
-        value={safeToSpend.data || null}
-        loading={safeToSpend.isLoading}
-        hideBalances={hideBalances}
-        onManageBudget={onOpenBudget}
-      />
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+        <div className="space-y-6 xl:col-span-7 2xl:col-span-8">
+          <SafeToSpendDial
+            value={safeToSpend.data || null}
+            loading={safeToSpend.isLoading}
+            hideBalances={hideBalances}
+            onManageBudget={onOpenBudget}
+          />
 
-      <QuickActionRail
-        onOpenTrafficLight={() => setIsTrafficLightOpen(true)}
-        onOpenCoro={() => onOpenCoro?.()}
-        onOpenWrapped={() => setIsWrappedOpen(true)}
-        onOpenSimulator={() => setIsSimulatorOpen(true)}
-      />
+          <QuickActionRail
+            onOpenTrafficLight={() => setIsTrafficLightOpen(true)}
+            onOpenCoro={() => onOpenCoro?.()}
+            onOpenWrapped={() => setIsWrappedOpen(true)}
+            onOpenSimulator={() => setIsSimulatorOpen(true)}
+          />
 
-      <ConnectionHealthCard
-        connection={primaryConnection}
-        loading={connectionsLoading}
-        failed={connectionsFailed}
-        onOpenConnections={onOpenConnections}
-        onSync={onSyncConnection}
-        syncing={syncingConnection}
-      />
+          <RecentTransactionsCard
+            transactions={transactions}
+            loading={loadingTransactions}
+            hideBalances={hideBalances}
+            onViewAll={onViewAllTransactions}
+            onSelectTransaction={onSelectTransaction}
+            onOpenConnections={onOpenConnections}
+            onAddManual={onAddManual}
+          />
+        </div>
 
-      <ProactiveFeedCard
-        feed={proactiveFeed.data || null}
-        loading={proactiveFeed.isLoading}
-        onDismiss={(actionId) => dismissProactiveAction.mutate(actionId)}
-        onNavigateBudget={onOpenBudget}
-        onNavigateRecurring={onOpenRecurring || onOpenBudget}
-        onQuickCategorize={(items) => { setTriageItems(items); setIsTriageOpen(true); }}
-        onOpenWeeklyCheckin={() => setIsWeeklyCheckinOpen(true)}
-        onOpenSimulator={() => setIsSimulatorOpen(true)}
-      />
+        <div className="space-y-6 xl:col-span-5 2xl:col-span-4">
+          <ProactiveFeedCard
+            feed={proactiveFeed.data || null}
+            loading={proactiveFeed.isLoading}
+            onDismiss={(actionId) => dismissProactiveAction.mutate(actionId)}
+            onNavigateBudget={onOpenBudget}
+            onNavigateRecurring={onOpenRecurring || onOpenBudget}
+            onQuickCategorize={(items) => { setTriageItems(items); setIsTriageOpen(true); }}
+            onOpenWeeklyCheckin={() => setIsWeeklyCheckinOpen(true)}
+            onOpenSimulator={() => setIsSimulatorOpen(true)}
+          />
 
-      <RecentTransactionsCard
-        transactions={transactions}
-        loading={loadingTransactions}
-        hideBalances={hideBalances}
-        onViewAll={onViewAllTransactions}
-        onSelectTransaction={onSelectTransaction}
-        onOpenConnections={onOpenConnections}
-        onAddManual={onAddManual}
-      />
+          <ConnectionHealthCard
+            connection={primaryConnection}
+            loading={connectionsLoading}
+            failed={connectionsFailed}
+            onOpenConnections={onOpenConnections}
+            onSync={onSyncConnection}
+            syncing={syncingConnection}
+          />
+        </div>
+      </div>
 
       {/* Dialogs */}
       <QuickTriageDialog
