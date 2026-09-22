@@ -4,7 +4,7 @@ import { ArrowRight, CreditCard, Download, Gift, Landmark, SlidersHorizontal, Sp
 import type { StatsSummary } from '@/entities/stat';
 import { CoroPromoCard } from '@/features/coro-hub';
 import { Button, Card, CardContent } from '@/shared/ui';
-import { CardTrafficLightDialog } from '../modals/CardTrafficLightDialog';
+import { CardTrafficLightModal } from '@/features/credit-cards';
 import { DobleSueldoDialog } from '../modals/DobleSueldoDialog';
 import { CuadreDelMesModal } from '@/features/cuadre-del-mes';
 
@@ -177,7 +177,7 @@ export function HubSection({
         </div>
       </div>
 
-      <CardTrafficLightDialog open={isTrafficLightOpen} onOpenChange={setIsTrafficLightOpen} />
+      <CardTrafficLightModal open={isTrafficLightOpen} onOpenChange={setIsTrafficLightOpen} />
       <DobleSueldoDialog open={isDobleSueldoOpen} onOpenChange={setIsDobleSueldoOpen} currency={currency} />
       <CuadreDelMesModal open={isWrappedOpen} onOpenChange={setIsWrappedOpen} initialStats={stats} currency={currency} />
     </div>

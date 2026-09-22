@@ -248,6 +248,7 @@ model Workspace {
   paydayRitualReviews  PaydayRitualReview[]
   productEvents        ProductEvent[]
   coroGroups           CoroGroup[]
+  creditCards          CreditCard[]
   createdAt            DateTime                 @default(now()) @map("created_at")
   updatedAt            DateTime                 @updatedAt @map("updated_at")
 
@@ -626,10 +627,33 @@ model FinancialInstitution {
   transactions       Transaction[]
   statusEvents       TransactionStatusEvent[]
   inboxSubscriptions InboxInstitutionSubscription[]
+  creditCards        CreditCard[]
   createdAt          DateTime                       @default(now()) @map("created_at")
   updatedAt          DateTime                       @updatedAt @map("updated_at")
 
   @@map("financial_institutions")
+}
+
+model CreditCard {
+  id              String               @id @default(uuid()) @db.Uuid
+  workspaceId     String               @map("workspace_id") @db.Uuid
+  institutionCode String               @map("institution_code")
+  alias           String
+  cardLast4       String               @map("card_last_4")
+  cardType        String?              @default("CREDIT") @map("card_type")
+  closingDay      Int                  @map("closing_day")
+  graceDays       Int                  @default(22) @map("grace_days")
+  isDefault       Boolean              @default(false) @map("is_default")
+  colorTheme      String?              @map("color_theme")
+  notes           String?
+  workspace       Workspace            @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  institution     FinancialInstitution @relation(fields: [institutionCode], references: [code], onDelete: Restrict)
+  createdAt       DateTime             @default(now()) @map("created_at")
+  updatedAt       DateTime             @updatedAt @map("updated_at")
+
+  @@unique([workspaceId, institutionCode, cardLast4])
+  @@index([workspaceId])
+  @@map("credit_cards")
 }
 
 model BankConnection {

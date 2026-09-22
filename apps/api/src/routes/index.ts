@@ -15,6 +15,7 @@ import engagementRoutes from './engagement.routes';
 import proactiveRoutes from './proactive.routes';
 import categoryCatalogRoutes from './category-catalog.routes';
 import coroRoutes from './coro.routes';
+import creditCardRoutes from './credit-card.routes';
 import { appContainer } from '../app-container';
 import { asyncHandler } from '../shared/http/async-handler';
 
@@ -42,5 +43,6 @@ router.use('/v1', engagementRoutes);
 router.use('/v1', proactiveRoutes);
 router.use('/v1', categoryCatalogRoutes);
 router.use('/v1', coroRoutes);
+router.use('/v1', creditCardRoutes);
 
 export default router;

@@ -19,7 +19,7 @@ import { WeeklyDigestPreviewDialog } from "@/features/weekly-digest";
 import { ConnectionHealthCard } from "../ConnectionHealthCard";
 import { RecentTransactionsCard } from "./RecentTransactionsCard";
 import { QuickActionRail } from "./QuickActionRail";
-import { CardTrafficLightDialog } from "../modals/CardTrafficLightDialog";
+import { CardTrafficLightModal } from "@/features/credit-cards";
 import { CuadreDelMesModal } from "@/features/cuadre-del-mes";
 
 interface HomeSectionProps {
@@ -172,7 +172,7 @@ export const HomeSection: React.FC<HomeSectionProps> = ({
         currency={activeCurrency}
       />
 
-      <CardTrafficLightDialog
+      <CardTrafficLightModal
         open={isTrafficLightOpen}
         onOpenChange={setIsTrafficLightOpen}
       />

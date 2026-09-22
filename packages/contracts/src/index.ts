@@ -13,3 +13,4 @@ export * from './proactive';
 export * from './auth';
 export * from './category-catalog';
 export * from './coro';
+export * from './credit-cards';
