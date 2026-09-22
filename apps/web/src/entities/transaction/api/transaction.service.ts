@@ -15,6 +15,10 @@ export const transactionService = {
     const response = await httpClient.get('/transactions', { params: compactParams(filters), signal });
     return parseResponse(transactionListResponseSchema, response.data);
   },
+  listTransactions(filters: TransactionFilters, signal?: AbortSignal) {
+    return transactionService.list(filters, signal);
+  },
+
   async update(input: { id: string; merchant: string; category: string; notes: string; financialRole?: TransactionFinancialRole }) {
     const response = await httpClient.patch(`/transactions/${input.id}`, input);
     return parseResponse(transactionSchema, response.data?.data);

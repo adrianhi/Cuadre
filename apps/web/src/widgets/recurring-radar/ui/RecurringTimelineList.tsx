@@ -10,6 +10,8 @@ interface RecurringTimelineListProps {
   onEdit: (bill: RecurringBillDto) => void;
   onStatus: (bill: RecurringBillDto, status: 'CONFIRMED' | 'PAUSED' | 'DISMISSED') => void;
   onAcknowledgeAlert: (alertId: string) => void;
+  onLink?: (bill: RecurringBillDto) => void;
+  onUnlink?: (bill: RecurringBillDto) => void;
 }
 
 export function RecurringTimelineList({
@@ -18,7 +20,10 @@ export function RecurringTimelineList({
   onEdit,
   onStatus,
   onAcknowledgeAlert,
+  onLink,
+  onUnlink,
 }: RecurringTimelineListProps) {
+
   const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'PAID' | 'PAUSED'>('ALL');
 
   const filteredBills = bills.filter((b) => {
@@ -118,6 +123,8 @@ export function RecurringTimelineList({
                 onEdit={onEdit}
                 onStatus={onStatus}
                 onAcknowledgeAlert={onAcknowledgeAlert}
+                onLink={onLink}
+                onUnlink={onUnlink}
               />
             ))}
           </div>

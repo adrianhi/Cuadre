@@ -42,4 +42,26 @@ export class RecurringService {
   sumFutureThrough(workspaceId: string, currency: string, after: string, through: string) {
     return this.repository.sumFutureThrough(workspaceId, currency, after, through);
   }
+
+  async linkTransaction(workspaceId: string, profileId: string, recurringBillId: string, transactionId: string) {
+    const result = await this.repository.linkTransaction(workspaceId, recurringBillId, transactionId);
+    await this.events?.recordAction({
+      workspaceId, profileId,
+      name: 'RECURRING_TRANSACTION_LINKED',
+      contextKey: `${recurringBillId}:${transactionId}`,
+      properties: { recurringBillId, transactionId },
+    });
+    return result;
+  }
+
+  async unlinkTransaction(workspaceId: string, profileId: string, recurringBillId: string, transactionId?: string) {
+    const result = await this.repository.unlinkTransaction(workspaceId, recurringBillId, transactionId);
+    await this.events?.recordAction({
+      workspaceId, profileId,
+      name: 'RECURRING_TRANSACTION_UNLINKED',
+      contextKey: `${recurringBillId}:${transactionId ?? 'all'}`,
+      properties: { recurringBillId, ...(transactionId ? { transactionId } : {}) },
+    });
+    return result;
+  }
 }

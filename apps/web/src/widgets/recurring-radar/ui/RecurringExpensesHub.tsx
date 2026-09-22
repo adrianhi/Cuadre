@@ -14,6 +14,8 @@ interface RecurringExpensesHubProps {
   onEdit: (bill: RecurringBillDto) => void;
   onStatus: (bill: RecurringBillDto, status: 'CONFIRMED' | 'PAUSED' | 'DISMISSED') => void;
   onAcknowledgeAlert: (alertId: string) => void;
+  onLink?: (bill: RecurringBillDto) => void;
+  onUnlink?: (bill: RecurringBillDto) => void;
 }
 
 export function RecurringExpensesHub({
@@ -26,6 +28,8 @@ export function RecurringExpensesHub({
   onEdit,
   onStatus,
   onAcknowledgeAlert,
+  onLink,
+  onUnlink,
 }: RecurringExpensesHubProps) {
   if (loading) {
     return (
@@ -75,6 +79,8 @@ export function RecurringExpensesHub({
         onEdit={onEdit}
         onStatus={onStatus}
         onAcknowledgeAlert={onAcknowledgeAlert}
+        onLink={onLink}
+        onUnlink={onUnlink}
       />
     </div>
   );

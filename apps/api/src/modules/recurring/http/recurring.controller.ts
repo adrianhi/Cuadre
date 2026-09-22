@@ -1,5 +1,8 @@
 import type { Request, Response } from 'express';
-import { acknowledgeRecurringAlertSchema, budgetCurrencySchema, createRecurringBillSchema, updateRecurringBillSchema } from '@bills/contracts';
+import {
+  acknowledgeRecurringAlertSchema, budgetCurrencySchema, createRecurringBillSchema,
+  linkRecurringTransactionSchema, updateRecurringBillSchema,
+} from '@bills/contracts';
 import { z } from 'zod';
 import { AppError } from '../../../errors/app-error';
 import { requestContext } from '../../../shared/application/request-context';
@@ -36,5 +39,23 @@ export class RecurringController {
       throw new AppError(404, 'RECURRING_ALERT_NOT_FOUND', 'No encontramos esa alerta.');
     }
     res.status(200).json({ success: true, data: { acknowledged: true } });
+  };
+
+  linkTransaction = async (req: Request, res: Response) => {
+    const { actor } = requestContext(req);
+    const recurringBillId = String(req.params.id);
+    const body = linkRecurringTransactionSchema.parse(req.body);
+    const result = await this.service.linkTransaction(actor.workspaceId, actor.userId, recurringBillId, body.transactionId);
+    res.status(200).json({ success: true, data: { linked: true, recurringBillId: result.recurringBillId, transactionId: result.transactionId } });
+  };
+
+  unlinkTransaction = async (req: Request, res: Response) => {
+    const { actor } = requestContext(req);
+    const recurringBillId = String(req.params.id);
+    const transactionId = req.params.transactionId
+      ? String(req.params.transactionId)
+      : (req.body?.transactionId ? String(req.body.transactionId) : undefined);
+    await this.service.unlinkTransaction(actor.workspaceId, actor.userId, recurringBillId, transactionId);
+    res.status(200).json({ success: true, data: { unlinked: true, recurringBillId } });
   };
 }

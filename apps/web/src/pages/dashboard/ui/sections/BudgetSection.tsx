@@ -4,12 +4,17 @@ import { Layers, Lightbulb, Repeat } from 'lucide-react';
 import { currentBudgetMonth, useBudgetSummary } from '@/entities/budget';
 import { useRecurringRadar, type RecurringBillDto } from '@/entities/recurring-bill';
 import { BudgetManagerDialog } from '@/features/budget-manager';
-import { RecurringCreatorDialog, RecurringEditorDialog, useManageRecurring } from '@/features/manage-recurring';
+import {
+  LinkRecurringTransactionDialog,
+  RecurringCreatorDialog,
+  RecurringEditorDialog,
+  useManageRecurring,
+} from '@/features/manage-recurring';
 import { IncomeStreamsSettingsModal } from '@/features/income-streams';
 import { BudgetOverviewCard, BudgetProgressList } from '@/widgets/budget-overview';
 import { RecurringExpensesHub } from '@/widgets/recurring-radar';
 import { formatCurrency } from '@/shared/lib';
-import { AsyncErrorState, Card, CardContent, LoadingScreen } from '@/shared/ui';
+import { AsyncErrorState, Card, CardContent, LoadingScreen, toast } from '@/shared/ui';
 import type { PeriodSelection } from '@/entities/period';
 
 function getMonthFromSelection(selection?: PeriodSelection): string {
@@ -31,48 +36,51 @@ export function BudgetSection(props: {
   const [creatorOpen, setCreatorOpen] = useState(false);
   const [incomeModalOpen, setIncomeModalOpen] = useState(false);
   const [editingRecurring, setEditingRecurring] = useState<RecurringBillDto | null>(null);
+  const [linkingBill, setLinkingBill] = useState<RecurringBillDto | null>(null);
 
   const month = getMonthFromSelection(props.currentPeriod);
   const currency = props.currency === 'USD' ? 'USD' : 'DOP';
 
-  // Budget category query
   const query = useBudgetSummary(month, currency);
   const summary = query.data ?? null;
 
-  // Recurring bills radar & mutations
   const recurringQuery = useRecurringRadar(currency);
   const recurringActions = useManageRecurring(currency);
 
   const setTab = (tab: 'categories' | 'recurring') => {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
-      if (tab === 'recurring') {
-        next.set('tab', 'recurring');
-      } else {
-        next.delete('tab');
-      }
+      if (tab === 'recurring') next.set('tab', 'recurring');
+      else next.delete('tab');
       return next;
     }, { replace: true });
   };
 
+  const handleLink = async (recurringBillId: string, transactionId: string) => {
+    try {
+      await recurringActions.linkTransaction.mutateAsync({ recurringBillId, transactionId });
+      toast.success('Movimiento vinculado exitosamente.');
+      setLinkingBill(null);
+    } catch {
+      toast.error('No se pudo vincular el movimiento.');
+    }
+  };
+
+  const handleUnlink = async (bill: RecurringBillDto) => {
+    try {
+      await recurringActions.unlinkTransaction.mutateAsync({ recurringBillId: bill.id });
+      toast.success('Movimiento desvinculado.');
+    } catch {
+      toast.error('No se pudo desvincular el movimiento.');
+    }
+  };
+
   if (query.isLoading && !summary && currentTab === 'categories') {
-    return (
-      <LoadingScreen
-        message="Cargando presupuesto…"
-        description="Calculando tus límites y consumos del mes."
-        fullPage
-      />
-    );
+    return <LoadingScreen message="Cargando presupuesto…" description="Calculando tus límites y consumos del mes." fullPage />;
   }
 
   if (recurringQuery.isLoading && !recurringQuery.data && currentTab === 'recurring') {
-    return (
-      <LoadingScreen
-        message="Cargando gastos fijos…"
-        description="Calculando tus compromisos y suscripciones del mes."
-        fullPage
-      />
-    );
+    return <LoadingScreen message="Cargando gastos fijos…" description="Calculando tus compromisos y suscripciones del mes." fullPage />;
   }
 
   return (
@@ -97,9 +105,7 @@ export function BudgetSection(props: {
           type="button"
           onClick={() => setTab('categories')}
           className={`flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-bold transition-all ${
-            currentTab === 'categories'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-muted-foreground hover:text-foreground'
+            currentTab === 'categories' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
           <Layers className="h-4 w-4" />
@@ -109,9 +115,7 @@ export function BudgetSection(props: {
           type="button"
           onClick={() => setTab('recurring')}
           className={`flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-bold transition-all ${
-            currentTab === 'recurring'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-muted-foreground hover:text-foreground'
+            currentTab === 'recurring' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
           <Repeat className="h-4 w-4" />
@@ -147,17 +151,11 @@ export function BudgetSection(props: {
                     <div className="mb-4 flex items-center justify-between">
                       <div>
                         <p className="font-bold">Límites por categoría</p>
-                        <p className="text-xs text-muted-foreground">
-                          Los pendientes se muestran sin consumir el límite.
-                        </p>
+                        <p className="text-xs text-muted-foreground">Los pendientes se muestran sin consumir el límite.</p>
                       </div>
                       <Lightbulb className="h-5 w-5 text-amber-500" />
                     </div>
-                    <BudgetProgressList
-                      items={summary.categories}
-                      currency={currency}
-                      hideBalances={props.hideBalances}
-                    />
+                    <BudgetProgressList items={summary.categories} currency={currency} hideBalances={props.hideBalances} />
                     {summary.unbudgetedSpent > 0 && (
                       <div className="mt-4 rounded-xl bg-muted/60 p-3">
                         <p className="text-xs font-bold">Gasto en categorías sin límite</p>
@@ -186,17 +184,13 @@ export function BudgetSection(props: {
           onEdit={setEditingRecurring}
           onStatus={(bill, status) => recurringActions.update.mutate({ id: bill.id, input: { status } })}
           onAcknowledgeAlert={(alertId) => recurringActions.acknowledge.mutate(alertId)}
+          onLink={(bill) => setLinkingBill(bill)}
+          onUnlink={handleUnlink}
         />
       )}
 
       {/* Dialogs */}
-      <BudgetManagerDialog
-        open={managerOpen}
-        onOpenChange={setManagerOpen}
-        month={month}
-        currency={currency}
-        summary={summary}
-      />
+      <BudgetManagerDialog open={managerOpen} onOpenChange={setManagerOpen} month={month} currency={currency} summary={summary} />
 
       <RecurringCreatorDialog
         open={creatorOpen}
@@ -222,11 +216,15 @@ export function BudgetSection(props: {
         }}
       />
 
-      <IncomeStreamsSettingsModal
-        open={incomeModalOpen}
-        onOpenChange={setIncomeModalOpen}
-        currency={currency}
+      <LinkRecurringTransactionDialog
+        bill={linkingBill}
+        open={Boolean(linkingBill)}
+        onOpenChange={(open) => { if (!open) setLinkingBill(null); }}
+        onLink={handleLink}
+        linking={recurringActions.linkTransaction.isPending}
       />
+
+      <IncomeStreamsSettingsModal open={incomeModalOpen} onOpenChange={setIncomeModalOpen} currency={currency} />
     </>
   );
 }

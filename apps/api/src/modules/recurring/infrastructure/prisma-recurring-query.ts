@@ -1,11 +1,15 @@
 import type { RecurringAlert, RecurringBill } from '@prisma/client';
 import type { CreateRecurringBillInput, RecurringBillDto, RecurringMonthStatus, RecurringRadarDto, UpdateRecurringBillInput } from '@bills/contracts';
 import { prisma } from '../../../config/database';
+import { AppError } from '../../../errors/app-error';
 import { expenseTransactionWhere } from '../../transactions';
 import { projectTotalMonthlyIncome } from '../../incomes';
 import { daysFrom, monthlyBurden, parseDateOnly, projectedDates, toDateOnly } from '../domain/recurring-projection';
 
-type BillWithAlerts = RecurringBill & { alerts: RecurringAlert[] };
+type BillWithAlerts = RecurringBill & {
+  alerts: RecurringAlert[];
+  occurrences?: Array<{ transaction?: { id: string; merchant: string; amount: unknown; transactionDate: Date } | null }>;
+};
 const round = (value: number) => Math.round(value * 100) / 100;
 
 function santoDomingoToday() {
@@ -17,7 +21,13 @@ function santoDomingoToday() {
 export function recurringDto(
   bill: BillWithAlerts,
   today = santoDomingoToday(),
-  extra?: { monthStatus?: RecurringMonthStatus; lastPaidAmount?: number | null; lastPaidDate?: string | null },
+  extra?: {
+    monthStatus?: RecurringMonthStatus;
+    lastPaidAmount?: number | null;
+    lastPaidDate?: string | null;
+    linkedTransactionId?: string | null;
+    linkedTransactionName?: string | null;
+  },
 ): RecurringBillDto {
   return {
     id: bill.id, displayName: bill.displayName, currency: bill.currency as 'DOP' | 'USD',
@@ -29,6 +39,8 @@ export function recurringDto(
     monthStatus: extra?.monthStatus ?? 'UPCOMING',
     lastPaidAmount: extra?.lastPaidAmount ?? null,
     lastPaidDate: extra?.lastPaidDate ?? null,
+    linkedTransactionId: extra?.linkedTransactionId ?? null,
+    linkedTransactionName: extra?.linkedTransactionName ?? null,
     alerts: bill.alerts.map((alert) => ({
       id: alert.id, kind: alert.kind,
       baselineAmount: alert.baselineAmount === null ? null : Number(alert.baselineAmount),
@@ -55,8 +67,7 @@ export class PrismaRecurringQuery {
       create: {
         workspaceId, identityKey, displayName: input.displayName.trim(),
         currency: input.currency, cadence: input.cadence, expectedAmount: input.expectedAmount,
-        nextExpectedDate: parsedDate, lastSeenAt: new Date(), occurrenceCount: 1,
-        confidence: 1.0, status: 'CONFIRMED', userEditedAt: new Date(),
+        nextExpectedDate: parsedDate, lastSeenAt: new Date(), occurrenceCount: 1, confidence: 1.0, status: 'CONFIRMED', userEditedAt: new Date(),
       },
       update: {
         displayName: input.displayName.trim(), cadence: input.cadence, expectedAmount: input.expectedAmount,
@@ -79,7 +90,14 @@ export class PrismaRecurringQuery {
     const [bills, job, incomeStreams, monthTransactions] = await Promise.all([
       prisma.recurringBill.findMany({
         where: { workspaceId, currency, status: { not: 'DISMISSED' } },
-        include: { alerts: { where: { acknowledgedAt: null }, orderBy: { createdAt: 'desc' } } },
+        include: {
+          alerts: { where: { acknowledgedAt: null }, orderBy: { createdAt: 'desc' } },
+          occurrences: {
+            where: { occurredAt: { gte: startOfMonth, lte: endOfMonth } },
+            include: { transaction: { select: { id: true, merchant: true, amount: true, transactionDate: true } } },
+            orderBy: { occurredAt: 'desc' }, take: 1,
+          },
+        },
         orderBy: [{ nextExpectedDate: 'asc' }, { displayName: 'asc' }],
       }),
       prisma.recurringScanJob.findUnique({ where: { workspaceId } }),
@@ -110,7 +128,8 @@ export class PrismaRecurringQuery {
       const billIdentity = bill.identityKey.toLowerCase();
       const billName = bill.displayName.trim().toLowerCase();
 
-      const match = monthTransactions.find((tx) => {
+      const explicitTx = bill.occurrences?.[0]?.transaction;
+      const match = explicitTx || monthTransactions.find((tx) => {
         const txKey = (tx.merchantKey || '').toLowerCase();
         const txName = tx.merchant.trim().toLowerCase();
         return (txKey && txKey === billIdentity) || txName === billName || txName.includes(billIdentity) || billIdentity.includes(txName);
@@ -131,7 +150,12 @@ export class PrismaRecurringQuery {
         if (isConfirmed) pendingThisMonth += Number(bill.expectedAmount);
       }
 
-      return recurringDto(bill, today, { monthStatus, lastPaidAmount, lastPaidDate });
+      const linkedTransactionId = explicitTx ? explicitTx.id : (match ? match.id : null);
+      const linkedTransactionName = explicitTx ? explicitTx.merchant : (match ? match.merchant : null);
+
+      return recurringDto(bill, today, {
+        monthStatus, lastPaidAmount, lastPaidDate, linkedTransactionId, linkedTransactionName,
+      });
     });
 
     const confirmed = mapped.filter((bill) => bill.status === 'CONFIRMED');
@@ -158,8 +182,7 @@ export class PrismaRecurringQuery {
     const updated = await prisma.recurringBill.update({
       where: { id },
       data: {
-        ...input,
-        ...(input.nextExpectedDate ? { nextExpectedDate: parseDateOnly(input.nextExpectedDate) } : {}),
+        ...input, ...(input.nextExpectedDate ? { nextExpectedDate: parseDateOnly(input.nextExpectedDate) } : {}),
         userEditedAt: new Date(),
         ...(input.status === 'DISMISSED' ? { dismissedAmount: input.expectedAmount ?? existing.expectedAmount } : {}),
       },
@@ -186,24 +209,36 @@ export class PrismaRecurringQuery {
     const bills = await prisma.recurringBill.findMany({ where: { workspaceId, currency, status: 'CONFIRMED' } });
     const totals = await Promise.all(bills.map(async (bill) => {
       const dates = projectedDates(bill.nextExpectedDate, bill.cadence, start, end);
-      const includesToday = dates.some((date) => toDateOnly(date) === after);
-      if (!includesToday) return dates.length * Number(bill.expectedAmount);
+      if (!dates.some((date) => toDateOnly(date) === after)) return dates.length * Number(bill.expectedAmount);
       const materialized = await prisma.transaction.findFirst({
         where: {
           workspaceId, currency, statusCode: 'APPROVED', ...expenseTransactionWhere(),
-          transactionDate: {
-            gte: new Date(`${after}T00:00:00.000-04:00`),
-            lte: new Date(`${after}T23:59:59.999-04:00`),
-          },
-          OR: [
-            { merchantKey: bill.identityKey },
-            { merchant: { equals: bill.displayName, mode: 'insensitive' } },
-          ],
+          transactionDate: { gte: new Date(`${after}T00:00:00.000-04:00`), lte: new Date(`${after}T23:59:59.999-04:00`) },
+          OR: [{ merchantKey: bill.identityKey }, { merchant: { equals: bill.displayName, mode: 'insensitive' } }],
         },
         select: { id: true },
       });
       return (dates.length - (materialized ? 1 : 0)) * Number(bill.expectedAmount);
     }));
     return round(totals.reduce((sum, value) => sum + value, 0));
+  }
+
+  async linkTransaction(workspaceId: string, recurringBillId: string, transactionId: string) {
+    const bill = await prisma.recurringBill.findFirst({ where: { id: recurringBillId, workspaceId } });
+    if (!bill) throw new AppError(404, 'RECURRING_BILL_NOT_FOUND', 'No encontramos ese cobro recurrente.');
+    const tx = await prisma.transaction.findFirst({ where: { id: transactionId, workspaceId } });
+    if (!tx || tx.statusCode !== 'APPROVED' || tx.currency !== bill.currency) {
+      throw new AppError(400, 'INVALID_RECURRING_TRANSACTION', 'El movimiento no es válido para este cobro recurrente.');
+    }
+    const data = { recurringBillId, amount: tx.amount, occurredAt: tx.transactionDate };
+    await prisma.recurringOccurrence.upsert({ where: { transactionId }, update: data, create: { ...data, transactionId } });
+    return { recurringBillId, transactionId };
+  }
+
+  async unlinkTransaction(workspaceId: string, recurringBillId: string, transactionId?: string) {
+    const bill = await prisma.recurringBill.findFirst({ where: { id: recurringBillId, workspaceId } });
+    if (!bill) throw new AppError(404, 'RECURRING_BILL_NOT_FOUND', 'No encontramos ese cobro recurrente.');
+    await prisma.recurringOccurrence.deleteMany({ where: { recurringBillId, ...(transactionId ? { transactionId } : {}) } });
+    return true;
   }
 }

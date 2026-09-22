@@ -23,5 +23,24 @@ export function useManageRecurring(currency: string) {
     mutationFn: recurringService.acknowledgeAlert,
     onSuccess: refresh,
   });
-  return { create, update, acknowledge };
+  const invalidateLinked = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: recurringKeys.all }),
+      queryClient.invalidateQueries({ queryKey: ['budget-summary'] }),
+      queryClient.invalidateQueries({ queryKey: ['payday-ritual'] }),
+      queryClient.invalidateQueries({ queryKey: ['safe-to-spend'] }),
+    ]);
+  };
+  const linkTransaction = useMutation({
+    mutationFn: (input: { recurringBillId: string; transactionId: string }) =>
+      recurringService.linkTransaction(input.recurringBillId, input.transactionId),
+    onSuccess: invalidateLinked,
+  });
+  const unlinkTransaction = useMutation({
+    mutationFn: (input: { recurringBillId: string; transactionId?: string }) =>
+      recurringService.unlinkTransaction(input.recurringBillId, input.transactionId),
+    onSuccess: invalidateLinked,
+  });
+  return { create, update, acknowledge, linkTransaction, unlinkTransaction };
 }
+

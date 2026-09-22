@@ -8,7 +8,12 @@ export interface RecurringCandidate {
   merchantKey: string | null;
 }
 
-export interface RecurringRepository {
+export interface RecurringQueryReader {
+  linkTransaction(workspaceId: string, recurringBillId: string, transactionId: string): Promise<{ recurringBillId: string; transactionId: string }>;
+  unlinkTransaction(workspaceId: string, recurringBillId: string, transactionId?: string): Promise<boolean>;
+}
+
+export interface RecurringRepository extends RecurringQueryReader {
   ensureScanScheduled(workspaceId: string): Promise<void>;
   radar(workspaceId: string, currency: 'DOP' | 'USD', window: number): Promise<RecurringRadarDto>;
   create(workspaceId: string, input: CreateRecurringBillInput): Promise<RecurringBillDto>;

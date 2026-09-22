@@ -4,10 +4,12 @@ import {
   CheckCircle,
   Clock,
   Dumbbell,
+  Link2,
   Pencil,
   Play,
   Repeat,
   Tv,
+  Unlink2,
   Wifi,
   Zap,
 } from 'lucide-react';
@@ -21,7 +23,10 @@ interface RecurringBillRowProps {
   onEdit: (bill: RecurringBillDto) => void;
   onStatus: (bill: RecurringBillDto, status: 'CONFIRMED' | 'PAUSED' | 'DISMISSED') => void;
   onAcknowledgeAlert: (alertId: string) => void;
+  onLink?: (bill: RecurringBillDto) => void;
+  onUnlink?: (bill: RecurringBillDto) => void;
 }
+
 
 const CADENCE_LABELS = {
   BIWEEKLY: 'Quincenal',
@@ -55,6 +60,8 @@ export function RecurringBillRow({
   onEdit,
   onStatus,
   onAcknowledgeAlert,
+  onLink,
+  onUnlink,
 }: RecurringBillRowProps) {
   const isPaid = bill.monthStatus === 'PAID';
   const isOverdue = bill.monthStatus === 'OVERDUE';
@@ -101,6 +108,11 @@ export function RecurringBillRow({
                   {' '}· Cobrado: {formatCurrency(bill.lastPaidAmount, bill.currency)}
                 </span>
               )}
+              {isPaid && bill.linkedTransactionName && (
+                <span className="text-muted-foreground">
+                  {' '}· Pagado con: {bill.linkedTransactionName}
+                </span>
+              )}
             </p>
           </div>
         </div>
@@ -117,6 +129,30 @@ export function RecurringBillRow({
           </div>
 
           <div className="flex items-center gap-1">
+            {!isPaid && onLink && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onLink(bill)}
+                className="h-8 gap-1.5 text-xs"
+              >
+                <Link2 className="h-3.5 w-3.5" />
+                Vincular pago
+              </Button>
+            )}
+
+            {isPaid && onUnlink && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onUnlink(bill)}
+                className="h-8 w-8 rounded-lg p-0 text-muted-foreground hover:text-destructive"
+                title="Desvincular movimiento"
+              >
+                <Unlink2 className="h-3.5 w-3.5" />
+              </Button>
+            )}
+
             <Button
               variant="ghost"
               size="sm"
@@ -126,6 +162,7 @@ export function RecurringBillRow({
             >
               <Pencil className="h-3.5 w-3.5" />
             </Button>
+
 
             {isPaused ? (
               <Button

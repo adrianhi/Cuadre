@@ -1,5 +1,7 @@
 import {
+  linkRecurringTransactionResponseSchema,
   recurringBillResponseSchema, recurringRadarResponseSchema,
+  unlinkRecurringTransactionResponseSchema,
   type CreateRecurringBillInput, type RecurringBillDto, type RecurringRadarDto, type UpdateRecurringBillInput,
 } from '@bills/contracts';
 import { httpClient, parseResponse } from '@/shared/api';
@@ -20,4 +22,13 @@ export const recurringService = {
   async acknowledgeAlert(id: string) {
     await httpClient.patch(`/recurring/alerts/${id}`, { acknowledged: true });
   },
+  async linkTransaction(recurringBillId: string, transactionId: string): Promise<{ linked: boolean; recurringBillId: string; transactionId: string }> {
+    const response = await httpClient.post(`/recurring/${recurringBillId}/link-transaction`, { transactionId });
+    return parseResponse(linkRecurringTransactionResponseSchema, response.data).data;
+  },
+  async unlinkTransaction(recurringBillId: string, transactionId?: string): Promise<{ unlinked: boolean; recurringBillId: string }> {
+    const response = await httpClient.post(`/recurring/${recurringBillId}/unlink-transaction`, { transactionId });
+    return parseResponse(unlinkRecurringTransactionResponseSchema, response.data).data;
+  },
 };
+

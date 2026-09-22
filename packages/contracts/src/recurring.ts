@@ -33,6 +33,8 @@ export const recurringBillSchema = z.object({
   monthStatus: recurringMonthStatusSchema.default('UPCOMING'),
   lastPaidAmount: z.number().nullable().optional(),
   lastPaidDate: z.string().nullable().optional(),
+  linkedTransactionId: z.string().nullable().optional(),
+  linkedTransactionName: z.string().nullable().optional(),
   alerts: z.array(recurringAlertSchema),
 });
 export type RecurringBillDto = z.infer<typeof recurringBillSchema>;
@@ -76,3 +78,27 @@ export type UpdateRecurringBillInput = z.infer<typeof updateRecurringBillSchema>
 export const acknowledgeRecurringAlertSchema = z.object({ acknowledged: z.literal(true) });
 export const recurringRadarResponseSchema = z.object({ success: z.literal(true), data: recurringRadarSchema });
 export const recurringBillResponseSchema = z.object({ success: z.literal(true), data: recurringBillSchema });
+
+export const linkRecurringTransactionSchema = z.object({
+  transactionId: z.string().uuid('ID de movimiento inválido'),
+});
+export type LinkRecurringTransactionInput = z.infer<typeof linkRecurringTransactionSchema>;
+
+export const linkRecurringTransactionResponseSchema = z.object({
+  success: z.literal(true),
+  data: z.object({
+    linked: z.literal(true),
+    recurringBillId: z.string(),
+    transactionId: z.string(),
+  }),
+});
+export type LinkRecurringTransactionResponse = z.infer<typeof linkRecurringTransactionResponseSchema>;
+
+export const unlinkRecurringTransactionResponseSchema = z.object({
+  success: z.literal(true),
+  data: z.object({
+    unlinked: z.literal(true),
+    recurringBillId: z.string(),
+  }),
+});
+export type UnlinkRecurringTransactionResponse = z.infer<typeof unlinkRecurringTransactionResponseSchema>;
