@@ -3,7 +3,14 @@ import type { PeriodSelection } from '@/entities/period';
 import { Building2, Calendar, Check, Coins, Filter } from 'lucide-react';
 import { CategoryPicker } from '@/entities/category';
 import { formatDateLabel } from '@/shared/lib';
-import { DatePickerField } from '@/shared/ui';
+import {
+  DatePickerField,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/ui';
 import { computePresetRange, type ExportPeriodType } from '../model/export-form';
 import { currentReportDate } from '../model/export-options';
 
@@ -22,7 +29,7 @@ interface ExportScopeFieldsProps {
   search?: string; setSearch?: (value: string) => void;
 }
 
-const selectClass = 'w-full rounded-xl border border-border bg-background px-3 py-2 text-xs font-medium';
+const ALL_OPTION = '__all__';
 
 export function ExportScopeFields(props: ExportScopeFieldsProps) {
   const toggleBank = (code: string) => props.setInstitutionCodes(
@@ -90,12 +97,24 @@ export function ExportScopeFields(props: ExportScopeFieldsProps) {
             ))}
           </div>
         </div>
-        <label className="text-xs font-medium">Estado
-          <select value={props.status} onChange={(event) => props.setStatus(event.target.value)} className={`${selectClass} mt-1.5`}>
-            <option value="">Todos</option><option value="APPROVED">Aprobadas</option><option value="DECLINED">Rechazadas</option>
-            <option value="REVERSED">Reversadas</option><option value="PENDING">Pendientes</option>
-          </select>
-        </label>
+        <div className="space-y-1">
+          <label className="text-xs font-medium">Estado</label>
+          <Select
+            value={props.status || ALL_OPTION}
+            onValueChange={(val) => props.setStatus(val === ALL_OPTION ? '' : val)}
+          >
+            <SelectTrigger className="h-9 mt-1.5">
+              <SelectValue placeholder="Todos los estados" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL_OPTION}>Todos</SelectItem>
+              <SelectItem value="APPROVED">Aprobadas</SelectItem>
+              <SelectItem value="DECLINED">Rechazadas</SelectItem>
+              <SelectItem value="REVERSED">Reversadas</SelectItem>
+              <SelectItem value="PENDING">Pendientes</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <fieldset>
@@ -177,21 +196,25 @@ export function ExportScopeFields(props: ExportScopeFieldsProps) {
           <CategoryPicker value={props.category} onValueChange={props.setCategory} emptyLabel="Todas"
             ariaLabel="Filtrar exportación por categoría" />
         </label>
-        <label className="text-xs font-medium">
-          Tipo de movimiento
-          <select
-            value={props.transactionType}
-            onChange={(event) => props.setTransactionType(event.target.value)}
-            className={`${selectClass} mt-1.5`}
+        <div className="space-y-1">
+          <label className="text-xs font-medium">Tipo de movimiento</label>
+          <Select
+            value={props.transactionType || ALL_OPTION}
+            onValueChange={(val) => props.setTransactionType(val === ALL_OPTION ? '' : val)}
           >
-            <option value="">Todos</option>
-            <option value="compra">Compras</option>
-            <option value="enviada">Transferencias enviadas</option>
-            <option value="propia">Entre cuentas</option>
-            <option value="servicio">Pagos de servicios</option>
-            <option value="retiro">Retiros</option>
-          </select>
-        </label>
+            <SelectTrigger className="h-9 mt-1.5">
+              <SelectValue placeholder="Todos los tipos" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL_OPTION}>Todos</SelectItem>
+              <SelectItem value="compra">Compras</SelectItem>
+              <SelectItem value="enviada">Transferencias enviadas</SelectItem>
+              <SelectItem value="propia">Entre cuentas</SelectItem>
+              <SelectItem value="servicio">Pagos de servicios</SelectItem>
+              <SelectItem value="retiro">Retiros</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
     </div>
   );

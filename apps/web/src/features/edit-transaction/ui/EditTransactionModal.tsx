@@ -8,6 +8,7 @@ import {
   DialogTitle, 
   DialogFooter,
   Button,
+  Checkbox,
   Input
 } from '@/shared/ui';
 import type { Transaction } from '@/entities/transaction';
@@ -160,9 +161,9 @@ export const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
           />
 
           {/* Notes */}
-          {onSuggestRule && category !== transaction.category && <label className="flex items-start gap-2 text-xs">
-            <input type="checkbox" checked={suggestRule} onChange={(event) => setSuggestRule(event.target.checked)} />
-            Crear una regla para futuros movimientos de este comercio en {category}. La revisarás después de guardar.
+          {onSuggestRule && category !== transaction.category && <label className="flex items-start gap-2 text-xs cursor-pointer">
+            <Checkbox checked={suggestRule} onCheckedChange={setSuggestRule} className="mt-0.5" />
+            <span>Crear una regla para futuros movimientos de este comercio en {category}. La revisarás después de guardar.</span>
           </label>}
           <div className="space-y-1.5">
             <div className="flex justify-between items-center">

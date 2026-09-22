@@ -1,7 +1,22 @@
 import { useState } from 'react';
 import type { CreateRecurringBillInput } from '@bills/contracts';
 import { parseAmountInput } from '@/shared/lib';
-import { Button, CurrencyAmountInput, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Input } from '@/shared/ui';
+import {
+  Button,
+  CurrencyAmountInput,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/ui';
 
 export function RecurringCreatorDialog(props: {
   open: boolean;
@@ -68,18 +83,22 @@ export function RecurringCreatorDialog(props: {
                 onValueChange={setAmount}
               />
             </label>
-            <label className="grid gap-1.5 text-sm font-medium">
-              Frecuencia
-              <select
-                className="h-9 rounded-md border border-input bg-background px-3 text-sm shadow-sm"
+            <div className="grid gap-1.5">
+              <label className="text-sm font-medium">Frecuencia</label>
+              <Select
                 value={cadence}
-                onChange={(e) => setCadence(e.target.value as 'BIWEEKLY' | 'MONTHLY' | 'ANNUAL')}
+                onValueChange={(e) => setCadence(e as 'BIWEEKLY' | 'MONTHLY' | 'ANNUAL')}
               >
-                <option value="MONTHLY">Mensual</option>
-                <option value="BIWEEKLY">Quincenal</option>
-                <option value="ANNUAL">Anual</option>
-              </select>
-            </label>
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder="Selecciona frecuencia" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="MONTHLY">Mensual</SelectItem>
+                  <SelectItem value="BIWEEKLY">Quincenal</SelectItem>
+                  <SelectItem value="ANNUAL">Anual</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <label className="grid gap-1.5 text-sm font-medium">
             Próxima fecha de pago

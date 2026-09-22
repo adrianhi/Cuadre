@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, FileText, Loader2, ShieldCheck } from 'lucide-react';
-import { Button, Card, CardContent } from '@/shared/ui';
+import { Button, Card, CardContent, Checkbox } from '@/shared/ui';
 import type { LegalDocument } from '../api/legal.service';
 import { useAcceptLegal, useLegalDocuments } from '../model/useLegalDocuments';
 
@@ -99,7 +99,7 @@ export function LegalAcceptanceScreen({ authToken, onAccepted, onLogout }: Legal
                 ))}
               </div>
               <label className="flex cursor-pointer items-start gap-3 rounded-xl bg-muted/60 p-4 text-sm">
-                <input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} className="mt-1 h-4 w-4 accent-emerald-600" />
+                <Checkbox checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} className="mt-0.5" />
                 <span>He leído y acepto los Términos y Condiciones y la Política de Privacidad vigentes.</span>
               </label>
               {(query.error || mutation.error) && <p className="text-xs text-destructive">{query.error?.message || mutation.error?.message}</p>}

@@ -14,4 +14,6 @@ export * from './async-error-state';
 export * from './select';
 export * from './switch';
 export * from './tabs';
+export * from './textarea';
+export * from './checkbox';
 export * from './toast';

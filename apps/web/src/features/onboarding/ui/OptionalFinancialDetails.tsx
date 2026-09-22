@@ -1,6 +1,13 @@
 import { ChevronDown, WalletCards } from 'lucide-react';
 import type { IncomeFrequency } from '@bills/contracts';
-import { CurrencyAmountInput } from '@/shared/ui';
+import {
+  CurrencyAmountInput,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/ui';
 import { RecurringServiceSelector } from './RecurringServiceSelector';
 
 interface OptionalFinancialDetailsProps {
@@ -47,18 +54,24 @@ export function OptionalFinancialDetails(props: OptionalFinancialDetailsProps) {
                 className="font-mono text-base font-semibold"
               />
             </label>
-            <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-              Frecuencia de pago
-              <select
-                className="h-9 rounded-md border border-input bg-background px-3 text-sm shadow-xs"
+            <div className="grid gap-1">
+              <label className="text-xs font-medium text-muted-foreground">
+                Frecuencia de pago
+              </label>
+              <Select
                 value={props.frequency}
-                onChange={(event) => props.onFrequencyChange(event.target.value as IncomeFrequency)}
+                onValueChange={(event) => props.onFrequencyChange(event as IncomeFrequency)}
               >
-                <option value="BIWEEKLY_15_30">Quincenal (15 y 30)</option>
-                <option value="MONTHLY">Mensual (1 cobro/mes)</option>
-                <option value="WEEKLY">Semanal</option>
-              </select>
-            </label>
+                <SelectTrigger className="h-9">
+                  <SelectValue placeholder="Selecciona frecuencia" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="BIWEEKLY_15_30">Quincenal (15 y 30)</SelectItem>
+                  <SelectItem value="MONTHLY">Mensual (1 cobro/mes)</SelectItem>
+                  <SelectItem value="WEEKLY">Semanal</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 

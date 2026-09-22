@@ -6,7 +6,7 @@ import { CategoryPicker } from '@/entities/category';
 import { ApiClientError } from '@/shared/api';
 import { currentLocalDateTime, formatCurrency, isFutureLocalDateTime, parseAmountInput, toDateValue } from '@/shared/lib';
 import {
-  Button, CurrencyAmountInput, DateTimePickerField, Dialog, DialogContent, DialogDescription,
+  Button, Checkbox, CurrencyAmountInput, DateTimePickerField, Dialog, DialogContent, DialogDescription,
   DialogFooter, DialogHeader, DialogTitle, Input, Select, SelectContent, SelectItem,
   SelectTrigger, SelectValue, toast,
 } from '@/shared/ui';
@@ -119,7 +119,7 @@ export function CoroManualExpenseDialog(props: Props) {
             </div>
             <div className="grid max-h-36 grid-cols-1 gap-2 overflow-y-auto sm:grid-cols-2">
               {props.participants.map((item) => <label key={item.id} className="flex min-w-0 cursor-pointer items-center gap-2 rounded-lg border p-2 text-xs">
-                <Input type="checkbox" className="h-4 w-4 shrink-0" checked={splitIds.includes(item.id)} onChange={() => toggleSplit(item.id)} />
+                <Checkbox checked={splitIds.includes(item.id)} onChange={() => toggleSplit(item.id)} />
                 <span className="truncate">{item.name}</span>
               </label>)}
             </div>

@@ -1,5 +1,6 @@
 import type { FinancialReportSection } from '../api/report.service';
 import { REPORT_SECTION_OPTIONS, type ExportFormat } from '../model/export-options';
+import { Checkbox, Input } from '@/shared/ui';
 
 interface Props {
   format: ExportFormat;
@@ -27,17 +28,19 @@ export function ExportCustomizationFields({
       <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">3. Personalización</h4>
       {rich && (
         <>
-          <label className="block text-xs font-medium">Título del informe
-            <input maxLength={100} value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Informe financiero"
-              className="mt-1.5 w-full rounded-xl border border-border bg-background px-3 py-2 text-xs" />
-          </label>
+          <div className="space-y-1.5">
+            <label className="block text-xs font-medium">Título del informe</label>
+            <Input maxLength={100} value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Informe financiero"
+              className="text-xs" />
+          </div>
           <fieldset>
             <legend className="mb-1.5 text-xs font-medium">Secciones incluidas</legend>
             <div className="grid grid-cols-2 gap-1.5">
               {REPORT_SECTION_OPTIONS.map((option) => (
                 <label key={option.id} className="flex min-h-9 cursor-pointer items-center gap-2 rounded-lg border border-border bg-background px-2 text-xs has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50">
-                  <input type="checkbox" checked={sections.includes(option.id)} onChange={() => toggle(option.id)}
-                    disabled={option.id === 'budget' && !budgetEligible && !sections.includes('budget')} className="accent-emerald-600" />{option.label}
+                  <Checkbox checked={sections.includes(option.id)} onChange={() => toggle(option.id)}
+                    disabled={option.id === 'budget' && !budgetEligible && !sections.includes('budget')} />
+                  <span>{option.label}</span>
                 </label>
               ))}
             </div>
@@ -47,7 +50,7 @@ export function ExportCustomizationFields({
         </>
       )}
       <label className="flex cursor-pointer items-start gap-2 text-xs text-muted-foreground">
-        <input type="checkbox" checked={includeNotes} onChange={(event) => setIncludeNotes(event.target.checked)} className="mt-0.5 accent-emerald-600" />
+        <Checkbox checked={includeNotes} onChange={(event) => setIncludeNotes(event.target.checked)} className="mt-0.5" />
         <span><strong className="text-foreground">Incluir notas</strong> · pueden contener información sensible.</span>
       </label>
     </div>

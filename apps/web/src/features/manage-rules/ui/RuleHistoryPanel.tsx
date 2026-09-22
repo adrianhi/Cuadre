@@ -1,4 +1,4 @@
-import { Button, Input } from '@/shared/ui';
+import { Button, Checkbox, Input } from '@/shared/ui';
 import type { useRuleHistory } from '../model/useRuleHistory';
 
 const labels: Record<string, string> = { QUEUED: 'En cola', PROCESSING: 'Procesando', READY: 'Vista previa lista', COMPLETED: 'Completado', FAILED: 'Requiere reintento', STALE: 'Vista previa desactualizada' };
@@ -8,7 +8,7 @@ export function RuleHistoryPanel({ model }: { model: ReturnType<typeof useRuleHi
       <h3 className="font-semibold">Preparar vista previa</h3>
       <div className="grid grid-cols-2 gap-2"><label className="text-xs">Desde<Input type="date" aria-label="Desde" value={model.startDate} onChange={(event) => model.setStartDate(event.target.value)} /></label>
         <label className="text-xs">Hasta<Input type="date" aria-label="Hasta" value={model.endDate} onChange={(event) => model.setEndDate(event.target.value)} /></label></div>
-      <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={model.includeUnknown} onChange={(event) => model.setIncludeUnknown(event.target.checked)} />Incluir registros anteriores sin origen conocido</label>
+      <label className="flex cursor-pointer items-start gap-2 text-sm"><Checkbox checked={model.includeUnknown} onChange={(event) => model.setIncludeUnknown(event.target.checked)} className="mt-0.5" /><span>Incluir registros anteriores sin origen conocido</span></label>
       <p className="text-xs text-muted-foreground">Las correcciones manuales registradas están protegidas. Sin fechas se revisa todo el histórico visible.</p>
       <Button disabled={model.pending || model.active} onClick={() => model.run('preview')}>Generar vista previa</Button>
     </div>}

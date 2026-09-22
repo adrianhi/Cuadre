@@ -1,5 +1,14 @@
-import React from 'react';
-import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Input } from '@/shared/ui';
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Textarea,
+} from '@/shared/ui';
 import { useCoroEditForm } from '../model/useCoroEditForm';
 
 interface CoroEditDialogProps {
@@ -71,11 +80,11 @@ export function CoroEditDialog({
             <label className="text-xs font-semibold text-foreground">
               Descripción o notas (opcional)
             </label>
-            <textarea
+            <Textarea
               value={description}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
+              onChange={(e) => setDescription(e.target.value)}
               placeholder="Ej. Gastos de villa, comida, gasolina y peajes"
-              className="flex w-full rounded-xl border border-input bg-transparent px-3 py-2 text-xs sm:text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[70px] resize-none"
+              className="min-h-[70px] resize-none text-xs sm:text-sm"
             />
           </div>
 

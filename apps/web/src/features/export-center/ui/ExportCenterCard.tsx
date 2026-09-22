@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Check, Download, FileDown, FileJson, FileSpreadsheet, FileText, Loader2, Share2, SlidersHorizontal } from 'lucide-react';
 import type { PeriodSelection } from '@/entities/period';
 import { accountService } from '@/entities/account';
-import { Button, Card, CardContent, SafeDiagnosticButton } from '@/shared/ui';
+import { Button, Card, CardContent, Checkbox, SafeDiagnosticButton } from '@/shared/ui';
 import { shareOrDownloadFile, supportsFileShare } from '@/shared/lib';
 import { reportService, type FinancialReportFormat } from '../api/report.service';
 import { ExportModal } from './ExportModal';
@@ -111,11 +111,9 @@ export const ExportCenterCard: React.FC<ExportCenterCardProps> = ({ period, curr
           </div>
 
           <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border border-border px-3">
-              <input
-                type="checkbox"
+              <Checkbox
                 checked={includeNotes}
                 onChange={(event) => setIncludeNotes(event.target.checked)}
-                className="h-4 w-4 accent-emerald-600"
               />
               <span className="text-sm"><span className="font-semibold">Incluir notas</span> <span className="text-muted-foreground">· desactivado por defecto para compartir sin datos sensibles</span></span>
           </label>

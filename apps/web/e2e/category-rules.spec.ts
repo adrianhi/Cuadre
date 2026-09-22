@@ -11,8 +11,8 @@ test('editing suggests an exact rule, previews protected records and recovers ba
   await edit.getByRole('checkbox', { name: 'Crear una regla para futuros' }).check();
   await edit.getByRole('button', { name: 'Guardar Cambios' }).click();
   await expect(page.getByRole('heading', { name: 'Reglas de categorización' })).toBeVisible();
-  await expect(page.getByLabel('Coincidencia', { exact: true })).toHaveValue('MERCHANT');
-  await expect(page.getByLabel('Comercio exacto')).toHaveValue('brand:uber-rides');
+  await expect(page.getByLabel('Coincidencia', { exact: true })).toHaveText('Este comercio');
+  await expect(page.getByLabel('Comercio exacto')).toHaveText('Uber Viajes');
   await expect(page.getByRole('combobox', { name: 'Categoría de la regla' })).toHaveAttribute('data-category-value', 'Servicios');
   await page.getByRole('button', { name: 'Guardar regla', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Preparar vista previa' })).toBeVisible();
@@ -41,7 +41,8 @@ test('contains mode warns about broad matches and validates without creating a r
   await page.getByRole('button', { name: 'Abrir conexiones y privacidad' }).click();
   await page.getByRole('tab', { name: 'Reglas y automatización' }).click();
   await page.getByRole('button', { name: /Reglas de categorías/ }).click();
-  await page.getByLabel('Coincidencia', { exact: true }).selectOption('CONTAINS');
+  await page.getByLabel('Coincidencia', { exact: true }).click();
+  await page.getByRole('option', { name: 'El texto contiene…' }).click();
   await expect(page.getByText(/“UBER” también coincide con Uber Eats/)).toBeVisible();
   await page.getByLabel('Texto del patrón').fill('U');
   await page.getByRole('button', { name: 'Guardar regla', exact: true }).click();

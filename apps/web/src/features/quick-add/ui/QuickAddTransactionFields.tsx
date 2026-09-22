@@ -2,7 +2,18 @@ import { ArrowLeftRight, ArrowUpRight, Check, CreditCard, Landmark, Receipt } fr
 import { FINANCIAL_INSTITUTIONS } from '@/shared/config/financial-options';
 import { CategoryPicker } from '@/entities/category';
 import { formatCurrency, parseAmountInput, toDateValue } from '@/shared/lib';
-import { Button, CurrencyAmountInput, DateTimePickerField, DialogFooter, Input } from '@/shared/ui';
+import {
+  Button,
+  CurrencyAmountInput,
+  DateTimePickerField,
+  DialogFooter,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/ui';
 import type { QuickAddTransactionModel } from '../model/useQuickAddTransaction';
 
 const MOVEMENT_TYPES = [
@@ -59,9 +70,18 @@ export function QuickAddTransactionFields({ model, onCancel }: QuickAddTransacti
       </div>
       <div className="space-y-1.5">
         <label className="text-xs font-semibold text-foreground">Entidad / Banco</label>
-        <select value={organization} onChange={(event) => setOrganization(event.target.value)} className="h-10 w-full cursor-pointer rounded-xl border border-input bg-background px-3 text-xs font-semibold text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
-          {FINANCIAL_INSTITUTIONS.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
-        </select>
+        <Select value={organization} onValueChange={setOrganization}>
+          <SelectTrigger className="h-10 rounded-xl">
+            <SelectValue placeholder="Selecciona entidad o banco" />
+          </SelectTrigger>
+          <SelectContent>
+            {FINANCIAL_INSTITUTIONS.map((item) => (
+              <SelectItem key={item.id} value={item.id}>
+                {item.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
