@@ -5,6 +5,17 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 dotenv.config({ path: path.resolve(__dirname, '../../../../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
+const isProdTarget =
+  process.env.NODE_ENV === 'production' ||
+  process.env.USE_PROD_ENV === 'true' ||
+  process.argv.includes('--prod');
+
+if (isProdTarget) {
+  dotenv.config({ path: path.resolve(process.cwd(), '.env.production'), override: true });
+  dotenv.config({ path: path.resolve(__dirname, '../../../../.env.production'), override: true });
+  dotenv.config({ path: path.resolve(__dirname, '../../../.env.production'), override: true });
+}
+
 function parseCorsOrigins(raw: string | undefined): string[] {
   const list = (raw || 'http://localhost:5173,http://localhost:3000')
     .split(',')

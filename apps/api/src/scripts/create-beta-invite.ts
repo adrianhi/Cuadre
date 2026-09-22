@@ -5,10 +5,23 @@ const usage = `Usage:
   npm run beta:invite -- user@example.com
   npm run beta:invite -- user@example.com --no-email
   npm run beta:invite -- user@example.com --resend
-  npm run beta:invite -- --waitlist 25`;
+  npm run beta:invite -- --waitlist 25
+  npm run beta:invite:prod -- --waitlist 25`;
 
 async function main() {
-  const args = process.argv.slice(2);
+  const rawArgs = process.argv.slice(2);
+  const isProd = rawArgs.includes('--prod');
+  const isDev = rawArgs.includes('--dev');
+  const args = rawArgs.filter((a) => a !== '--prod' && a !== '--dev');
+
+  console.log(`\n🚀 Modo de Entorno: ${isProd ? 'PRODUCCIÓN (app.cuadre.com.do)' : 'DESARROLLO / STAGING (localhost)'}\n`);
+
+  if (isProd || (!isDev && (!args.includes('--no-email') || args.includes('--waitlist')))) {
+    if (isProd || appContainer.betaInviteService.getAppUrl().includes('localhost')) {
+      appContainer.betaInviteService.setAppUrl('https://app.cuadre.com.do');
+    }
+  }
+
   const waitlistAt = args.indexOf('--waitlist');
   if (waitlistAt >= 0) {
     if (args.includes('--resend') || args.includes('--no-email') || args.length !== 2) throw new Error(usage);

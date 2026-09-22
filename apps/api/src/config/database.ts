@@ -11,6 +11,17 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 dotenv.config({ path: path.resolve(__dirname, '../../../../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
+const isProdTarget =
+  process.env.NODE_ENV === 'production' ||
+  process.env.USE_PROD_ENV === 'true' ||
+  process.argv.includes('--prod');
+
+if (isProdTarget) {
+  dotenv.config({ path: path.resolve(process.cwd(), '.env.production'), override: true });
+  dotenv.config({ path: path.resolve(__dirname, '../../../../.env.production'), override: true });
+  dotenv.config({ path: path.resolve(__dirname, '../../../.env.production'), override: true });
+}
+
 function querySummary(query: string) {
   const normalized = query.replace(/\s+/g, ' ').trim();
   return {

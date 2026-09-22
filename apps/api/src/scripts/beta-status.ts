@@ -3,6 +3,9 @@ import { PRODUCT_GUIDE_VERSION } from '@bills/contracts';
 import { appContainer } from '../app-container';
 
 async function main() {
+  const isProd = process.argv.includes('--prod');
+  console.log(`\n🚀 Modo de Entorno: ${isProd ? 'PRODUCCIÓN (app.cuadre.com.do)' : 'DESARROLLO / STAGING (localhost)'}\n`);
+
   const metrics = await appContainer.betaInviteService.getFunnelMetrics();
   console.table([{
     interesados: metrics.interestedTotal,
@@ -21,10 +24,33 @@ async function main() {
     conversión: `${metrics.conversionPercent}%`,
   }]);
 
-  const invites = await prisma.betaInvite.findMany({
-    orderBy: { createdAt: 'asc' },
-    select: { email: true, createdAt: true, usedAt: true },
-  });
+  const [interests, invites] = await Promise.all([
+    prisma.betaInterest.findMany({
+      orderBy: { createdAt: 'asc' },
+      select: { email: true, createdAt: true, source: true, campaignCode: true },
+    }),
+    prisma.betaInvite.findMany({
+      orderBy: { createdAt: 'asc' },
+      select: { email: true, createdAt: true, usedAt: true },
+    }),
+  ]);
+
+  const invitedEmails = new Set(invites.map((i) => i.email));
+
+  if (interests.length > 0) {
+    console.log('\n📋 Solicitudes de Acceso / Lista de Espera (Waitlist):');
+    console.table(
+      interests.map((item) => ({
+        email: item.email,
+        solicitó: item.createdAt.toISOString().slice(0, 10),
+        origen: item.source || '—',
+        campaña: item.campaignCode || '—',
+        estado: invitedEmails.has(item.email) ? 'INVITADO ✅' : 'PENDIENTE ⏳',
+      }))
+    );
+  }
+
+  console.log('\n👥 Usuarios Invitados y Estado de Actividad:');
 
   const rows = await Promise.all(invites.map(async (invite) => {
     const profile = await prisma.profile.findUnique({

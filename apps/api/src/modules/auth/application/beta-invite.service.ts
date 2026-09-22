@@ -69,8 +69,16 @@ export class BetaInviteService {
     private readonly store: BetaInviteStore,
     private readonly queue: BetaInviteEmailQueue,
     private readonly processor: BetaInviteEmailProcessor,
-    private readonly appUrl: string,
+    private appUrl: string,
   ) {}
+
+  setAppUrl(appUrl: string) {
+    this.appUrl = appUrl;
+  }
+
+  getAppUrl(): string {
+    return this.appUrl;
+  }
 
   private activationUrl(code: string) {
     const url = new URL('/login', this.appUrl);
