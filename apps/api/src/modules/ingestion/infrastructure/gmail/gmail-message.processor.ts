@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 import { config } from '../../../../config';
 import { prisma } from '../../../../config/database';
 import { AppError } from '../../../../errors/app-error';
+import { logger } from '../../../../shared/observability/logger';
 import { ParserRegistry } from '../../../../ingestion/parser-registry';
 import type { NormalizedEmail } from '../../../../ingestion/types';
 import {
@@ -172,7 +173,10 @@ export class GmailMessageProcessor {
         },
       });
     } catch (error) {
-      console.error(`[GmailMessageProcessor] Error processing message ${input.messageId}:`, error);
+      logger.error('gmail_message_processing_failed', {
+        errorCode: error instanceof AppError ? error.code : 'GMAIL_MESSAGE_PROCESSING_FAILED',
+        errorName: error instanceof Error ? error.name : 'UnknownError',
+      });
       input.summary.failed += 1;
       const code = error instanceof AppError ? error.code : 'GMAIL_MESSAGE_PROCESSING_FAILED';
       const message = error instanceof Error ? error.message : code;

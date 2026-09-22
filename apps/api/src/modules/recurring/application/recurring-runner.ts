@@ -1,6 +1,7 @@
 import type { RecurringJobProcessor } from './recurring.ports';
 import { RunnerLoopControl, type RunnerDelays } from '../../../shared/application/runner-loop-control';
 import { logger } from '../../../shared/observability/logger';
+import { runnerStateRegistry } from '../../../shared/observability/runner-state';
 
 const delay = (milliseconds: number) => new Promise<void>((resolve) => setTimeout(resolve, milliseconds));
 
@@ -20,6 +21,7 @@ export class RecurringRunner {
     if (this.running) return;
     this.running = true;
     this.loopPromise = this.loop();
+    runnerStateRegistry.started('recurring');
     logger.info('recurring_runner_started', { ...this.delays });
   }
 
@@ -27,6 +29,7 @@ export class RecurringRunner {
     this.running = false;
     this.control.interruptAll();
     if (this.loopPromise) await Promise.race([this.loopPromise, delay(timeoutMs)]);
+    runnerStateRegistry.stopped('recurring');
     logger.info('recurring_runner_stopped');
   }
 
@@ -57,7 +60,18 @@ export class RecurringRunner {
 
   private runCycle(forceSchedule: boolean) {
     if (this.activeCycle) return this.activeCycle;
-    this.activeCycle = this.performCycle(forceSchedule).finally(() => { this.activeCycle = null; });
+    const startedAt = Date.now();
+    runnerStateRegistry.cycleStarted('recurring');
+    this.activeCycle = this.performCycle(forceSchedule)
+      .then((processed) => {
+        runnerStateRegistry.cycleSucceeded('recurring', startedAt, processed);
+        return processed;
+      })
+      .catch((error) => {
+        runnerStateRegistry.cycleFailed('recurring', startedAt, error);
+        throw error;
+      })
+      .finally(() => { this.activeCycle = null; });
     return this.activeCycle;
   }
 

@@ -1,6 +1,8 @@
 import { prisma } from '../../../config/database';
 import type { RecurringJobProcessor } from '../application/recurring.ports';
 import type { ProcessRecurringScan } from '../application/process-recurring-scan';
+import { reportError } from '../../../shared/observability/error-reporter';
+import { logger } from '../../../shared/observability/logger';
 
 const DAY_MS = 86_400_000;
 
@@ -66,6 +68,12 @@ export class RecurringJobService implements RecurringJobProcessor {
           errorCode: error instanceof Error ? error.name : 'UNKNOWN_ERROR',
         },
       });
+      if (attempts === 5) {
+        logger.error('recurring_scan_repeated_failure', {
+          jobId: job.id, attempts, errorName: error instanceof Error ? error.name : 'UnknownError',
+        });
+        reportError(error, { source: 'recurringScan', jobId: job.id, attempts });
+      }
     }
     return true;
   }

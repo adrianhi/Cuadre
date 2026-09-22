@@ -1,6 +1,7 @@
 import type { IngestionJobProcessor } from '../modules/ingestion/application/ingestion-job.port';
 import { RunnerLoopControl, type RunnerDelays } from '../shared/application/runner-loop-control';
 import { logger } from '../shared/observability/logger';
+import { runnerStateRegistry } from '../shared/observability/runner-state';
 
 type CycleResult = {
   gmailProcessed: boolean;
@@ -28,6 +29,7 @@ export class IngestionRunner {
     if (this.running) return;
     this.running = true;
     this.loopPromise = this.loop();
+    runnerStateRegistry.started('ingestion');
     logger.info('ingestion_runner_started', { ...this.delays });
   }
 
@@ -36,6 +38,7 @@ export class IngestionRunner {
     this.control.interruptAll();
     const pending = this.loopPromise;
     if (pending) await Promise.race([pending, delay(timeoutMs)]);
+    runnerStateRegistry.stopped('ingestion');
     logger.info('ingestion_runner_stopped');
   }
 
@@ -76,9 +79,18 @@ export class IngestionRunner {
 
   private runCycle(forceSchedule: boolean): Promise<CycleResult> {
     if (this.activeCycle) return this.activeCycle;
-    this.activeCycle = this.performCycle(forceSchedule).finally(() => {
-      this.activeCycle = null;
-    });
+    const startedAt = Date.now();
+    runnerStateRegistry.cycleStarted('ingestion');
+    this.activeCycle = this.performCycle(forceSchedule)
+      .then((result) => {
+        runnerStateRegistry.cycleSucceeded('ingestion', startedAt, result.gmailProcessed);
+        return result;
+      })
+      .catch((error) => {
+        runnerStateRegistry.cycleFailed('ingestion', startedAt, error);
+        throw error;
+      })
+      .finally(() => { this.activeCycle = null; });
     return this.activeCycle;
   }
 

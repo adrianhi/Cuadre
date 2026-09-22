@@ -6,6 +6,8 @@ import { visibleTransactionWhere } from '../../transactions';
 import type { ApplicationJob, RuleApplications } from '../application/rule-application.port';
 import type { PreviewDecision } from '../domain/preview-decision';
 import { checkpointPreview, applyClassificationBatch, type ClassificationWriterFactory } from './rule-application-checkpoints';
+import { reportError } from '../../../shared/observability/error-reporter';
+import { logger } from '../../../shared/observability/logger';
 
 export class PrismaRuleApplications implements RuleApplications {
   constructor(private readonly writer: ClassificationWriterFactory) {}
@@ -53,5 +55,11 @@ export class PrismaRuleApplications implements RuleApplications {
       status: current.attempts >= 3 ? 'FAILED' : 'QUEUED', errorCode: 'RULE_APPLICATION_RETRY_REQUIRED',
       nextAttemptAt: new Date(Date.now() + 5000 * 2 ** Math.min(current.attempts, 3)), leaseToken: null, leaseUntil: null,
     } });
+    if (current.attempts >= 3) {
+      logger.error('rule_application_exhausted', { jobId: job.id, attempts: current.attempts });
+      reportError(new Error('RULE_APPLICATION_RETRY_EXHAUSTED'), {
+        source: 'ruleApplication', jobId: job.id, attempts: current.attempts,
+      });
+    }
   }
 }

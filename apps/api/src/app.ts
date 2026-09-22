@@ -1,7 +1,6 @@
 import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import morgan from 'morgan';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
@@ -10,7 +9,7 @@ import { config } from './config';
 import apiRoutes from './routes';
 import { errorHandler } from './middlewares/error.middleware';
 import { appContainer } from './app-container';
-import { logger } from './shared/observability/logger';
+import { httpRequestLogger } from './shared/observability/http-request-logger';
 
 function resolvePublicDir(): string {
   const candidates = [
@@ -27,17 +26,6 @@ function resolvePublicDir(): string {
     }
   }
   return path.resolve(process.cwd(), 'public');
-}
-
-function safeRequestUrl(req: Request): string {
-  try {
-    const url = new URL(req.originalUrl, 'http://localhost');
-    if (url.searchParams.has('invite')) url.searchParams.set('invite', '[REDACTED]');
-    const pathname = url.pathname.replace(/(\/(?:api\/v1\/public\/)?coro\/)[^/]+/i, '$1[REDACTED]');
-    return `${pathname}${url.search}`;
-  } catch {
-    return req.path;
-  }
 }
 
 export function createApp(): Express {
@@ -99,6 +87,7 @@ export function createApp(): Express {
       credentials: true,
     })
   );
+  if (config.nodeEnv !== 'test') app.use('/api', httpRequestLogger);
   app.post(
     '/api/v1/webhooks/google/gmail',
     express.json({ limit: '256kb' }),
@@ -119,25 +108,6 @@ export function createApp(): Express {
   );
   app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: true }));
-
-  if (config.nodeEnv === 'development') {
-    morgan.token('safe-url', (req) => safeRequestUrl(req as Request));
-    app.use(morgan(':method :safe-url :status :response-time ms - :res[content-length]'));
-  } else if (config.nodeEnv !== 'test') {
-    app.use((req: Request, res: Response, next) => {
-      const startedAt = Date.now();
-      res.on('finish', () => {
-        logger.info('http_request_completed', {
-          requestId: req.requestId,
-          method: req.method,
-          path: safeRequestUrl(req),
-          statusCode: res.statusCode,
-          durationMs: Date.now() - startedAt,
-        });
-      });
-      next();
-    });
-  }
 
   // Prevent financial API routes from being cached by CDN / downstream proxies
   app.use('/api', (_req: Request, res: Response, next) => {

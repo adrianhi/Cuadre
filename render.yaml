@@ -3,9 +3,9 @@ services:
   - type: web
     name: cuadre-app
     runtime: node
-    plan: starter
+    plan: free
     region: oregon
-    buildCommand: npm run prisma:deploy && npm run prisma:generate && npm run build
+    buildCommand: npm run prisma:generate && npm run build && npm run prisma:deploy
     startCommand: npm run start
     healthCheckPath: /health
     autoDeploy: true
@@ -24,6 +24,20 @@ services:
         value: "50"
       - key: WORKER_ERROR_DELAY_MS
         value: "10000"
+      - key: LOG_LEVEL
+        value: info
+      - key: DB_QUERY_LOG_MODE
+        value: slow
+      - key: SLOW_QUERY_MS
+        value: "500"
+      - key: SLOW_REQUEST_MS
+        value: "1000"
+      - key: REQUEST_LOG_SAMPLE_RATE
+        value: "0.10"
+      - key: ERROR_TRACKING_DSN
+        sync: false
+      - key: MAINTENANCE_HEARTBEAT_URL
+        sync: false
       - key: APP_URL
         sync: false
       - key: API_PUBLIC_URL
@@ -89,17 +103,5 @@ services:
       - key: GMAIL_BACKFILL_CONCURRENCY
         value: "2"
 
-  # Cron job cada 10 minutos para despertar el servicio y avanzar reconciliaciones de Gmail
-  - type: cron
-    name: cuadre-maintenance-tick
-    runtime: node
-    plan: starter
-    region: oregon
-    schedule: "*/10 * * * *"
-    buildCommand: "echo 'Maintenance cron ready'"
-    startCommand: "curl -fsS -X POST -H \"Authorization: Bearer $MAINTENANCE_SECRET\" \"$API_PUBLIC_URL/api/v1/internal/maintenance/tick\""
-    envVars:
-      - key: API_PUBLIC_URL
-        sync: false
-      - key: MAINTENANCE_SECRET
-        sync: false
+# El scheduler externo llama POST /api/v1/internal/maintenance/tick cada 10 minutos
+# entre 06:00 y 23:50 America/Santo_Domingo. No se declara un cron de pago aquí.

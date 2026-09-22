@@ -18,11 +18,13 @@ import coroRoutes from './coro.routes';
 import creditCardRoutes from './credit-card.routes';
 import { appContainer } from '../app-container';
 import { asyncHandler } from '../shared/http/async-handler';
+import { operationsController } from '../modules/system/operations';
 
 const router = Router();
 
 router.get('/v1/health/ready', asyncHandler(appContainer.readinessController.handle));
 router.post('/v1/internal/maintenance/tick', asyncHandler(appContainer.maintenanceController.tick));
+router.get('/v1/internal/ops/status', asyncHandler(operationsController.status));
 router.get('/v1/notifications/unsubscribe', asyncHandler(appContainer.emailNotificationController.unsubscribeGet));
 router.post('/v1/notifications/unsubscribe', asyncHandler(appContainer.emailNotificationController.unsubscribePost));
 

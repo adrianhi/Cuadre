@@ -9,6 +9,7 @@ import type {
   GmailWatchResponse,
   GoogleTokenResponse,
 } from './gmail-types';
+import { logger } from '../../../../shared/observability/logger';
 
 export const GMAIL_READONLY_SCOPE = 'https://www.googleapis.com/auth/gmail.readonly';
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
@@ -63,13 +64,13 @@ export class GoogleGmailClient {
       headers: { Authorization: `Bearer ${accessToken}`, Accept: 'application/json' },
     });
     if (!response.ok) {
-      const errorBody = await response.text().catch(() => '');
-      console.error(`[GoogleGmailClient] HTTP ${response.status} for ${url}: ${errorBody}`);
+      await response.text().catch(() => '');
+      logger.warn('google_gmail_api_request_failed', { statusCode: response.status });
       throw new AppError(
         response.status === 401 ? 401 : response.status === 404 ? 404 : 502,
         response.status === 401 ? 'GOOGLE_REAUTH_REQUIRED' : response.status === 404 ? 'GOOGLE_NOT_FOUND' : 'GOOGLE_API_ERROR',
-        `Google API error (${response.status}): ${errorBody.slice(0, 200)}`,
-        { status: response.status, body: errorBody, url }
+        response.status === 401 ? 'Reconnect Gmail to continue syncing.' : 'Google Gmail could not complete the request.',
+        { status: response.status }
       );
     }
     return (await response.json()) as T;

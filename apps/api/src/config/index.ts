@@ -46,6 +46,15 @@ export function parseDelayMs(raw: string | undefined, fallback: number, minimum:
   return Math.max(parsed, minimum);
 }
 
+function parseRatio(raw: string | undefined, fallback: number): number {
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) ? Math.min(Math.max(parsed, 0), 1) : fallback;
+}
+
+function parseChoice<T extends string>(raw: string | undefined, values: readonly T[], fallback: T): T {
+  return values.includes(raw as T) ? raw as T : fallback;
+}
+
 export const config = {
   port: parseInt(process.env.PORT || '3000', 10),
   nodeEnv: process.env.NODE_ENV || 'development',
@@ -98,6 +107,14 @@ export const config = {
   workerIdleDelayMs: parseDelayMs(process.env.WORKER_IDLE_DELAY_MS, 60_000, 5_000),
   workerBusyDelayMs: parseDelayMs(process.env.WORKER_BUSY_DELAY_MS, 50, 0),
   workerErrorDelayMs: parseDelayMs(process.env.WORKER_ERROR_DELAY_MS, 10_000, 1_000),
+  logLevel: parseChoice(process.env.LOG_LEVEL, ['debug', 'info', 'warn', 'error', 'silent'] as const, 'info'),
+  dbQueryLogMode: parseChoice(process.env.DB_QUERY_LOG_MODE, ['off', 'slow', 'all'] as const,
+    process.env.NODE_ENV === 'development' ? 'all' : 'slow'),
+  slowQueryMs: parseDelayMs(process.env.SLOW_QUERY_MS, 500, 1),
+  slowRequestMs: parseDelayMs(process.env.SLOW_REQUEST_MS, 1_000, 1),
+  requestLogSampleRate: parseRatio(process.env.REQUEST_LOG_SAMPLE_RATE, 0.1),
+  errorTrackingDsn: process.env.ERROR_TRACKING_DSN || '',
+  maintenanceHeartbeatUrl: process.env.MAINTENANCE_HEARTBEAT_URL || '',
   maintenanceSecret: process.env.MAINTENANCE_SECRET || '',
   emailDeliveryMode: (process.env.EMAIL_DELIVERY_MODE === 'LIVE' || (!process.env.EMAIL_DELIVERY_MODE && Boolean(process.env.RESEND_API_KEY) && process.env.NODE_ENV === 'production'))
     ? 'LIVE' as const

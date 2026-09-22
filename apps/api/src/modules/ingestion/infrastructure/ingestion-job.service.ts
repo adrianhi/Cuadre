@@ -13,6 +13,8 @@ import type {
   IngestionJobKind,
 } from '../application/ingestion-job.port';
 import { IngestionScheduler } from './ingestion-scheduler';
+import { reportError } from '../../../shared/observability/error-reporter';
+import { logger } from '../../../shared/observability/logger';
 
 import type { SyncCompletedNotifier } from '../application/sync-completed-notifier';
 
@@ -139,6 +141,8 @@ export class IngestionJobService implements IngestionJobQueue, IngestionJobProce
         where: { id: candidate.id },
         data: { status: 'FAILED', leaseUntil: null, nextAttemptAt: NEVER_RETRY },
       });
+      logger.error('ingestion_job_exhausted', { jobId: candidate.id, errorCode: candidate.errorCode });
+      reportError(new Error('INGESTION_JOB_EXHAUSTED'), { jobId: candidate.id, errorCode: candidate.errorCode });
       return true;
     }
     const claimed = await prisma.ingestionJob.updateMany({
@@ -230,5 +234,9 @@ export class IngestionJobService implements IngestionJobQueue, IngestionJobProce
       },
     });
     await prisma.inboxConnection.update({ where: { id: connectionId }, data: { lastErrorCode: errorCode(error) } });
+    if (exhausted) {
+      logger.error('ingestion_job_exhausted', { jobId, errorCode: errorCode(error), attempts });
+      reportError(error, { source: 'ingestionJob', jobId, errorCode: errorCode(error), attempts });
+    }
   }
 }

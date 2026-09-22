@@ -2,6 +2,7 @@ import { logger } from '../../../shared/observability/logger';
 import { RunnerLoopControl, type RunnerDelays } from '../../../shared/application/runner-loop-control';
 import { ProactiveEmailScheduler } from './proactive-email.scheduler';
 import { ProactiveEmailService } from './proactive-email.service';
+import { runnerStateRegistry } from '../../../shared/observability/runner-state';
 
 const delay = (milliseconds: number) => new Promise<void>((resolve) => setTimeout(resolve, milliseconds));
 
@@ -22,6 +23,7 @@ export class ProactiveEmailRunner {
   start() {
     if (this.running) return;
     this.running = true; this.loopPromise = this.loop();
+    runnerStateRegistry.started('proactiveEmail');
     logger.info('proactive_email_runner_started', { ...this.delays });
   }
 
@@ -29,6 +31,7 @@ export class ProactiveEmailRunner {
     this.running = false;
     this.control.interruptAll();
     if (this.loopPromise) await Promise.race([this.loopPromise, delay(timeoutMs)]);
+    runnerStateRegistry.stopped('proactiveEmail');
     logger.info('proactive_email_runner_stopped');
   }
 
@@ -59,7 +62,18 @@ export class ProactiveEmailRunner {
 
   private runCycle(schedule: boolean) {
     if (this.activeCycle) return this.activeCycle;
-    this.activeCycle = this.performCycle(schedule).finally(() => { this.activeCycle = null; });
+    const startedAt = Date.now();
+    runnerStateRegistry.cycleStarted('proactiveEmail');
+    this.activeCycle = this.performCycle(schedule)
+      .then((processed) => {
+        runnerStateRegistry.cycleSucceeded('proactiveEmail', startedAt, processed);
+        return processed;
+      })
+      .catch((error) => {
+        runnerStateRegistry.cycleFailed('proactiveEmail', startedAt, error);
+        throw error;
+      })
+      .finally(() => { this.activeCycle = null; });
     return this.activeCycle;
   }
 

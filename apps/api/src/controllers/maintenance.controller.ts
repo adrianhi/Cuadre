@@ -1,4 +1,3 @@
-import crypto from 'crypto';
 import { Request, Response } from 'express';
 import { config } from '../config';
 import { AppError } from '../errors/app-error';
@@ -6,12 +5,17 @@ import type { IngestionRunner } from '../ingestion/ingestion-runner';
 import type { RecurringRunner } from '../modules/recurring';
 import type { EngagementService } from '../modules/engagement';
 import type { ProactiveEmailRunner } from '../modules/proactivity';
+import { hasValidBearerToken } from '../shared/http/internal-auth';
+import { logger } from '../shared/observability/logger';
 
-function authorized(header: string | undefined) {
-  if (!config.maintenanceSecret || !header?.startsWith('Bearer ')) return false;
-  const received = Buffer.from(header.slice('Bearer '.length));
-  const expected = Buffer.from(config.maintenanceSecret);
-  return received.length === expected.length && crypto.timingSafeEqual(received, expected);
+async function notifyHeartbeat() {
+  if (!config.maintenanceHeartbeatUrl) return;
+  try {
+    const response = await fetch(config.maintenanceHeartbeatUrl, { signal: AbortSignal.timeout(2_000) });
+    if (!response.ok) throw new Error(`Heartbeat responded with HTTP ${response.status}`);
+  } catch (error) {
+    logger.warn('maintenance_heartbeat_failed', { errorName: error instanceof Error ? error.name : 'UnknownError' });
+  }
 }
 
 export class MaintenanceController {
@@ -26,7 +30,7 @@ export class MaintenanceController {
     if (!config.maintenanceSecret) {
       throw new AppError(503, 'MAINTENANCE_DISABLED', 'Maintenance endpoint is not configured.');
     }
-    if (!authorized(req.header('authorization'))) {
+    if (!hasValidBearerToken(req.header('authorization'), config.maintenanceSecret)) {
       throw new AppError(401, 'INVALID_MAINTENANCE_TOKEN', 'Maintenance token is invalid.');
     }
     const [ingestion, recurring, email] = await Promise.all([
@@ -35,6 +39,9 @@ export class MaintenanceController {
       this.emailRunner.maintenanceTick(4_000),
       this.engagement.pruneExpired(),
     ]);
-    res.status(200).json({ success: true, data: { ...ingestion, ...recurring, ...email } });
+    const data = { ...ingestion, ...recurring, ...email };
+    await notifyHeartbeat();
+    logger.info('maintenance_tick_completed', data);
+    res.status(200).json({ success: true, data });
   };
 }

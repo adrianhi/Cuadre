@@ -3,12 +3,13 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '../../../config/database';
 import type { EmailDeliveryRecord, EmailPreferenceRecord, ProactiveEmailRepository } from '../application/proactive.ports';
 import { decideEmailFailure } from '../domain/email-retry';
+import { reportError } from '../../../shared/observability/error-reporter';
+import { logger } from '../../../shared/observability/logger';
 const preferenceSelect = {
   workspaceId: true, profileId: true, weeklyDigestEnabled: true, criticalAlertsEnabled: true,
   digestSchedule: true, customDayOfWeek: true, customHour: true, customMinute: true, nextWeeklyDigestAt: true,
   membership: { select: { profile: { select: { email: true, displayName: true, timezone: true, defaultCurrency: true } } } },
 } as const;
-
 function preference(row: Prisma.EmailNotificationPreferenceGetPayload<{ select: typeof preferenceSelect }>): EmailPreferenceRecord {
   return { ...row, ...row.membership.profile, digestSchedule: row.digestSchedule as EmailPreferenceRecord['digestSchedule'] };
 }
@@ -174,6 +175,11 @@ export class PrismaEmailRepository implements ProactiveEmailRepository {
       status: decision.status, errorCode: error.code, leaseToken: null, leaseUntil: null,
       processedAt: decision.terminal ? now : null, nextAttemptAt: decision.retryAt || now,
     } });
+    if (decision.terminal) {
+      logger.error('email_delivery_exhausted', { jobId: job.id, errorCode: error.code, attempts: job.attempts });
+      reportError(new Error(error.code), { source: 'emailDelivery', jobId: job.id,
+        errorCode: error.code, attempts: job.attempts });
+    }
   }
 
   testCount(profileId: string, since: Date) {
