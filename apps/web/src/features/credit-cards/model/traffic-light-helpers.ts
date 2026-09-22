@@ -48,17 +48,9 @@ export function getTrafficLightMeta(status: CardRecommendationStatus): TrafficLi
   return TRAFFIC_LIGHT_META[status] ?? TRAFFIC_LIGHT_META.GOOD;
 }
 
-export function formatShortDate(dateString?: string | null): string {
-  if (!dateString) return '-';
-  const date = new Date(dateString);
-  if (Number.isNaN(date.getTime())) return String(dateString);
-  return new Intl.DateTimeFormat('es-DO', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    timeZone: 'UTC',
-  }).format(date);
-}
+import { formatDayDate } from '@/shared/lib';
+
+export { formatDayDate as formatShortDate };
 
 export const ANTI_FINANCING_INFO = {
   title: 'Alerta Anti-Financiamiento en RD',

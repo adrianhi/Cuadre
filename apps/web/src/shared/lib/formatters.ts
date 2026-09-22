@@ -19,6 +19,18 @@ export function formatDate(dateString: string | Date | null | undefined): string
   }).format(date);
 }
 
+export function formatDayDate(dateString: string | Date | null | undefined): string {
+  if (!dateString) return '-';
+  const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+  if (Number.isNaN(date.getTime())) return String(dateString);
+  return new Intl.DateTimeFormat('es-DO', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(date);
+}
+
 export function formatRelativeDate(dateString: string | Date | null | undefined): string {
   if (!dateString) return '-';
   const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
