@@ -34,12 +34,12 @@ test('shows and completes the predictive finance workflow', async ({ page }) => 
   await page.getByRole('button', { name: 'Saltar', exact: true }).click();
   await expect(page.getByText('Margen Seguro Diario')).toBeVisible();
   await expect(page.getByText('RD$ 550.00')).toBeVisible();
-  await page.getByRole('button', { name: 'Presupuesto', exact: true }).click();
+  await page.getByRole('button', { name: 'Control', exact: true }).click();
   await page.getByRole('button', { name: /Gastos Fijos y Suscripciones/ }).click();
   await expect(page.getByText('Netflix')).toBeVisible();
   await page.getByRole('button', { name: 'Confirmar' }).click();
   await expect.poll(() => confirmed).toBe(true);
-  await page.getByRole('button', { name: 'Inicio' }).click();
+  await page.getByRole('button', { name: 'Quincena', exact: true }).click();
   await expect(page.getByText('Tu quincena está lista')).toBeVisible();
   await page.getByRole('button', { name: 'Marcar quincena revisada' }).click();
   await expect(page.getByText('Tu quincena está lista')).toBeHidden();

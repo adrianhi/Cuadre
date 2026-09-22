@@ -45,10 +45,10 @@ export function SafeToSpendDial(props: {
   return (
     <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-primary/10 via-card to-card shadow-sm" data-product-tour="safe-to-spend">
       <CardContent className="p-5 sm:p-7">
-        {/* Mobile header (< lg) */}
-        <div className="mb-4 flex w-full items-center justify-between lg:hidden">
-          <div className="flex items-center gap-2 text-sm font-bold">
-            <Gauge className="h-4 w-4 text-primary" /> Margen Seguro Diario
+        {/* Card header */}
+        <div className="mb-4 flex w-full items-center justify-between">
+          <div className="flex items-center gap-2 text-sm font-bold sm:text-base">
+            <Gauge className="h-4 w-4 text-primary sm:h-5 sm:w-5" /> Margen Seguro Diario
           </div>
           <Badge variant="secondary" className="text-xs font-normal text-muted-foreground">
             {value.daysRemaining} días restantes
@@ -79,19 +79,9 @@ export function SafeToSpendDial(props: {
             </div>
           </div>
 
-          {/* Right side: Status explanation, remaining days, reserve badge, CTA */}
+          {/* Right side: Status explanation, reserve badge, CTA */}
           <div className="mt-5 flex flex-1 flex-col items-center text-center lg:mt-0 lg:items-start lg:text-left">
-            {/* Desktop header row (lg+) */}
-            <div className="hidden w-full items-center justify-between lg:flex">
-              <div className="flex items-center gap-2 text-base font-bold">
-                <Gauge className="h-5 w-5 text-primary" /> Margen Seguro Diario
-              </div>
-              <Badge variant="secondary" className="text-xs font-normal text-muted-foreground">
-                {value.daysRemaining} días restantes
-              </Badge>
-            </div>
-
-            <p className="mt-2 text-sm font-medium text-foreground lg:mt-3">
+            <p className="text-sm font-medium text-foreground">
               {copy[value.status]}
             </p>
 
