@@ -1,5 +1,6 @@
 import { CreditCard, Sparkles, Users, Wand2 } from 'lucide-react';
 import { getBankTheme, useCreditCardsSummary } from '@/features/credit-cards';
+import { Badge } from '@/shared/ui';
 
 interface QuickActionRailProps {
   onOpenTrafficLight: () => void;
@@ -79,9 +80,9 @@ export function QuickActionRail({
                     {action.title}
                   </p>
                   {action.badgeText && (
-                    <span className="rounded px-1 py-0.2 text-[9px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                    <Badge variant="success" className="rounded px-1 py-0.2 text-[9px] font-bold border-0">
                       {action.badgeText}
-                    </span>
+                    </Badge>
                   )}
                 </div>
                 <p className="text-[11px] text-muted-foreground leading-tight truncate">

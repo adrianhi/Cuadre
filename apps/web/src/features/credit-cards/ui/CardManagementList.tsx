@@ -3,6 +3,8 @@ import { Edit3, Plus, Trash2 } from 'lucide-react';
 import type { CreditCard } from '@bills/contracts';
 import {
   Button,
+  Card,
+  CardContent,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -55,76 +57,80 @@ export function CardManagementList({
       </div>
 
       {cards.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border p-6 text-center space-y-2">
-          <p className="text-sm font-semibold text-foreground">No tienes tarjetas registradas</p>
-          <p className="text-xs text-muted-foreground">
-            Agrega tus tarjetas de crédito con su día de corte para calcular el semáforo inteligente.
-          </p>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onStartCreate}
-            className="mt-2 rounded-xl text-xs font-bold"
-          >
-            Registrar mi primera tarjeta
-          </Button>
-        </div>
+        <Card className="rounded-2xl border-dashed border-border text-center shadow-none bg-transparent">
+          <CardContent className="p-6 space-y-2">
+            <p className="text-sm font-semibold text-foreground">No tienes tarjetas registradas</p>
+            <p className="text-xs text-muted-foreground">
+              Agrega tus tarjetas de crédito con su día de corte para calcular el semáforo inteligente.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onStartCreate}
+              className="mt-2 rounded-xl text-xs font-bold"
+            >
+              Registrar mi primera tarjeta
+            </Button>
+          </CardContent>
+        </Card>
       ) : (
         <div className="space-y-2.5">
           {cards.map((card) => {
             const bank = getBankTheme(card.institutionCode);
 
             return (
-              <div
+              <Card
                 key={card.id}
-                className="flex items-center justify-between gap-3 rounded-2xl border border-border/70 bg-card p-3.5 shadow-sm transition hover:border-border"
+                className="rounded-2xl border-border/70 bg-card shadow-sm transition hover:border-border"
               >
-                <div className="flex items-center gap-3 min-w-0">
-                  <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${bank.chipBg} font-bold text-xs`}>
-                    {bank.shortName.slice(0, 2).toUpperCase()}
-                  </span>
+                <CardContent className="p-3.5 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${bank.chipBg} font-bold text-xs`}>
+                      {bank.shortName.slice(0, 2).toUpperCase()}
+                    </span>
 
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-foreground truncate">
-                        {card.alias}
-                      </span>
-                      <span className="text-[11px] text-muted-foreground font-mono">
-                        {formatCardLast4(card.cardLast4)}
-                      </span>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-foreground truncate">
+                          {card.alias}
+                        </span>
+                        <span className="text-[11px] text-muted-foreground font-mono">
+                          {formatCardLast4(card.cardLast4)}
+                        </span>
+                      </div>
+
+                      <p className="text-[11px] text-muted-foreground">
+                        Corte: día {card.closingDay} · Gracia: {card.graceDays} días
+                      </p>
                     </div>
-
-                    <p className="text-[11px] text-muted-foreground">
-                      Corte: día {card.closingDay} · Gracia: {card.graceDays} días
-                    </p>
                   </div>
-                </div>
 
-                <div className="flex items-center gap-1 shrink-0">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
-                    onClick={() => onStartEdit(card)}
-                    aria-label={`Editar ${card.alias}`}
-                  >
-                    <Edit3 className="h-3.5 w-3.5" />
-                  </Button>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+                      onClick={() => onStartEdit(card)}
+                      aria-label={`Editar ${card.alias}`}
+                    >
+                      <Edit3 className="h-3.5 w-3.5" />
+                    </Button>
 
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:text-destructive"
-                    onClick={() => setCardToDelete(card)}
-                    aria-label={`Eliminar ${card.alias}`}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:text-destructive"
+                      onClick={() => setCardToDelete(card)}
+                      aria-label={`Eliminar ${card.alias}`}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             );
           })}
         </div>

@@ -1,5 +1,7 @@
 import { AlertTriangle, ShieldAlert } from 'lucide-react';
 import type { CardRecommendation } from '@bills/contracts';
+import { cn } from '@/shared/lib';
+import { Badge, Card, CardContent } from '@/shared/ui';
 import { formatCardLast4, getBankTheme } from '../model/bank-theme';
 import {
   ANTI_FINANCING_INFO,
@@ -32,9 +34,12 @@ export function CardRecommendationList({ cards }: CardRecommendationListProps) {
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className={`inline-flex items-center rounded-lg px-2 py-0.5 text-[11px] font-bold border ${bank.badgeClass}`}>
+                      <Badge
+                        variant="outline"
+                        className={cn('rounded-lg px-2 py-0.5 text-[11px] font-bold border', bank.badgeClass)}
+                      >
                         {bank.shortName}
-                      </span>
+                      </Badge>
                       <span className="font-bold text-xs text-foreground truncate">
                         {item.card.alias}
                       </span>
@@ -43,9 +48,12 @@ export function CardRecommendationList({ cards }: CardRecommendationListProps) {
                       </span>
                     </div>
 
-                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold border shrink-0 ${meta.badgeClass}`}>
+                    <Badge
+                      variant="outline"
+                      className={cn('rounded-full px-2 py-0.5 text-[10px] font-bold border shrink-0', meta.badgeClass)}
+                    >
                       {meta.label}
-                    </span>
+                    </Badge>
                   </div>
 
                   <p className="text-xs text-muted-foreground leading-relaxed">
@@ -71,21 +79,23 @@ export function CardRecommendationList({ cards }: CardRecommendationListProps) {
       )}
 
       {/* Alerta Anti-Financiamiento Educativa RD */}
-      <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 space-y-2">
-        <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
-          <ShieldAlert className="h-4 w-4 shrink-0" />
-          <h4 className="text-xs font-bold uppercase tracking-wider">
-            {ANTI_FINANCING_INFO.title}
-          </h4>
-        </div>
-        <p className="text-xs text-muted-foreground leading-relaxed">
-          {ANTI_FINANCING_INFO.message}
-        </p>
-        <div className="flex items-center gap-1.5 text-[11px] text-amber-600 dark:text-amber-400 font-semibold pt-1">
-          <AlertTriangle className="h-3 w-3 shrink-0" />
-          <span>Tasa regular: {ANTI_FINANCING_INFO.statRate}. ¡Finánciate con el corte, no con intereses!</span>
-        </div>
-      </div>
+      <Card className="rounded-2xl border-amber-500/30 bg-amber-500/10 shadow-none">
+        <CardContent className="p-4 space-y-2">
+          <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
+            <ShieldAlert className="h-4 w-4 shrink-0" />
+            <h4 className="text-xs font-bold uppercase tracking-wider">
+              {ANTI_FINANCING_INFO.title}
+            </h4>
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            {ANTI_FINANCING_INFO.message}
+          </p>
+          <div className="flex items-center gap-1.5 text-[11px] text-amber-600 dark:text-amber-400 font-semibold pt-1">
+            <AlertTriangle className="h-3 w-3 shrink-0" />
+            <span>Tasa regular: {ANTI_FINANCING_INFO.statRate}. ¡Finánciate con el corte, no con intereses!</span>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

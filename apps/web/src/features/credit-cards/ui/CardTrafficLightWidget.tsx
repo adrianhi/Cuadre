@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ArrowRight, CreditCard, Sparkles } from 'lucide-react';
-import { Button, Card, CardContent } from '@/shared/ui';
+import { Badge, Button, Card, CardContent } from '@/shared/ui';
 import { getBankTheme } from '../model/bank-theme';
 import { useCreditCardsSummary } from '../model/useCreditCards';
 import { CardTrafficLightModal } from './CardTrafficLightModal';
@@ -36,14 +36,20 @@ export function CardTrafficLightWidget({ className = '', onOpen }: CardTrafficLi
               </span>
 
               {bestCard ? (
-                <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                <Badge
+                  variant="success"
+                  className="gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold"
+                >
                   <Sparkles className="h-3 w-3" />
                   {bestCard.freeFinancingDays} días gratis
-                </span>
+                </Badge>
               ) : (
-                <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                <Badge
+                  variant="outline"
+                  className="rounded-full px-2.5 py-0.5 text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                >
                   Semáforo
-                </span>
+                </Badge>
               )}
             </div>
 

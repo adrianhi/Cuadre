@@ -1,6 +1,7 @@
 import { Calendar, CheckCircle2, Clock, Sparkles } from 'lucide-react';
 import type { CardRecommendation } from '@bills/contracts';
-import { Card, CardContent } from '@/shared/ui';
+import { cn } from '@/shared/lib';
+import { Badge, Card, CardContent } from '@/shared/ui';
 import { formatCardLast4, getBankTheme } from '../model/bank-theme';
 import { formatShortDate } from '../model/traffic-light-helpers';
 
@@ -22,18 +23,24 @@ export function CardRecommendationHero({ recommendation }: CardRecommendationHer
         {/* Top bar: Bank badge & Card identifier */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
-            <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-bold border ${bankTheme.badgeClass}`}>
+            <Badge
+              variant="outline"
+              className={cn('rounded-lg px-2.5 py-1 text-xs font-bold border', bankTheme.badgeClass)}
+            >
               {bankTheme.name}
-            </span>
+            </Badge>
             <span className="text-xs font-medium text-muted-foreground font-mono">
               {formatCardLast4(card.cardLast4)}
             </span>
           </div>
 
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+          <Badge
+            variant="success"
+            className="gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full"
+          >
             <Sparkles className="h-3 w-3" />
             Mejor opción hoy
-          </span>
+          </Badge>
         </div>
 
         {/* Alias & Giant Hero Metric */}
