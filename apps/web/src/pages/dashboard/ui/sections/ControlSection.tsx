@@ -1,10 +1,11 @@
-import React, { type ReactNode } from 'react';
+import React, { useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { BarChart3, CalendarCheck, Info, WalletCards } from 'lucide-react';
 import type { PeriodSelection } from '@/entities/period';
 import type { StatsSummary } from '@/entities/stat';
 import { usePaydayRitual } from '@/entities/payday-ritual';
 import { useCompletePaydayRitual } from '@/features/complete-payday-ritual';
+import { IncomeStreamsSettingsModal } from '@/features/income-streams';
 import { PaydayRitualCard } from '@/widgets/payday-ritual';
 import { Card, CardContent } from '@/shared/ui';
 import { BudgetSection } from './BudgetSection';
@@ -51,12 +52,13 @@ export const ControlSection: React.FC<ControlSectionProps> = ({
       const next = new URLSearchParams(prev);
       next.set('view', newView);
       if (newView !== 'budget') {
-        if (next.get('tab') !== 'recurring') next.delete('tab');
+        next.delete('tab');
       }
       return next;
     }, { replace: true });
   };
 
+  const [incomeModalOpen, setIncomeModalOpen] = useState(false);
   const activeCurrency = currency === 'USD' ? 'USD' : 'DOP';
   const paydayRitual = usePaydayRitual(activeCurrency);
   const completePaydayRitual = useCompletePaydayRitual(activeCurrency);
@@ -153,6 +155,7 @@ export const ControlSection: React.FC<ControlSectionProps> = ({
                 completing={completePaydayRitual.isPending}
                 hideBalances={hideBalances}
                 onComplete={(cycleKey) => completePaydayRitual.mutate(cycleKey)}
+                onConfigureIncome={() => setIncomeModalOpen(true)}
               />
             </div>
 
@@ -172,6 +175,12 @@ export const ControlSection: React.FC<ControlSectionProps> = ({
           </div>
         </div>
       )}
+
+      <IncomeStreamsSettingsModal
+        open={incomeModalOpen}
+        onOpenChange={setIncomeModalOpen}
+        currency={activeCurrency}
+      />
     </div>
   );
 };
