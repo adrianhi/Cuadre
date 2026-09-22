@@ -99,3 +99,9 @@ Todo agente debe ejecutar y verificar que pasen satisfactoriamente los siguiente
    npm run lint --prefix apps/web
    npm run build:web
    ```
+
+4. **Verificación de GitHub Actions (CI):**
+   - Siempre que se realice un `push` a una rama remota (`develop`, `master`, o ramas de features/fixes) o se trabaje sobre un Pull Request, es **estrictamente obligatorio verificar que los workflows de GitHub Actions (CI / Quality) concluyan exitosamente en verde**.
+   - Ninguna tarea se considera terminada ni ningún PR se da por listo sin confirmar el paso exitoso de los checks remotos en GitHub.
+   - Si algún job del CI falla (compilación, pruebas unitarias/integración, cobertura, pruebas E2E de Playwright, migraciones de base de datos aislada, o linter), el agente debe inspeccionar el reporte del fallo inmediatamente, aplicar la solución y verificar nuevamente hasta que el CI pase por completo.
+
