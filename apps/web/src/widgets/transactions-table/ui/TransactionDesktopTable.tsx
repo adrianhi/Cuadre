@@ -56,32 +56,32 @@ const TransactionRow = ({ transaction, hideBalances, onEdit, onDelete }: {
 
   return (
     <tr className="group transition-colors hover:bg-muted/30">
-      <td className="px-2.5 py-3 xl:px-3.5 2xl:px-5 2xl:py-4">
+      <td className="px-2.5 py-3 xl:px-3 2xl:px-4 2xl:py-3.5">
         <div className="flex items-center gap-2.5">
-          <div className={`flex h-8 w-8 2xl:h-10 2xl:w-10 flex-shrink-0 items-center justify-center rounded-xl ${internal ? 'bg-violet-500/15' : sent ? 'bg-sky-500/15' : 'bg-muted/60'}`}><TransactionIcon transaction={transaction} /></div>
+          <div className={`flex h-8 w-8 2xl:h-9 2xl:w-9 flex-shrink-0 items-center justify-center rounded-xl ${internal ? 'bg-violet-500/15' : sent ? 'bg-sky-500/15' : 'bg-muted/60'}`}><TransactionIcon transaction={transaction} /></div>
           <div className="min-w-0">
-            <div className="max-w-[170px] xl:max-w-[240px] 2xl:max-w-[380px] 3xl:max-w-[500px] truncate font-semibold" title={transaction.merchant}>{transaction.merchant}</div>
+            <div className="max-w-[150px] xl:max-w-[190px] 2xl:max-w-[240px] 4xl:max-w-[400px] truncate font-semibold" title={transaction.merchant}>{transaction.merchant}</div>
             <div className="mt-0.5 flex items-center gap-1.5">
               <span className={`inline-flex rounded border px-1.5 py-0.2 text-[10px] font-semibold ${institution.badgeClass}`}>{institution.shortName}</span>
               {secondaryText && (
-                <span className="max-w-[120px] xl:max-w-[180px] 2xl:max-w-[280px] 3xl:max-w-[400px] truncate font-mono text-[11px] text-muted-foreground" title={secondaryText}>{secondaryText}</span>
+                <span className="max-w-[100px] xl:max-w-[150px] 2xl:max-w-[200px] 4xl:max-w-[300px] truncate font-mono text-[11px] text-muted-foreground" title={secondaryText}>{secondaryText}</span>
               )}
             </div>
           </div>
         </div>
       </td>
-      <td className="whitespace-nowrap px-2.5 py-3 xl:px-3.5 2xl:px-5 2xl:py-4"><TransactionTypeBadge transaction={transaction} /></td>
-      <td className="whitespace-nowrap px-2.5 py-3 xl:px-3.5 2xl:px-5 2xl:py-4"><span className="inline-flex rounded-full border border-border/50 bg-muted/60 px-2 py-0.5 text-xs font-medium">{transaction.category || 'Otros'}</span></td>
-      <td className="whitespace-nowrap px-2.5 py-3 xl:px-3.5 2xl:px-5 2xl:py-4 text-xs text-muted-foreground">
-        <span className="hidden 2xl:inline">{formatDate(transaction.transactionDate)}</span>
-        <span className="2xl:hidden">{formatCompactDate(transaction.transactionDate)}</span>
+      <td className="whitespace-nowrap px-2.5 py-3 xl:px-3 2xl:px-4 2xl:py-3.5"><TransactionTypeBadge transaction={transaction} /></td>
+      <td className="whitespace-nowrap px-2.5 py-3 xl:px-3 2xl:px-4 2xl:py-3.5"><span className="inline-flex rounded-full border border-border/50 bg-muted/60 px-2 py-0.5 text-xs font-medium">{transaction.category || 'Otros'}</span></td>
+      <td className="whitespace-nowrap px-2.5 py-3 xl:px-3 2xl:px-4 2xl:py-3.5 text-xs text-muted-foreground">
+        <span className="hidden 4xl:inline">{formatDate(transaction.transactionDate)}</span>
+        <span className="4xl:hidden">{formatCompactDate(transaction.transactionDate)}</span>
       </td>
-      <td className="whitespace-nowrap px-2.5 py-3 xl:px-3.5 2xl:px-5 2xl:py-4 font-mono text-xs text-muted-foreground">{transaction.cardLast4 ? `•••• ${transaction.cardLast4}` : '—'}</td>
-      <td className="whitespace-nowrap px-2.5 py-3 xl:px-3.5 2xl:px-5 2xl:py-4"><TransactionStatus transaction={transaction} /></td>
-      <td className="whitespace-nowrap px-2.5 py-3 xl:px-3.5 2xl:px-5 2xl:py-4 text-right"><div className={`font-mono text-sm font-bold ${inactive ? 'text-muted-foreground line-through' : ''}`}>{hideBalances ? '••••••' : formatCurrency(transaction.amount, transaction.currency)}</div></td>
-      <td className="px-2.5 py-3 xl:px-3.5 2xl:px-5 2xl:py-4 text-center">
+      <td className="whitespace-nowrap px-2.5 py-3 xl:px-3 2xl:px-4 2xl:py-3.5 font-mono text-xs text-muted-foreground">{transaction.cardLast4 ? `•••• ${transaction.cardLast4}` : '—'}</td>
+      <td className="whitespace-nowrap px-2.5 py-3 xl:px-3 2xl:px-4 2xl:py-3.5"><TransactionStatus transaction={transaction} /></td>
+      <td className="whitespace-nowrap px-2.5 py-3 xl:px-3 2xl:px-4 2xl:py-3.5 text-right sticky right-14 z-10 bg-card group-hover:bg-muted/30 transition-colors shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.03)]"><div className={`font-mono text-sm font-bold ${inactive ? 'text-muted-foreground line-through' : ''}`}>{hideBalances ? '••••••' : formatCurrency(transaction.amount, transaction.currency)}</div></td>
+      <td className="w-14 min-w-[56px] px-2 py-3 text-center sticky right-0 z-10 bg-card group-hover:bg-muted/30 transition-colors">
         <div className="flex items-center justify-center gap-1">
-          <Button variant="ghost" size="icon" onClick={() => onEdit(transaction)} className="h-7 w-7 2xl:h-8 2xl:w-8 cursor-pointer text-muted-foreground hover:text-foreground" title="Editar clasificación">
+          <Button variant="ghost" size="icon" onClick={() => onEdit(transaction)} className="h-7 w-7 cursor-pointer text-muted-foreground hover:text-foreground" title="Editar clasificación">
             <Edit3 className="h-3.5 w-3.5" />
           </Button>
           {onDelete && (
@@ -89,7 +89,7 @@ const TransactionRow = ({ transaction, hideBalances, onEdit, onDelete }: {
               variant="ghost"
               size="icon"
               onClick={() => onDelete(transaction)}
-              className="h-7 w-7 2xl:h-8 2xl:w-8 cursor-pointer text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+              className="h-7 w-7 cursor-pointer text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
               title="Eliminar movimiento"
             >
               <Trash2 className="h-3.5 w-3.5" />
@@ -111,26 +111,26 @@ export const TransactionDesktopTable = ({ groups, hideBalances, onEdit, onDelete
     <table className="w-full text-left text-sm">
       <thead className="border-y bg-muted/40 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         <tr>
-          <th className="px-2.5 py-3 xl:px-3.5 2xl:px-5 2xl:py-3.5">
-            <span className="hidden 2xl:inline">Comercio / Beneficiario</span>
-            <span className="2xl:hidden">Comercio</span>
+          <th className="px-2.5 py-3 xl:px-3 2xl:px-4 2xl:py-3.5">
+            <span className="hidden 4xl:inline">Comercio / Beneficiario</span>
+            <span className="4xl:hidden">Comercio</span>
           </th>
-          <th className="px-2.5 py-3 xl:px-3.5 2xl:px-5 2xl:py-3.5">
-            <span className="hidden 2xl:inline">Tipo de Movimiento</span>
-            <span className="2xl:hidden">Tipo</span>
+          <th className="px-2.5 py-3 xl:px-3 2xl:px-4 2xl:py-3.5">
+            <span className="hidden 4xl:inline">Tipo de Movimiento</span>
+            <span className="4xl:hidden">Tipo</span>
           </th>
-          <th className="px-2.5 py-3 xl:px-3.5 2xl:px-5 2xl:py-3.5">Categoría</th>
-          <th className="px-2.5 py-3 xl:px-3.5 2xl:px-5 2xl:py-3.5">
-            <span className="hidden 2xl:inline">Fecha & Hora</span>
-            <span className="2xl:hidden">Fecha</span>
+          <th className="px-2.5 py-3 xl:px-3 2xl:px-4 2xl:py-3.5">Categoría</th>
+          <th className="px-2.5 py-3 xl:px-3 2xl:px-4 2xl:py-3.5">
+            <span className="hidden 4xl:inline">Fecha & Hora</span>
+            <span className="4xl:hidden">Fecha</span>
           </th>
-          <th className="px-2.5 py-3 xl:px-3.5 2xl:px-5 2xl:py-3.5">
-            <span className="hidden 2xl:inline">Cuenta / Tarjeta</span>
-            <span className="2xl:hidden">Cuenta</span>
+          <th className="px-2.5 py-3 xl:px-3 2xl:px-4 2xl:py-3.5">
+            <span className="hidden 4xl:inline">Cuenta / Tarjeta</span>
+            <span className="4xl:hidden">Cuenta</span>
           </th>
-          <th className="px-2.5 py-3 xl:px-3.5 2xl:px-5 2xl:py-3.5">Estado</th>
-          <th className="px-2.5 py-3 xl:px-3.5 2xl:px-5 2xl:py-3.5 text-right">Monto</th>
-          <th className="px-2.5 py-3 xl:px-3.5 2xl:px-5 2xl:py-3.5 text-center">Acciones</th>
+          <th className="px-2.5 py-3 xl:px-3 2xl:px-4 2xl:py-3.5">Estado</th>
+          <th className="px-2.5 py-3 xl:px-3 2xl:px-4 2xl:py-3.5 text-right sticky right-14 z-20 bg-muted/95 backdrop-blur shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.03)]">Monto</th>
+          <th className="w-14 min-w-[56px] px-2 py-3 text-center sticky right-0 z-20 bg-muted/95 backdrop-blur">Acciones</th>
         </tr>
       </thead>
       <tbody className="divide-y divide-border/40">
