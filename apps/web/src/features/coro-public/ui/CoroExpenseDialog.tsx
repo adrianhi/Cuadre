@@ -140,7 +140,7 @@ export function CoroExpenseDialog({
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Cena, gasolina, picapollo, hielo…"
+              placeholder="Cena, gasolina, alojamiento…"
               className="h-10 text-xs sm:text-sm"
               autoFocus
             />
