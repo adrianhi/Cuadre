@@ -31,4 +31,15 @@ describe('recurringService', () => {
     const result = await recurringService.unlinkTransaction(billId, txId);
     expect(result).toEqual({ unlinked: true, recurringBillId: billId });
   });
+
+  it('deletes a recurring bill', async () => {
+    mock.onDelete(`/recurring/${billId}`).reply(200, {
+      success: true,
+      data: { deleted: true, id: billId },
+    });
+
+    const result = await recurringService.delete(billId);
+    expect(result).toEqual({ deleted: true, id: billId });
+  });
 });
+

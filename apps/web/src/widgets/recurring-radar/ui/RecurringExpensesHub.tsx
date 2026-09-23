@@ -16,6 +16,9 @@ interface RecurringExpensesHubProps {
   onAcknowledgeAlert: (alertId: string) => void;
   onLink?: (bill: RecurringBillDto) => void;
   onUnlink?: (bill: RecurringBillDto) => void;
+  onDelete?: (bill: RecurringBillDto) => void;
+  unlinkingBillId?: string | null;
+  deletingBillId?: string | null;
 }
 
 export function RecurringExpensesHub({
@@ -30,7 +33,11 @@ export function RecurringExpensesHub({
   onAcknowledgeAlert,
   onLink,
   onUnlink,
+  onDelete,
+  unlinkingBillId,
+  deletingBillId,
 }: RecurringExpensesHubProps) {
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -81,6 +88,9 @@ export function RecurringExpensesHub({
         onAcknowledgeAlert={onAcknowledgeAlert}
         onLink={onLink}
         onUnlink={onUnlink}
+        onDelete={onDelete}
+        unlinkingBillId={unlinkingBillId}
+        deletingBillId={deletingBillId}
       />
     </div>
   );

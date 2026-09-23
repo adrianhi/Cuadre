@@ -1,54 +1,10 @@
-import type { RecurringAlert, RecurringBill } from '@prisma/client';
 import type { CreateRecurringBillInput, RecurringBillDto, RecurringMonthStatus, RecurringRadarDto, UpdateRecurringBillInput } from '@bills/contracts';
 import { prisma } from '../../../config/database';
 import { AppError } from '../../../errors/app-error';
 import { expenseTransactionWhere } from '../../transactions';
 import { projectTotalMonthlyIncome } from '../../incomes';
 import { daysFrom, monthlyBurden, parseDateOnly, projectedDates, toDateOnly } from '../domain/recurring-projection';
-
-type BillWithAlerts = RecurringBill & {
-  alerts: RecurringAlert[];
-  occurrences?: Array<{ transaction?: { id: string; merchant: string; amount: unknown; transactionDate: Date } | null }>;
-};
-const round = (value: number) => Math.round(value * 100) / 100;
-
-function santoDomingoToday() {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'America/Santo_Domingo', year: 'numeric', month: '2-digit', day: '2-digit',
-  }).format(new Date());
-}
-
-export function recurringDto(
-  bill: BillWithAlerts,
-  today = santoDomingoToday(),
-  extra?: {
-    monthStatus?: RecurringMonthStatus;
-    lastPaidAmount?: number | null;
-    lastPaidDate?: string | null;
-    linkedTransactionId?: string | null;
-    linkedTransactionName?: string | null;
-  },
-): RecurringBillDto {
-  return {
-    id: bill.id, displayName: bill.displayName, currency: bill.currency as 'DOP' | 'USD',
-    cadence: bill.cadence, expectedAmount: Number(bill.expectedAmount),
-    nextExpectedDate: toDateOnly(bill.nextExpectedDate), lastSeenAt: bill.lastSeenAt.toISOString(),
-    occurrenceCount: bill.occurrenceCount, confidence: bill.confidence,
-    status: bill.status, userEdited: Boolean(bill.userEditedAt),
-    daysRemaining: daysFrom(today, bill.nextExpectedDate),
-    monthStatus: extra?.monthStatus ?? 'UPCOMING',
-    lastPaidAmount: extra?.lastPaidAmount ?? null,
-    lastPaidDate: extra?.lastPaidDate ?? null,
-    linkedTransactionId: extra?.linkedTransactionId ?? null,
-    linkedTransactionName: extra?.linkedTransactionName ?? null,
-    alerts: bill.alerts.map((alert) => ({
-      id: alert.id, kind: alert.kind,
-      baselineAmount: alert.baselineAmount === null ? null : Number(alert.baselineAmount),
-      observedAmount: alert.observedAmount === null ? null : Number(alert.observedAmount),
-      createdAt: alert.createdAt.toISOString(),
-    })),
-  };
-}
+import { recurringDto, round, santoDomingoToday } from './recurring-dto.mapper';
 
 export class PrismaRecurringQuery {
   async ensureScanScheduled(workspaceId: string) {
@@ -239,6 +195,13 @@ export class PrismaRecurringQuery {
     const bill = await prisma.recurringBill.findFirst({ where: { id: recurringBillId, workspaceId } });
     if (!bill) throw new AppError(404, 'RECURRING_BILL_NOT_FOUND', 'No encontramos ese cobro recurrente.');
     await prisma.recurringOccurrence.deleteMany({ where: { recurringBillId, ...(transactionId ? { transactionId } : {}) } });
+    return true;
+  }
+
+  async delete(workspaceId: string, id: string): Promise<boolean> {
+    const bill = await prisma.recurringBill.findFirst({ where: { id, workspaceId } });
+    if (!bill) throw new AppError(404, 'RECURRING_BILL_NOT_FOUND', 'No encontramos ese cobro recurrente.');
+    await prisma.recurringBill.delete({ where: { id } });
     return true;
   }
 }

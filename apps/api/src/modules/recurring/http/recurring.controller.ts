@@ -58,4 +58,11 @@ export class RecurringController {
     await this.service.unlinkTransaction(actor.workspaceId, actor.userId, recurringBillId, transactionId);
     res.status(200).json({ success: true, data: { unlinked: true, recurringBillId } });
   };
+
+  delete = async (req: Request, res: Response) => {
+    const { actor } = requestContext(req);
+    const id = String(req.params.id);
+    await this.service.delete(actor.workspaceId, actor.userId, id);
+    res.status(200).json({ success: true, data: { deleted: true, id } });
+  };
 }

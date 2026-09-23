@@ -11,6 +11,7 @@ export interface RecurringCandidate {
 export interface RecurringQueryReader {
   linkTransaction(workspaceId: string, recurringBillId: string, transactionId: string): Promise<{ recurringBillId: string; transactionId: string }>;
   unlinkTransaction(workspaceId: string, recurringBillId: string, transactionId?: string): Promise<boolean>;
+  delete(workspaceId: string, id: string): Promise<boolean>;
 }
 
 export interface RecurringRepository extends RecurringQueryReader {
@@ -18,6 +19,7 @@ export interface RecurringRepository extends RecurringQueryReader {
   radar(workspaceId: string, currency: 'DOP' | 'USD', window: number): Promise<RecurringRadarDto>;
   create(workspaceId: string, input: CreateRecurringBillInput): Promise<RecurringBillDto>;
   update(workspaceId: string, id: string, input: UpdateRecurringBillInput): Promise<RecurringBillDto | null>;
+  delete(workspaceId: string, id: string): Promise<boolean>;
   acknowledgeAlert(workspaceId: string, id: string): Promise<boolean>;
   sumFutureThroughMonthEnd(workspaceId: string, currency: string, today: string): Promise<number>;
   sumFutureThrough(workspaceId: string, currency: string, after: string, through: string): Promise<number>;

@@ -64,4 +64,15 @@ export class RecurringService {
     });
     return result;
   }
+
+  async delete(workspaceId: string, profileId: string, id: string) {
+    const result = await this.repository.delete(workspaceId, id);
+    await this.events?.recordAction({
+      workspaceId, profileId,
+      name: 'RECURRING_DELETED',
+      contextKey: `${id}:deleted`,
+      properties: { id },
+    });
+    return result;
+  }
 }

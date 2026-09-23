@@ -30,8 +30,10 @@ export function LinkRecurringTransactionDialog({
   linking = false,
 }: LinkRecurringTransactionDialogProps) {
   const [search, setSearch] = useState('');
+  const [linkingTxId, setLinkingTxId] = useState<string | null>(null);
   const currentMonthPrefix = new Date().toISOString().slice(0, 7);
   const currency = bill?.currency ?? 'DOP';
+  const isBusy = linking || Boolean(linkingTxId);
 
   const filters = useMemo(() => ({
     page: 1,
@@ -58,9 +60,19 @@ export function LinkRecurringTransactionDialog({
     });
   }, [query.data?.data, search]);
 
+  const handleLink = async (txId: string) => {
+    if (!bill || isBusy) return;
+    setLinkingTxId(txId);
+    try {
+      await onLink(bill.id, txId);
+    } finally {
+      setLinkingTxId(null);
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+    <Dialog open={open} onOpenChange={(val) => { if (!isBusy) onOpenChange(val); }}>
+      <DialogContent className="sm:max-w-xl overflow-hidden">
         <DialogHeader>
           <DialogTitle>Vincular movimiento</DialogTitle>
           <DialogDescription>
@@ -75,6 +87,7 @@ export function LinkRecurringTransactionDialog({
           <Input
             placeholder="Buscar por comercio o nota…"
             value={search}
+            disabled={isBusy}
             onChange={(event) => setSearch(event.target.value)}
             className="pl-9"
           />
@@ -108,14 +121,14 @@ export function LinkRecurringTransactionDialog({
               </p>
             </div>
           ) : (
-            <div className="max-h-[320px] space-y-2 overflow-y-auto pr-1">
+            <div className="max-h-[360px] space-y-2 overflow-y-auto overflow-x-hidden pr-1">
               {transactions.map((tx) => (
                 <div
                   key={tx.id}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-border/50 bg-card p-3 transition-colors hover:bg-muted/40"
+                  className="flex w-full min-w-0 items-center justify-between gap-3 overflow-hidden rounded-xl border border-border/50 bg-card p-3 transition-colors hover:bg-muted/40"
                 >
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <div className="flex min-w-0 items-center gap-2">
                       <p className="truncate text-sm font-semibold text-foreground">
                         {tx.merchant || tx.rawMerchant}
                       </p>
@@ -125,30 +138,36 @@ export function LinkRecurringTransactionDialog({
                         </span>
                       )}
                     </div>
-                    <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
-                      <span>{formatDate(tx.transactionDate)}</span>
+                    <div className="mt-0.5 flex min-w-0 items-center gap-2 truncate text-xs text-muted-foreground">
+                      <span className="shrink-0">{formatDate(tx.transactionDate)}</span>
                       {tx.notes && (
-                        <span className="truncate max-w-[180px]" title={tx.notes}>
+                        <span className="truncate" title={tx.notes}>
                           · {tx.notes}
                         </span>
                       )}
                     </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-3">
-                    <span className="text-sm font-bold text-foreground">
+                    <span className="whitespace-nowrap text-sm font-bold tabular-nums text-foreground">
                       {formatCurrency(tx.amount, tx.currency)}
                     </span>
                     <Button
                       size="sm"
-                      disabled={linking}
-                      onClick={() => {
-                        if (!bill) return;
-                        void onLink(bill.id, tx.id);
-                      }}
-                      className="h-8 gap-1.5 text-xs"
+                      disabled={isBusy}
+                      onClick={() => void handleLink(tx.id)}
+                      className="h-8 min-w-[88px] gap-1.5 text-xs"
                     >
-                      <Link2 className="h-3.5 w-3.5" />
-                      Vincular
+                      {linkingTxId === tx.id ? (
+                        <>
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          <span>Vinculando…</span>
+                        </>
+                      ) : (
+                        <>
+                          <Link2 className="h-3.5 w-3.5" />
+                          <span>Vincular</span>
+                        </>
+                      )}
                     </Button>
                   </div>
                 </div>

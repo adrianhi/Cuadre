@@ -1,4 +1,5 @@
 import {
+  deleteRecurringBillResponseSchema,
   linkRecurringTransactionResponseSchema,
   recurringBillResponseSchema, recurringRadarResponseSchema,
   unlinkRecurringTransactionResponseSchema,
@@ -30,5 +31,10 @@ export const recurringService = {
     const response = await httpClient.post(`/recurring/${recurringBillId}/unlink-transaction`, { transactionId });
     return parseResponse(unlinkRecurringTransactionResponseSchema, response.data).data;
   },
+  async delete(recurringBillId: string): Promise<{ deleted: boolean; id: string }> {
+    const response = await httpClient.delete(`/recurring/${recurringBillId}`);
+    return parseResponse(deleteRecurringBillResponseSchema, response.data).data;
+  },
 };
+
 

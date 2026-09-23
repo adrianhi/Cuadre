@@ -1,21 +1,18 @@
 import {
   AlertTriangle,
-  Building2,
   CheckCircle,
   Clock,
-  Dumbbell,
   Link2,
+  Loader2,
   Pencil,
   Play,
-  Repeat,
-  Tv,
+  Trash2,
   Unlink2,
-  Wifi,
-  Zap,
 } from 'lucide-react';
 import type { RecurringBillDto } from '@/entities/recurring-bill';
 import { formatCurrency } from '@/shared/lib';
 import { Button } from '@/shared/ui';
+import { CADENCE_LABELS, getServiceIcon } from '../lib/recurring-display';
 
 interface RecurringBillRowProps {
   bill: RecurringBillDto;
@@ -25,34 +22,11 @@ interface RecurringBillRowProps {
   onAcknowledgeAlert: (alertId: string) => void;
   onLink?: (bill: RecurringBillDto) => void;
   onUnlink?: (bill: RecurringBillDto) => void;
+  onDelete?: (bill: RecurringBillDto) => void;
+  isUnlinking?: boolean;
+  isDeleting?: boolean;
 }
 
-
-const CADENCE_LABELS = {
-  BIWEEKLY: 'Quincenal',
-  MONTHLY: 'Mensual',
-  ANNUAL: 'Anual',
-} as const;
-
-function getServiceIcon(name: string) {
-  const lower = name.toLowerCase();
-  if (lower.includes('claro') || lower.includes('altice') || lower.includes('viva') || lower.includes('internet') || lower.includes('wifi')) {
-    return <Wifi className="h-5 w-5 text-sky-500" />;
-  }
-  if (lower.includes('luz') || lower.includes('edeeste') || lower.includes('edesur') || lower.includes('edenorte') || lower.includes('electric') || lower.includes('energia')) {
-    return <Zap className="h-5 w-5 text-amber-500" />;
-  }
-  if (lower.includes('netflix') || lower.includes('spotify') || lower.includes('youtube') || lower.includes('apple') || lower.includes('prime') || lower.includes('streaming') || lower.includes('disney')) {
-    return <Tv className="h-5 w-5 text-purple-500" />;
-  }
-  if (lower.includes('smart fit') || lower.includes('gym') || lower.includes('gimnasio') || lower.includes('fitness') || lower.includes('gold')) {
-    return <Dumbbell className="h-5 w-5 text-orange-500" />;
-  }
-  if (lower.includes('alquiler') || lower.includes('mantenimiento') || lower.includes('condominio') || lower.includes('apartamento') || lower.includes('casa')) {
-    return <Building2 className="h-5 w-5 text-emerald-500" />;
-  }
-  return <Repeat className="h-5 w-5 text-primary" />;
-}
 
 export function RecurringBillRow({
   bill,
@@ -62,10 +36,14 @@ export function RecurringBillRow({
   onAcknowledgeAlert,
   onLink,
   onUnlink,
+  onDelete,
+  isUnlinking = false,
+  isDeleting = false,
 }: RecurringBillRowProps) {
   const isPaid = bill.monthStatus === 'PAID';
   const isOverdue = bill.monthStatus === 'OVERDUE';
   const isPaused = bill.status === 'PAUSED';
+  const isBusy = isUnlinking || isDeleting;
 
   return (
     <div className="group py-3.5 transition-colors hover:bg-muted/20">
@@ -133,6 +111,7 @@ export function RecurringBillRow({
               <Button
                 variant="outline"
                 size="sm"
+                disabled={isBusy}
                 onClick={() => onLink(bill)}
                 className="h-8 gap-1.5 text-xs"
               >
@@ -145,17 +124,23 @@ export function RecurringBillRow({
               <Button
                 variant="ghost"
                 size="sm"
+                disabled={isBusy}
                 onClick={() => onUnlink(bill)}
-                className="h-8 w-8 rounded-lg p-0 text-muted-foreground hover:text-destructive"
+                className="h-8 w-8 rounded-lg p-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                 title="Desvincular movimiento"
               >
-                <Unlink2 className="h-3.5 w-3.5" />
+                {isUnlinking ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                ) : (
+                  <Unlink2 className="h-3.5 w-3.5" />
+                )}
               </Button>
             )}
 
             <Button
               variant="ghost"
               size="sm"
+              disabled={isBusy}
               onClick={() => onEdit(bill)}
               className="h-8 w-8 rounded-lg p-0 text-muted-foreground hover:text-foreground"
               title="Editar"
@@ -163,11 +148,11 @@ export function RecurringBillRow({
               <Pencil className="h-3.5 w-3.5" />
             </Button>
 
-
             {isPaused ? (
               <Button
                 variant="ghost"
                 size="sm"
+                disabled={isBusy}
                 onClick={() => onStatus(bill, 'CONFIRMED')}
                 className="h-8 rounded-lg px-2 text-xs font-semibold text-emerald-600 hover:text-emerald-700"
               >
@@ -178,15 +163,34 @@ export function RecurringBillRow({
               <Button
                 variant="ghost"
                 size="sm"
+                disabled={isBusy}
                 onClick={() => onStatus(bill, 'PAUSED')}
                 className="h-8 rounded-lg px-2 text-xs text-muted-foreground hover:text-foreground"
               >
                 Pausar
               </Button>
             )}
+
+            {onDelete && (
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={isBusy}
+                onClick={() => onDelete(bill)}
+                className="h-8 w-8 rounded-lg p-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                title="Eliminar gasto fijo"
+              >
+                {isDeleting ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-destructive" />
+                ) : (
+                  <Trash2 className="h-3.5 w-3.5" />
+                )}
+              </Button>
+            )}
           </div>
         </div>
       </div>
+
 
       {/* Alerts (Price hike or missing) */}
       {bill.alerts.map((alert) => (

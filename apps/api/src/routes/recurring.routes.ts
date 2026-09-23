@@ -14,5 +14,6 @@ router.patch('/recurring/alerts/:id', ...protectedRoute, asyncHandler(appContain
 router.post('/recurring/:id/link-transaction', ...protectedRoute, asyncHandler(appContainer.recurringController.linkTransaction));
 router.post('/recurring/:id/unlink-transaction', ...protectedRoute, asyncHandler(appContainer.recurringController.unlinkTransaction));
 router.delete('/recurring/:id/link-transaction/:transactionId', ...protectedRoute, asyncHandler(appContainer.recurringController.unlinkTransaction));
+router.delete('/recurring/:id', ...protectedRoute, asyncHandler(appContainer.recurringController.delete));
 
 export default router;

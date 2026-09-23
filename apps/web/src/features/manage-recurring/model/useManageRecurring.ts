@@ -41,6 +41,11 @@ export function useManageRecurring(currency: string) {
       recurringService.unlinkTransaction(input.recurringBillId, input.transactionId),
     onSuccess: invalidateLinked,
   });
-  return { create, update, acknowledge, linkTransaction, unlinkTransaction };
+  const deleteBill = useMutation({
+    mutationFn: (id: string) => recurringService.delete(id),
+    onSuccess: invalidateLinked,
+  });
+  return { create, update, acknowledge, linkTransaction, unlinkTransaction, deleteBill };
 }
+
 

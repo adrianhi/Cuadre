@@ -18,4 +18,5 @@ export class PrismaRecurringRepository implements RecurringRepository {
   saveDetection = this.scan.saveDetection.bind(this.scan);
   linkTransaction = this.query.linkTransaction.bind(this.query);
   unlinkTransaction = this.query.unlinkTransaction.bind(this.query);
+  delete = this.query.delete.bind(this.query);
 }

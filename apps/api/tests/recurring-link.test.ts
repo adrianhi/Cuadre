@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  deleteRecurringBillResponseSchema,
   linkRecurringTransactionSchema,
   linkRecurringTransactionResponseSchema,
   unlinkRecurringTransactionResponseSchema,
@@ -11,7 +12,7 @@ import type { RecurringActionRecorder, RecurringRepository } from '../src/module
 
 vi.mock('../src/config/database', () => ({
   prisma: {
-    recurringBill: { findFirst: vi.fn(), findMany: vi.fn() },
+    recurringBill: { findFirst: vi.fn(), findMany: vi.fn(), delete: vi.fn() },
     transaction: { findFirst: vi.fn(), findMany: vi.fn() },
     recurringOccurrence: { upsert: vi.fn(), deleteMany: vi.fn() },
     recurringScanJob: { findUnique: vi.fn() },
@@ -20,7 +21,7 @@ vi.mock('../src/config/database', () => ({
 }));
 
 const mockedPrisma = prisma as unknown as {
-  recurringBill: { findFirst: ReturnType<typeof vi.fn>; findMany: ReturnType<typeof vi.fn> };
+  recurringBill: { findFirst: ReturnType<typeof vi.fn>; findMany: ReturnType<typeof vi.fn>; delete: ReturnType<typeof vi.fn> };
   transaction: { findFirst: ReturnType<typeof vi.fn>; findMany: ReturnType<typeof vi.fn> };
   recurringOccurrence: { upsert: ReturnType<typeof vi.fn>; deleteMany: ReturnType<typeof vi.fn> };
   recurringScanJob: { findUnique: ReturnType<typeof vi.fn> };
@@ -59,6 +60,13 @@ describe('recurring transaction linking', () => {
         data: { unlinked: true, recurringBillId: billId },
       });
       expect(unlinkResp.data.unlinked).toBe(true);
+
+      const delResp = deleteRecurringBillResponseSchema.parse({
+        success: true,
+        data: { deleted: true, id: billId },
+      });
+      expect(delResp.data.deleted).toBe(true);
+      expect(delResp.data.id).toBe(billId);
     });
   });
 
@@ -136,6 +144,22 @@ describe('recurring transaction linking', () => {
     });
   });
 
+  describe('PrismaRecurringQuery.delete', () => {
+    it('deletes recurring bill and throws 404 when missing', async () => {
+      mockedPrisma.recurringBill.findFirst.mockResolvedValue({ id: billId, workspaceId });
+      mockedPrisma.recurringBill.delete.mockResolvedValue({ id: billId });
+
+      expect(await query.delete(workspaceId, billId)).toBe(true);
+      expect(mockedPrisma.recurringBill.delete).toHaveBeenCalledWith({ where: { id: billId } });
+
+      mockedPrisma.recurringBill.findFirst.mockResolvedValue(null);
+      await expect(query.delete(workspaceId, billId)).rejects.toMatchObject({
+        statusCode: 404,
+        code: 'RECURRING_BILL_NOT_FOUND',
+      });
+    });
+  });
+
   describe('Radar inclusion with linked transaction', () => {
     it('includes explicit linked transaction details in radar', async () => {
       const explicitDate = new Date('2026-09-08T15:00:00.000-04:00');
@@ -171,12 +195,13 @@ describe('recurring transaction linking', () => {
   });
 
   describe('RecurringService events', () => {
-    it('records actions when linking and unlinking transactions', async () => {
+    it('records actions when linking, unlinking, and deleting', async () => {
       const repository: RecurringRepository = {
         ensureScanScheduled: vi.fn(),
         radar: vi.fn(),
         create: vi.fn(),
         update: vi.fn(),
+        delete: vi.fn().mockResolvedValue(true),
         acknowledgeAlert: vi.fn(),
         sumFutureThroughMonthEnd: vi.fn(),
         sumFutureThrough: vi.fn(),
@@ -199,6 +224,12 @@ describe('recurring transaction linking', () => {
       expect(repository.unlinkTransaction).toHaveBeenCalledWith(workspaceId, billId, txId);
       expect(events.recordAction).toHaveBeenCalledWith(expect.objectContaining({
         workspaceId, profileId: 'profile-1', name: 'RECURRING_TRANSACTION_UNLINKED',
+      }));
+
+      await service.delete(workspaceId, 'profile-1', billId);
+      expect(repository.delete).toHaveBeenCalledWith(workspaceId, billId);
+      expect(events.recordAction).toHaveBeenCalledWith(expect.objectContaining({
+        workspaceId, profileId: 'profile-1', name: 'RECURRING_DELETED', contextKey: `${billId}:deleted`,
       }));
     });
   });

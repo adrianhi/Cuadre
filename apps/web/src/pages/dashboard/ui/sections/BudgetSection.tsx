@@ -7,6 +7,7 @@ import { BudgetManagerDialog } from '@/features/budget-manager';
 import {
   LinkRecurringTransactionDialog,
   RecurringCreatorDialog,
+  RecurringDeleteDialog,
   RecurringEditorDialog,
   useManageRecurring,
 } from '@/features/manage-recurring';
@@ -17,11 +18,7 @@ import { formatCurrency } from '@/shared/lib';
 import { AsyncErrorState, Card, CardContent, LoadingScreen, toast } from '@/shared/ui';
 import type { PeriodSelection } from '@/entities/period';
 
-function getMonthFromSelection(selection?: PeriodSelection): string {
-  if (selection?.month) return selection.month;
-  if (selection?.startDate) return selection.startDate.slice(0, 7);
-  return currentBudgetMonth();
-}
+const getMonthFromSelection = (s?: PeriodSelection) => s?.month || s?.startDate?.slice(0, 7) || currentBudgetMonth();
 
 export function BudgetSection(props: {
   periodToolbar: ReactNode;
@@ -37,6 +34,8 @@ export function BudgetSection(props: {
   const [incomeModalOpen, setIncomeModalOpen] = useState(false);
   const [editingRecurring, setEditingRecurring] = useState<RecurringBillDto | null>(null);
   const [linkingBill, setLinkingBill] = useState<RecurringBillDto | null>(null);
+  const [deletingBill, setDeletingBill] = useState<RecurringBillDto | null>(null);
+  const [unlinkingBillId, setUnlinkingBillId] = useState<string | null>(null);
 
   const month = getMonthFromSelection(props.currentPeriod);
   const currency = props.currency === 'USD' ? 'USD' : 'DOP';
@@ -67,13 +66,28 @@ export function BudgetSection(props: {
   };
 
   const handleUnlink = async (bill: RecurringBillDto) => {
+    setUnlinkingBillId(bill.id);
     try {
       await recurringActions.unlinkTransaction.mutateAsync({ recurringBillId: bill.id });
       toast.success('Movimiento desvinculado.');
     } catch {
       toast.error('No se pudo desvincular el movimiento.');
+    } finally {
+      setUnlinkingBillId(null);
     }
   };
+
+  const handleDelete = async () => {
+    if (!deletingBill) return;
+    try {
+      await recurringActions.deleteBill.mutateAsync(deletingBill.id);
+      toast.success('Gasto fijo eliminado.');
+      setDeletingBill(null);
+    } catch {
+      toast.error('No se pudo eliminar el gasto fijo.');
+    }
+  };
+
 
   if (query.isLoading && !summary && currentTab === 'categories') {
     return <LoadingScreen message="Cargando presupuesto…" description="Calculando tus límites y consumos del mes." fullPage />;
@@ -186,28 +200,22 @@ export function BudgetSection(props: {
           onAcknowledgeAlert={(alertId) => recurringActions.acknowledge.mutate(alertId)}
           onLink={(bill) => setLinkingBill(bill)}
           onUnlink={handleUnlink}
+          onDelete={setDeletingBill}
+          unlinkingBillId={unlinkingBillId}
+          deletingBillId={deletingBill?.id}
         />
       )}
 
       {/* Dialogs */}
       <BudgetManagerDialog open={managerOpen} onOpenChange={setManagerOpen} month={month} currency={currency} summary={summary} />
-
       <RecurringCreatorDialog
-        open={creatorOpen}
-        currency={currency}
-        saving={recurringActions.create.isPending}
+        open={creatorOpen} currency={currency} saving={recurringActions.create.isPending}
         onOpenChange={setCreatorOpen}
-        onSave={async (input) => {
-          await recurringActions.create.mutateAsync(input);
-          setCreatorOpen(false);
-        }}
+        onSave={async (input) => { await recurringActions.create.mutateAsync(input); setCreatorOpen(false); }}
       />
-
       <RecurringEditorDialog
         key={editingRecurring?.id || 'closed-recurring-editor'}
-        bill={editingRecurring}
-        open={Boolean(editingRecurring)}
-        saving={recurringActions.update.isPending}
+        bill={editingRecurring} open={Boolean(editingRecurring)} saving={recurringActions.update.isPending}
         onOpenChange={(open) => { if (!open) setEditingRecurring(null); }}
         onSave={async (input) => {
           if (!editingRecurring) return;
@@ -215,16 +223,19 @@ export function BudgetSection(props: {
           setEditingRecurring(null);
         }}
       />
-
       <LinkRecurringTransactionDialog
-        bill={linkingBill}
-        open={Boolean(linkingBill)}
+        bill={linkingBill} open={Boolean(linkingBill)}
         onOpenChange={(open) => { if (!open) setLinkingBill(null); }}
-        onLink={handleLink}
-        linking={recurringActions.linkTransaction.isPending}
+        onLink={handleLink} linking={recurringActions.linkTransaction.isPending}
       />
-
+      <RecurringDeleteDialog
+        bill={deletingBill} open={Boolean(deletingBill)}
+        onOpenChange={(open) => { if (!open) setDeletingBill(null); }}
+        onConfirm={handleDelete} deleting={recurringActions.deleteBill.isPending}
+      />
       <IncomeStreamsSettingsModal open={incomeModalOpen} onOpenChange={setIncomeModalOpen} currency={currency} />
     </>
   );
 }
+
+

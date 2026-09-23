@@ -102,3 +102,12 @@ export const unlinkRecurringTransactionResponseSchema = z.object({
   }),
 });
 export type UnlinkRecurringTransactionResponse = z.infer<typeof unlinkRecurringTransactionResponseSchema>;
+
+export const deleteRecurringBillResponseSchema = z.object({
+  success: z.literal(true),
+  data: z.object({
+    deleted: z.literal(true),
+    id: z.string().uuid(),
+  }),
+});
+export type DeleteRecurringBillResponse = z.infer<typeof deleteRecurringBillResponseSchema>;
