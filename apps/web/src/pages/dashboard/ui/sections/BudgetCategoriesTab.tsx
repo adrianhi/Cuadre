@@ -1,8 +1,11 @@
-import { Lightbulb, Info } from 'lucide-react';
-import type { BudgetSummaryDto } from '@/entities/budget';
-import { BudgetOverviewCard, BudgetProgressList } from '@/widgets/budget-overview';
-import { formatCurrency } from '@/shared/lib';
-import { AsyncErrorState, Card, CardContent } from '@/shared/ui';
+import { Lightbulb, Info } from "lucide-react";
+import type { BudgetSummaryDto } from "@/entities/budget";
+import {
+  BudgetOverviewCard,
+  BudgetProgressList,
+} from "@/widgets/budget-overview";
+import { formatCurrency } from "@/shared/lib";
+import { AsyncErrorState, Card, CardContent } from "@/shared/ui";
 
 interface BudgetCategoriesTabProps {
   summary: BudgetSummaryDto | null;
@@ -54,10 +57,14 @@ export function BudgetCategoriesTab({
       <div className="flex items-start gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-4 text-xs text-foreground">
         <Info className="h-4 w-4 shrink-0 text-primary mt-0.5" />
         <div className="space-y-1">
-          <p className="font-semibold text-foreground">¿Cómo se calculan estos consumos?</p>
+          <p className="font-semibold text-foreground">
+            ¿Cómo se calculan estos consumos?
+          </p>
           <p className="text-muted-foreground leading-relaxed">
-            Tus gastos se agrupan automáticamente según la categoría asignada a cada movimiento.
-            Si tienes consumos en &ldquo;Otros&rdquo; o pendientes de categorizar, puedes editarlos en la pestaña de Movimientos para que se sumen a tus límites en tiempo real.
+            Tus gastos se agrupan automáticamente según la categoría asignada a
+            cada movimiento. Si tienes consumos en &ldquo;Otros&rdquo; o
+            pendientes de categorizar, puedes editarlos en la pestaña de
+            Movimientos para que se sumen a tus límites en tiempo real.
           </p>
         </div>
       </div>
@@ -83,9 +90,14 @@ export function BudgetCategoriesTab({
 
             {summary.unbudgetedSpent > 0 && (
               <div className="mt-4 rounded-xl bg-muted/60 p-3">
-                <p className="text-xs font-bold">Gasto en categorías sin límite</p>
+                <p className="text-xs font-bold">
+                  Gasto en categorías sin límite
+                </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {hideBalances ? '••••••' : formatCurrency(summary.unbudgetedSpent, currency)} · incluido en el límite global.
+                  {hideBalances
+                    ? "••••••"
+                    : formatCurrency(summary.unbudgetedSpent, currency)}{" "}
+                  · incluido en el límite global.
                 </p>
               </div>
             )}

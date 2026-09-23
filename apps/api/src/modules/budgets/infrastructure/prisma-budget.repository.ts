@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../../../config/database';
 import type { BudgetRepository } from '../application/budget.ports';
+import { santoDomingoMonth } from '../domain/budget-month';
 
 const select = {
   targetKey: true, categoryKey: true, categoryLabel: true, scope: true,
@@ -41,6 +42,15 @@ export class PrismaBudgetRepository implements BudgetRepository {
         });
       }
     });
+  }
+
+  async firstTransactionMonth(workspaceId: string) {
+    const transaction = await prisma.transaction.findFirst({
+      where: { workspaceId, statusCode: 'APPROVED' },
+      orderBy: { transactionDate: 'asc' },
+      select: { transactionDate: true },
+    });
+    return transaction ? santoDomingoMonth(transaction.transactionDate) : null;
   }
 
   exportForWorkspaces(workspaceIds: string[]) {

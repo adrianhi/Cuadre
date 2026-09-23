@@ -8,7 +8,7 @@ import { SuggestBudget } from '../src/modules/budgets/application/suggest-budget
 function ports() {
   const budgets: BudgetRepository = {
     listThroughMonth: vi.fn().mockResolvedValue([]), replaceVersion: vi.fn().mockResolvedValue(undefined),
-    exportForWorkspaces: vi.fn().mockResolvedValue([]),
+    exportForWorkspaces: vi.fn().mockResolvedValue([]), firstTransactionMonth: vi.fn().mockResolvedValue(null),
   };
   const expenses: BudgetExpenseReadModel = {
     summarizeMonth: vi.fn().mockResolvedValue([]), history: vi.fn().mockResolvedValue([]),
@@ -29,6 +29,39 @@ describe('budget application', () => {
     });
     expect(budgets.replaceVersion).toHaveBeenCalledWith(expect.objectContaining({
       workspaceId: 'workspace', kind: 'MONTH_OVERRIDE', clearMonthOverrides: false,
+    }));
+  });
+
+  it('propagates budget to ALL_HISTORY with earliest transaction month', async () => {
+    const { budgets, expenses } = ports();
+    vi.mocked(budgets.firstTransactionMonth).mockResolvedValue('2024-03');
+    const categories = new ListBudgetCategories(expenses);
+    const summary = new GetMonthlyBudget(budgets, expenses);
+    const useCase = new ReplaceMonthlyBudget(budgets, categories, summary);
+    await useCase.execute('workspace', {
+      month: '2026-09', currency: 'DOP', propagation: 'ALL_HISTORY', globalLimit: 8000,
+      categories: [{ categoryKey: 'mi categoria', amount: 2000 }],
+    });
+    expect(budgets.replaceVersion).toHaveBeenCalledWith(expect.objectContaining({
+      workspaceId: 'workspace', kind: 'RECURRING', month: new Date('2024-03-01T00:00:00.000Z'), clearMonthOverrides: true,
+    }));
+    expect(budgets.replaceVersion).toHaveBeenCalledWith(expect.objectContaining({
+      workspaceId: 'workspace', kind: 'RECURRING', month: new Date('2026-09-01T00:00:00.000Z'), clearMonthOverrides: true,
+    }));
+  });
+
+  it('propagates budget to ALL_HISTORY with fallback 2020-01 when no transactions exist', async () => {
+    const { budgets, expenses } = ports();
+    vi.mocked(budgets.firstTransactionMonth).mockResolvedValue(null);
+    const categories = new ListBudgetCategories(expenses);
+    const summary = new GetMonthlyBudget(budgets, expenses);
+    const useCase = new ReplaceMonthlyBudget(budgets, categories, summary);
+    await useCase.execute('workspace', {
+      month: '2026-09', currency: 'DOP', propagation: 'ALL_HISTORY', globalLimit: 8000,
+      categories: [{ categoryKey: 'mi categoria', amount: 2000 }],
+    });
+    expect(budgets.replaceVersion).toHaveBeenCalledWith(expect.objectContaining({
+      workspaceId: 'workspace', kind: 'RECURRING', month: new Date('2020-01-01T00:00:00.000Z'), clearMonthOverrides: true,
     }));
   });
 

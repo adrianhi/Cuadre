@@ -1,15 +1,7 @@
-import { useRef } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
-import type { BudgetCategoryDto } from '@/entities/budget';
-import {
-  Button,
-  CurrencyAmountInput,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/ui';
+import { useRef } from "react";
+import { Plus, Trash2 } from "lucide-react";
+import type { BudgetCategoryDto } from "@/entities/budget";
+import { Button, Combobox, CurrencyAmountInput } from "@/shared/ui";
 
 function CategorySelect(props: {
   selectedKey: string;
@@ -17,26 +9,28 @@ function CategorySelect(props: {
   unusedCategories: BudgetCategoryDto[];
   onChange: (newKey: string) => void;
 }) {
-  const currentCategory = props.categories.find((c) => c.key === props.selectedKey);
+  const currentCategory = props.categories.find(
+    (c) => c.key === props.selectedKey,
+  );
   const options = [
     ...(currentCategory ? [currentCategory] : []),
     ...props.unusedCategories.filter((c) => c.key !== props.selectedKey),
-  ];
+  ].map((item) => ({
+    value: item.key,
+    label: item.label,
+  }));
 
   return (
     <div className="min-w-0 flex-1">
-      <Select value={props.selectedKey} onValueChange={props.onChange}>
-        <SelectTrigger className="h-10 w-full text-xs font-semibold">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {options.map((item) => (
-            <SelectItem key={item.key} value={item.key}>
-              {item.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <Combobox
+        options={options}
+        value={props.selectedKey}
+        onValueChange={props.onChange}
+        placeholder="Selecciona categoría"
+        searchPlaceholder="Buscar categoría…"
+        emptyText="No se encontraron categorías"
+        className="h-10 w-full text-xs font-semibold"
+      />
     </div>
   );
 }
@@ -53,7 +47,7 @@ export function BudgetLimitRows(props: {
   const addFirst = () => {
     if (unused[0]) {
       const nextKey = unused[0].key;
-      props.setLimit(nextKey, '');
+      props.setLimit(nextKey, "");
       setTimeout(() => {
         inputRefs.current[nextKey]?.focus();
       }, 50);
@@ -67,7 +61,9 @@ export function BudgetLimitRows(props: {
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-sm font-bold">Límites por categoría</p>
-          <p className="text-xs text-muted-foreground">Añade solo las categorías que quieras controlar.</p>
+          <p className="text-xs text-muted-foreground">
+            Añade solo las categorías que quieras controlar.
+          </p>
         </div>
         <Button
           type="button"
@@ -101,7 +97,7 @@ export function BudgetLimitRows(props: {
               value={value}
               onValueChange={(formatted) => props.setLimit(key, formatted)}
               onKeyDown={(event) => {
-                if (event.key === 'Enter') {
+                if (event.key === "Enter") {
                   event.preventDefault();
                   addFirst();
                 }

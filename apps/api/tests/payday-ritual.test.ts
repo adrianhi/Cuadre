@@ -1,6 +1,14 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { calculatePaydayAmounts, currentPaydayCycle } from '../src/modules/payday-ritual/domain/payday-cycle';
 import { PaydayRitualService } from '../src/modules/payday-ritual';
+import { prisma } from '../src/config/database';
+import { PrismaPaydayIncomeReader } from '../src/modules/payday-ritual/infrastructure/prisma-payday-income.reader';
+
+vi.mock('../src/config/database', () => ({
+  prisma: {
+    incomeStream: { findMany: vi.fn() },
+  },
+}));
 
 describe('payday ritual', () => {
   it('uses February last day as the second payday', () => {
@@ -32,5 +40,18 @@ describe('payday ritual', () => {
       { completedAt: async () => null, complete: async () => new Date() },
     );
     expect((await service.current('workspace', 'profile', 'DOP')).status).toBe('UNAVAILABLE');
+  });
+
+  it('calculates proportional biweekly income across active streams in PrismaPaydayIncomeReader', async () => {
+    vi.mocked(prisma.incomeStream.findMany).mockResolvedValue([
+      { id: '1', amount: 30000, frequency: 'BIWEEKLY_15_30', isActive: true },
+      { id: '2', amount: 50000, frequency: 'MONTHLY', isActive: true },
+      { id: '3', amount: 5000, frequency: 'WEEKLY', isActive: true },
+      { id: '4', amount: 10000, frequency: 'CUSTOM', isActive: true },
+    ] as any);
+
+    const reader = new PrismaPaydayIncomeReader();
+    const total = await reader.plannedBiweeklyIncome('workspace', 'DOP');
+    expect(total).toBe(65000);
   });
 });

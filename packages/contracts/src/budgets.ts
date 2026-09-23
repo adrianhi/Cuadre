@@ -9,7 +9,7 @@ export const COMMON_EXPENSE_CATEGORIES = [
 export const budgetCurrencySchema = z.enum(['DOP', 'USD']);
 export const budgetMonthSchema = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/);
 export const budgetStatusSchema = z.enum(['ON_TRACK', 'PACE_WARNING', 'NEAR_LIMIT', 'EXCEEDED']);
-export const budgetPropagationSchema = z.enum(['CURRENT_MONTH', 'CURRENT_AND_FUTURE']);
+export const budgetPropagationSchema = z.enum(['THIS_MONTH_ONLY', 'CURRENT_MONTH', 'CURRENT_AND_FUTURE', 'ALL_HISTORY']);
 export const safeToSpendStatusSchema = z.enum(['SURPLUS', 'ADJUSTING', 'EXCEEDED', 'UNSET']);
 export const safeToSpendReasonSchema = z.enum([
   'NONE', 'OVER_DAILY_ALLOWANCE', 'UPCOMING_COMMITMENTS', 'BUDGET_EXCEEDED', 'BUDGET_UNSET',

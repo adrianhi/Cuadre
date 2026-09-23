@@ -39,11 +39,28 @@ export class ReplaceMonthlyBudget {
       targetKey: item.targetKey, categoryKey: item.categoryKey, categoryLabel: item.categoryLabel,
       scope: item.scope, amount: null, disabled: true,
     }));
-    await this.budgets.replaceVersion({
-      workspaceId, currency: input.currency, month,
-      kind: input.propagation === 'CURRENT_MONTH' ? 'MONTH_OVERRIDE' : 'RECURRING',
-      limits: desired, clearMonthOverrides: input.propagation === 'CURRENT_AND_FUTURE',
-    });
+    if (input.propagation === 'ALL_HISTORY') {
+      const earliestMonth = await this.budgets.firstTransactionMonth(workspaceId);
+      const effectiveFromMonth = earliestMonth && earliestMonth < input.month ? earliestMonth : (earliestMonth ?? (input.month < '2020-01' ? input.month : '2020-01'));
+      const historyMonth = monthDate(effectiveFromMonth);
+      await this.budgets.replaceVersion({
+        workspaceId, currency: input.currency, month: historyMonth,
+        kind: 'RECURRING', limits: desired, clearMonthOverrides: true,
+      });
+      if (input.month !== effectiveFromMonth) {
+        await this.budgets.replaceVersion({
+          workspaceId, currency: input.currency, month,
+          kind: 'RECURRING', limits: desired, clearMonthOverrides: true,
+        });
+      }
+    } else {
+      const isSingleMonth = input.propagation === 'CURRENT_MONTH' || (input.propagation as string) === 'THIS_MONTH_ONLY';
+      await this.budgets.replaceVersion({
+        workspaceId, currency: input.currency, month,
+        kind: isSingleMonth ? 'MONTH_OVERRIDE' : 'RECURRING',
+        limits: desired, clearMonthOverrides: input.propagation === 'CURRENT_AND_FUTURE',
+      });
+    }
     return this.summary.execute(workspaceId, input.month, input.currency);
   }
 }

@@ -17,6 +17,7 @@ export interface BudgetRepository {
     limits: BudgetLimitWrite[]; clearMonthOverrides: boolean;
   }): Promise<void>;
   exportForWorkspaces(workspaceIds: string[]): Promise<unknown[]>;
+  firstTransactionMonth(workspaceId: string): Promise<string | null>;
 }
 
 export interface MonthlyExpenseHistory {

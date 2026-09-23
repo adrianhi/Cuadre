@@ -88,7 +88,7 @@ export function LinkRecurringTransactionDialog({
         if (!isBusy) onOpenChange(val);
       }}
     >
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className="sm:max-w-xl overflow-hidden">
         <DialogHeader>
           <DialogTitle>Vincular movimiento</DialogTitle>
           <DialogDescription>
@@ -145,9 +145,9 @@ export function LinkRecurringTransactionDialog({
               {transactions.map((tx) => (
                 <div
                   key={tx.id}
-                  className="flex flex-col gap-2 rounded-xl border border-border/50 bg-card p-3 transition-colors hover:bg-muted/40 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
+                  className="flex flex-col gap-2 rounded-xl border border-border/50 bg-card p-3 transition-colors hover:bg-muted/40 sm:flex-row sm:items-center sm:justify-between sm:gap-3 w-full min-w-0"
                 >
-                  <div className="min-w-0 flex-1">
+                  <div className="min-w-0 flex-1 overflow-hidden space-y-1">
                     <div className="flex items-center gap-2">
                       <p className="truncate text-sm font-semibold text-foreground">
                         {tx.merchant || tx.rawMerchant}
@@ -158,26 +158,20 @@ export function LinkRecurringTransactionDialog({
                         </span>
                       )}
                     </div>
-                    <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
-                      <span className="shrink-0">
-                        {formatDate(tx.transactionDate)}
-                      </span>
-                      {tx.notes && (
-                        <span className="truncate" title={tx.notes}>
-                          · {tx.notes}
-                        </span>
-                      )}
+                    <div className="truncate text-xs text-muted-foreground">
+                      <span>{formatDate(tx.transactionDate)}</span>
+                      {tx.notes && <span title={tx.notes}> · {tx.notes}</span>}
                     </div>
                   </div>
-                  <div className="flex shrink-0 items-center justify-between gap-3 border-t border-border/40 pt-2 sm:border-t-0 sm:pt-0 sm:justify-end">
-                    <span className="whitespace-nowrap text-sm font-bold tabular-nums text-foreground">
+                  <div className="flex items-center justify-between gap-3 pt-1 border-t border-border/30 sm:border-0 sm:pt-0 sm:justify-end sm:shrink-0">
+                    <span className="text-sm font-bold tabular-nums text-foreground">
                       {formatCurrency(tx.amount, tx.currency)}
                     </span>
                     <Button
                       size="sm"
                       disabled={isBusy}
                       onClick={() => void handleLink(tx.id)}
-                      className="h-8 min-w-[88px] gap-1.5 text-xs"
+                      className="h-8 min-w-[88px] gap-1.5 text-xs shrink-0"
                     >
                       {linkingTxId === tx.id ? (
                         <>

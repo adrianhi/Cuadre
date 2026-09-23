@@ -3,37 +3,50 @@ import {
   transactionSchema,
   type TransactionFilters,
   type TransactionFinancialRole,
-} from '@bills/contracts';
-import { httpClient, parseResponse } from '@/shared/api';
+} from "@bills/contracts";
+import { httpClient, parseResponse } from "@/shared/api";
 
 function compactParams(filters: Partial<TransactionFilters>) {
-  return Object.fromEntries(Object.entries(filters).filter(([, value]) => value !== undefined && value !== ''));
+  return Object.fromEntries(
+    Object.entries(filters).filter(
+      ([, value]) => value !== undefined && value !== "",
+    ),
+  );
 }
 
 export const transactionService = {
   async list(filters: TransactionFilters, signal?: AbortSignal) {
-    const response = await httpClient.get('/transactions', { params: compactParams(filters), signal });
+    const response = await httpClient.get("/transactions", {
+      params: compactParams(filters),
+      signal,
+    });
     return parseResponse(transactionListResponseSchema, response.data);
   },
   listTransactions(filters: TransactionFilters, signal?: AbortSignal) {
     return transactionService.list(filters, signal);
   },
 
-  async update(input: { id: string; merchant: string; category: string; notes: string; financialRole?: TransactionFinancialRole }) {
+  async update(input: {
+    id: string;
+    merchant: string;
+    category: string;
+    notes: string;
+    financialRole?: TransactionFinancialRole;
+  }) {
     const response = await httpClient.patch(`/transactions/${input.id}`, input);
     return parseResponse(transactionSchema, response.data?.data);
   },
   async create(input: Record<string, unknown>) {
-    const response = await httpClient.post('/transactions', input);
+    const response = await httpClient.post("/transactions", input);
     return parseResponse(transactionSchema, response.data?.data);
   },
   async remove(id: string) {
     await httpClient.delete(`/transactions/${id}`);
   },
   async exportCsv(filters: Partial<TransactionFilters>) {
-    const response = await httpClient.get<Blob>('/transactions/export', {
-      params: { ...compactParams(filters), format: 'csv' },
-      responseType: 'blob',
+    const response = await httpClient.get<Blob>("/transactions/export", {
+      params: { ...compactParams(filters), format: "csv" },
+      responseType: "blob",
     });
     return response.data;
   },
