@@ -1,4 +1,4 @@
-export { useManageRecurring } from "./model/useManageRecurring";
+export { useManageRecurring, type CreateFromTransactionInput } from "./model/useManageRecurring";
 export { RecurringEditorDialog } from "./ui/RecurringEditorDialog";
 export { RecurringCreatorDialog } from "./ui/RecurringCreatorDialog";
 export { LinkRecurringTransactionDialog } from "./ui/LinkRecurringTransactionDialog";

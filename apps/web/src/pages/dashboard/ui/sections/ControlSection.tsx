@@ -1,6 +1,7 @@
 import React, { useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { BarChart3, CalendarCheck, Info, WalletCards } from 'lucide-react';
+import { BarChart3, CalendarCheck, FolderTree, Info, WalletCards } from 'lucide-react';
+import type { TransactionFinancialRole } from '@bills/contracts';
 import type { PeriodSelection } from '@/entities/period';
 import type { StatsSummary } from '@/entities/stat';
 import { usePaydayRitual } from '@/entities/payday-ritual';
@@ -10,8 +11,9 @@ import { PaydayRitualCard } from '@/widgets/payday-ritual';
 import { Card, CardContent } from '@/shared/ui';
 import { BudgetSection } from './BudgetSection';
 import { AnalyticsSection } from './AnalyticsSection';
+import { CategoriesSection } from './CategoriesSection';
 
-type ControlTab = 'budget' | 'analytics' | 'quincena';
+type ControlTab = 'budget' | 'categories' | 'analytics' | 'quincena';
 
 interface ControlSectionProps {
   periodToolbar: ReactNode;
@@ -23,6 +25,13 @@ interface ControlSectionProps {
   loadingStats: boolean;
   onRefresh: () => void;
   onOpenExport?: () => void;
+  onSaveTransaction?: (
+    id: string,
+    merchant: string,
+    category: string,
+    notes: string,
+    financialRole?: TransactionFinancialRole,
+  ) => Promise<void>;
 }
 
 export const ControlSection: React.FC<ControlSectionProps> = ({
@@ -34,14 +43,17 @@ export const ControlSection: React.FC<ControlSectionProps> = ({
   statsError,
   loadingStats,
   onRefresh,
+  onSaveTransaction,
 }) => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const activeView: ControlTab = (() => {
     const viewParam = searchParams.get('view');
+    if (viewParam === 'categories') return 'categories';
     if (viewParam === 'analytics' || viewParam === 'quincena') return viewParam;
     if (viewParam === 'budget') return 'budget';
     const tabParam = searchParams.get('tab');
+    if (tabParam === 'categories') return 'categories';
     if (tabParam === 'analytics') return 'analytics';
     if (tabParam === 'quincena' || tabParam === 'payday') return 'quincena';
     return 'budget';
@@ -67,7 +79,7 @@ export const ControlSection: React.FC<ControlSectionProps> = ({
     <div className="w-full space-y-6">
       {/* Sticky Segmented Control */}
       <div className="sticky top-0 z-20 -mx-4 sm:-mx-6 lg:-mx-8 2xl:-mx-12 px-4 sm:px-6 lg:px-8 2xl:px-12 py-2.5 bg-background/90 backdrop-blur-md border-b border-border/40">
-        <div className="mx-auto max-w-md 2xl:max-w-lg rounded-2xl bg-muted/80 p-1 text-xs 2xl:text-sm font-semibold text-muted-foreground shadow-inner flex gap-1">
+        <div className="mx-auto max-w-lg 2xl:max-w-xl rounded-2xl bg-muted/80 p-1 text-xs 2xl:text-sm font-semibold text-muted-foreground shadow-inner flex gap-1">
           <button
             type="button"
             onClick={() => handleSelectView('budget')}
@@ -80,6 +92,19 @@ export const ControlSection: React.FC<ControlSectionProps> = ({
           >
             <WalletCards className="h-4 w-4" />
             <span>Presupuesto</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleSelectView('categories')}
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 2xl:py-2.5 transition-all ${
+              activeView === 'categories'
+                ? 'bg-card text-foreground font-bold shadow-sm'
+                : 'hover:text-foreground hover:bg-card/40'
+            }`}
+            aria-pressed={activeView === 'categories'}
+          >
+            <FolderTree className="h-4 w-4" />
+            <span>Categorías</span>
           </button>
           <button
             type="button"
@@ -117,6 +142,15 @@ export const ControlSection: React.FC<ControlSectionProps> = ({
           currentPeriod={currentPeriod}
           currency={currency}
           hideBalances={hideBalances}
+        />
+      )}
+
+      {activeView === 'categories' && (
+        <CategoriesSection
+          periodToolbar={periodToolbar}
+          currentPeriod={currentPeriod}
+          currency={currency}
+          onSaveTransaction={onSaveTransaction}
         />
       )}
 

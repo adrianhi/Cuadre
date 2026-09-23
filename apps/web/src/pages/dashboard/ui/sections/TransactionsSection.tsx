@@ -1,7 +1,7 @@
 import React, { type ReactNode } from 'react';
 import type { Transaction } from '@/entities/transaction';
 import { TransactionTable } from '@/widgets/transactions-table';
-import { LoadingScreen } from '@/shared/ui';
+import { Button, LoadingScreen } from '@/shared/ui';
 
 interface TransactionsSectionProps {
   periodToolbar: ReactNode;
@@ -72,6 +72,10 @@ export const TransactionsSection: React.FC<TransactionsSectionProps> = ({
     );
   }
 
+  const unclassifiedCount = transactions.filter(
+    (tx) => !tx.category || tx.category === 'Otros'
+  ).length;
+
   return (
     <div className="w-full space-y-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
@@ -85,6 +89,27 @@ export const TransactionsSection: React.FC<TransactionsSectionProps> = ({
         </div>
         {periodToolbar}
       </div>
+
+      {unclassifiedCount > 0 && (
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-primary/20 bg-primary/5 p-4 text-sm text-foreground animate-in fade-in-0 duration-200">
+          <div className="flex items-start sm:items-center gap-2.5">
+            <span className="text-base shrink-0" role="img" aria-label="Aviso">💡</span>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              ¿Tienes movimientos sin clasificar? Categorízalos para que tus límites de presupuesto y margen diario cuadren a la perfección.
+            </p>
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="shrink-0 self-start sm:self-auto text-xs"
+            onClick={() => setCategoryFilter('Otros')}
+          >
+            Ver sin clasificar
+          </Button>
+        </div>
+      )}
+
       <div className="w-full">
         <TransactionTable
           transactions={transactions}

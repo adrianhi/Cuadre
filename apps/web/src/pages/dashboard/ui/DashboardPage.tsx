@@ -56,6 +56,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
     navigate(coroId ? `/app/coro/${encodeURIComponent(coroId)}` : '/app/coro');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+  const handleOpenCategories = () => {
+    navigate('/app/control?view=categories');
+    selectSection('control');
+  };
   const [, setSearchParams] = useSearchParams();
   const openBudgetTab = (tab?: string) => {
     setSearchParams((prev) => {
@@ -93,7 +97,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         onSelectSection={selectSection}
         onQuickAdd={() => setIsQuickAddOpen(true)}
         activeFiltersCount={activeFiltersCount}
-        onOpenRules={() => setIsRulesModalOpen(true)} onOpenCoro={() => handleOpenCoro()} onOpenExport={() => setIsExportModalOpen(true)}
+        onOpenRules={handleOpenCategories} onOpenCoro={() => handleOpenCoro()} onOpenExport={() => setIsExportModalOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)} userEmail={userEmail} connection={primaryConnection}
       />
       <div className="flex min-h-screen min-w-0 w-full flex-col lg:pl-64">
@@ -160,12 +164,13 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                 loadingStats={loadingStats}
                 onRefresh={onRefresh}
                 onOpenExport={() => setIsExportModalOpen(true)}
+                onSaveTransaction={onSaveTransaction}
               />
             )}
             {!isCoroRoute && activeSection === 'hub' && (
               <HubSection
                 onOpenCoro={handleOpenCoro}
-                onOpenRules={() => setIsRulesModalOpen(true)}
+                onOpenRules={handleOpenCategories}
                 onOpenConnections={() => setIsSettingsOpen(true)}
                 onOpenExport={() => setIsExportModalOpen(true)}
                 stats={stats}
