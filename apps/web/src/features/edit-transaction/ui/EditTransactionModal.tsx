@@ -1,6 +1,6 @@
-import React from 'react';
-import { Trash2 } from 'lucide-react';
-import type { TransactionFinancialRole } from '@bills/contracts';
+import React from "react";
+import { Trash2 } from "lucide-react";
+import type { TransactionFinancialRole } from "@bills/contracts";
 import {
   Dialog,
   DialogContent,
@@ -10,12 +10,12 @@ import {
   Button,
   Checkbox,
   Input,
-} from '@/shared/ui';
-import type { Transaction } from '@/entities/transaction';
-import { CategoryPicker } from '@/entities/category';
-import { InternalTransferControl } from './InternalTransferControl';
-import { TransactionEditSummary } from './TransactionEditSummary';
-import { useEditTransactionForm } from '../model/useEditTransactionForm';
+} from "@/shared/ui";
+import type { Transaction } from "@/entities/transaction";
+import { CategoryPicker } from "@/entities/category";
+import { InternalTransferControl } from "./InternalTransferControl";
+import { TransactionEditSummary } from "./TransactionEditSummary";
+import { useEditTransactionForm } from "../model/useEditTransactionForm";
 
 interface EditTransactionModalProps {
   transaction: Transaction | null;
@@ -85,14 +85,14 @@ export const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
               onChange={(e) => {
                 form.setMerchant(e.target.value);
                 if (form.fieldErrors.merchant) {
-                  form.setFieldErrors((prev) => ({ ...prev, merchant: '' }));
+                  form.setFieldErrors((prev) => ({ ...prev, merchant: "" }));
                 }
               }}
               placeholder="Ej: Supermercados Bravo o Billy Noel"
               className={
                 form.fieldErrors.merchant
-                  ? 'border-destructive focus-visible:ring-destructive'
-                  : ''
+                  ? "border-destructive focus-visible:ring-destructive"
+                  : ""
               }
             />
             {form.fieldErrors.merchant && (
@@ -111,14 +111,15 @@ export const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
               ariaLabel="Categoría del movimiento"
             />
             <p className="text-[11px] text-muted-foreground">
-              💡 Al categorizar este gasto, se reflejará automáticamente en su límite de Presupuesto y en tu Margen Seguro Diario.
+              💡 Al categorizar este gasto, se reflejará automáticamente en su
+              límite de Presupuesto y en tu Margen Seguro Diario.
             </p>
           </div>
 
           <InternalTransferControl
-            checked={form.financialRole === 'INTERNAL_TRANSFER'}
+            checked={form.financialRole === "INTERNAL_TRANSFER"}
             suggestionPending={
-              transaction.suggestedFinancialRole === 'INTERNAL_TRANSFER' &&
+              transaction.suggestedFinancialRole === "INTERNAL_TRANSFER" &&
               !form.roleReviewed
             }
             onConfirmSuggestion={form.handleConfirmRoleSuggestion}
@@ -135,15 +136,20 @@ export const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
                 className="mt-0.5"
               />
               <span>
-                Crear una regla para futuros movimientos de este comercio en {form.category}. La revisarás después de guardar.
+                Crear una regla para futuros movimientos de este comercio en{" "}
+                {form.category}. La revisarás después de guardar.
               </span>
             </label>
           )}
 
           <div className="space-y-1.5">
             <div className="flex justify-between items-center">
-              <label className="text-xs font-semibold">Notas / Comentarios (Opcional)</label>
-              <span className="text-[10px] text-muted-foreground">{form.notes.length}/250</span>
+              <label className="text-xs font-semibold">
+                Notas / Comentarios (Opcional)
+              </label>
+              <span className="text-[10px] text-muted-foreground">
+                {form.notes.length}/250
+              </span>
             </div>
             <Input
               value={form.notes}
@@ -151,14 +157,14 @@ export const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
               onChange={(e) => {
                 form.setNotes(e.target.value);
                 if (form.fieldErrors.notes) {
-                  form.setFieldErrors((prev) => ({ ...prev, notes: '' }));
+                  form.setFieldErrors((prev) => ({ ...prev, notes: "" }));
                 }
               }}
               placeholder="Ej: Compra de despensa o pago de cena"
               className={
                 form.fieldErrors.notes
-                  ? 'border-destructive focus-visible:ring-destructive'
-                  : ''
+                  ? "border-destructive focus-visible:ring-destructive"
+                  : ""
               }
             />
             {form.fieldErrors.notes && (
@@ -172,23 +178,23 @@ export const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
             {onDelete || onRequestDelete ? (
               <Button
                 type="button"
-                variant={form.confirmDelete ? 'destructive' : 'ghost'}
+                variant={form.confirmDelete ? "destructive" : "ghost"}
                 size="sm"
                 onClick={form.handleDelete}
                 disabled={form.saving || form.deleting}
                 className={
                   form.confirmDelete
-                    ? 'w-full sm:w-auto gap-1.5 text-xs text-white bg-destructive hover:bg-destructive/90'
-                    : 'w-full sm:w-auto gap-1.5 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10'
+                    ? "w-full sm:w-auto gap-1.5 text-xs text-white bg-destructive hover:bg-destructive/90"
+                    : "w-full sm:w-auto gap-1.5 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                 }
               >
                 <Trash2 className="h-3.5 w-3.5 text-destructive" />
                 <span>
                   {form.deleting
-                    ? 'Eliminando...'
+                    ? "Eliminando..."
                     : form.confirmDelete
-                      ? '¿Confirmar eliminación?'
-                      : 'Eliminar movimiento'}
+                      ? "¿Confirmar eliminación?"
+                      : "Eliminar movimiento"}
                 </span>
               </Button>
             ) : (
@@ -211,7 +217,7 @@ export const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
                 disabled={form.saving || form.deleting}
                 className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white"
               >
-                {form.saving ? 'Guardando...' : 'Guardar Cambios'}
+                {form.saving ? "Guardando..." : "Guardar Cambios"}
               </Button>
             </div>
           </DialogFooter>

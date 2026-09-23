@@ -1,17 +1,17 @@
-import { useState, type ReactNode } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Layers, Repeat } from 'lucide-react';
-import { currentBudgetMonth, useBudgetSummary } from '@/entities/budget';
+import { useState, type ReactNode } from "react";
+import { useSearchParams } from "react-router-dom";
+import { Layers, Repeat } from "lucide-react";
+import { currentBudgetMonth, useBudgetSummary } from "@/entities/budget";
 import {
   useRecurringRadar,
   type RecurringBillDto,
-} from '@/entities/recurring-bill';
-import { useManageRecurring } from '@/features/manage-recurring';
-import { RecurringExpensesHub } from '@/widgets/recurring-radar';
-import { LoadingScreen, toast } from '@/shared/ui';
-import type { PeriodSelection } from '@/entities/period';
-import { BudgetCategoriesTab } from './BudgetCategoriesTab';
-import { BudgetSectionModals } from './BudgetSectionModals';
+} from "@/entities/recurring-bill";
+import { useManageRecurring } from "@/features/manage-recurring";
+import { RecurringExpensesHub } from "@/widgets/recurring-radar";
+import { LoadingScreen, toast } from "@/shared/ui";
+import type { PeriodSelection } from "@/entities/period";
+import { BudgetCategoriesTab } from "./BudgetCategoriesTab";
+import { BudgetSectionModals } from "./BudgetSectionModals";
 
 const getMonthFromSelection = (s?: PeriodSelection) =>
   s?.month || s?.startDate?.slice(0, 7) || currentBudgetMonth();
@@ -24,7 +24,7 @@ export function BudgetSection(props: {
 }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const currentTab =
-    searchParams.get('tab') === 'recurring' ? 'recurring' : 'categories';
+    searchParams.get("tab") === "recurring" ? "recurring" : "categories";
 
   const [managerOpen, setManagerOpen] = useState(false);
   const [creatorOpen, setCreatorOpen] = useState(false);
@@ -32,11 +32,13 @@ export function BudgetSection(props: {
   const [editingRecurring, setEditingRecurring] =
     useState<RecurringBillDto | null>(null);
   const [linkingBill, setLinkingBill] = useState<RecurringBillDto | null>(null);
-  const [deletingBill, setDeletingBill] = useState<RecurringBillDto | null>(null);
+  const [deletingBill, setDeletingBill] = useState<RecurringBillDto | null>(
+    null,
+  );
   const [unlinkingBillId, setUnlinkingBillId] = useState<string | null>(null);
 
   const month = getMonthFromSelection(props.currentPeriod);
-  const currency = props.currency === 'USD' ? 'USD' : 'DOP';
+  const currency = props.currency === "USD" ? "USD" : "DOP";
 
   const query = useBudgetSummary(month, currency);
   const summary = query.data ?? null;
@@ -44,12 +46,12 @@ export function BudgetSection(props: {
   const recurringQuery = useRecurringRadar(currency);
   const recurringActions = useManageRecurring(currency);
 
-  const setTab = (tab: 'categories' | 'recurring') => {
+  const setTab = (tab: "categories" | "recurring") => {
     setSearchParams(
       (prev) => {
         const next = new URLSearchParams(prev);
-        if (tab === 'recurring') next.set('tab', 'recurring');
-        else next.delete('tab');
+        if (tab === "recurring") next.set("tab", "recurring");
+        else next.delete("tab");
         return next;
       },
       { replace: true },
@@ -62,10 +64,10 @@ export function BudgetSection(props: {
         recurringBillId,
         transactionId,
       });
-      toast.success('Movimiento vinculado exitosamente.');
+      toast.success("Movimiento vinculado exitosamente.");
       setLinkingBill(null);
     } catch {
-      toast.error('No se pudo vincular el movimiento.');
+      toast.error("No se pudo vincular el movimiento.");
     }
   };
 
@@ -75,9 +77,9 @@ export function BudgetSection(props: {
       await recurringActions.unlinkTransaction.mutateAsync({
         recurringBillId: bill.id,
       });
-      toast.success('Movimiento desvinculado.');
+      toast.success("Movimiento desvinculado.");
     } catch {
-      toast.error('No se pudo desvincular el movimiento.');
+      toast.error("No se pudo desvincular el movimiento.");
     } finally {
       setUnlinkingBillId(null);
     }
@@ -87,14 +89,14 @@ export function BudgetSection(props: {
     if (!deletingBill) return;
     try {
       await recurringActions.deleteBill.mutateAsync(deletingBill.id);
-      toast.success('Gasto fijo eliminado.');
+      toast.success("Gasto fijo eliminado.");
       setDeletingBill(null);
     } catch {
-      toast.error('No se pudo eliminar el gasto fijo.');
+      toast.error("No se pudo eliminar el gasto fijo.");
     }
   };
 
-  if (query.isLoading && !summary && currentTab === 'categories') {
+  if (query.isLoading && !summary && currentTab === "categories") {
     return (
       <LoadingScreen
         message="Cargando presupuesto…"
@@ -107,7 +109,7 @@ export function BudgetSection(props: {
   if (
     recurringQuery.isLoading &&
     !recurringQuery.data &&
-    currentTab === 'recurring'
+    currentTab === "recurring"
   ) {
     return (
       <LoadingScreen
@@ -123,14 +125,14 @@ export function BudgetSection(props: {
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <h2 className="text-xl font-bold tracking-tight sm:text-2xl">
-            {currentTab === 'recurring'
-              ? 'Gastos Fijos y Suscripciones'
-              : 'Planifica tus gastos'}
+            {currentTab === "recurring"
+              ? "Gastos Fijos y Suscripciones"
+              : "Planifica tus gastos"}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            {currentTab === 'recurring'
-              ? 'Conoce tu compromiso ineludible y cuánto dinero libre tienes para el mes.'
-              : 'Define tus límites por categoría y revisa cuánto margen te queda.'}
+            {currentTab === "recurring"
+              ? "Conoce tu compromiso ineludible y cuánto dinero libre tienes para el mes."
+              : "Define tus límites por categoría y revisa cuánto margen te queda."}
           </p>
         </div>
         {props.periodToolbar}
@@ -139,11 +141,11 @@ export function BudgetSection(props: {
       <div className="flex gap-2 border-b border-border/70 pb-1">
         <button
           type="button"
-          onClick={() => setTab('categories')}
+          onClick={() => setTab("categories")}
           className={`flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-bold transition-all ${
-            currentTab === 'categories'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-muted-foreground hover:text-foreground'
+            currentTab === "categories"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
           }`}
         >
           <Layers className="h-4 w-4" />
@@ -151,11 +153,11 @@ export function BudgetSection(props: {
         </button>
         <button
           type="button"
-          onClick={() => setTab('recurring')}
+          onClick={() => setTab("recurring")}
           className={`flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-bold transition-all ${
-            currentTab === 'recurring'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-muted-foreground hover:text-foreground'
+            currentTab === "recurring"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
           }`}
         >
           <Repeat className="h-4 w-4" />
@@ -169,7 +171,7 @@ export function BudgetSection(props: {
         </button>
       </div>
 
-      {currentTab === 'categories' && (
+      {currentTab === "categories" && (
         <BudgetCategoriesTab
           summary={summary}
           loading={query.isLoading}
@@ -182,7 +184,7 @@ export function BudgetSection(props: {
         />
       )}
 
-      {currentTab === 'recurring' && (
+      {currentTab === "recurring" && (
         <RecurringExpensesHub
           radar={recurringQuery.data ?? null}
           loading={recurringQuery.isLoading}

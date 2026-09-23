@@ -1,17 +1,17 @@
-import type { RecurringBillDto } from '@/entities/recurring-bill';
-import type { BudgetSummaryDto } from '@/entities/budget';
-import { BudgetManagerDialog } from '@/features/budget-manager';
+import type { RecurringBillDto } from "@/entities/recurring-bill";
+import type { BudgetSummaryDto } from "@/entities/budget";
+import { BudgetManagerDialog } from "@/features/budget-manager";
 import {
   LinkRecurringTransactionDialog,
   RecurringCreatorDialog,
   RecurringDeleteDialog,
   RecurringEditorDialog,
-} from '@/features/manage-recurring';
-import { IncomeStreamsSettingsModal } from '@/features/income-streams';
+} from "@/features/manage-recurring";
+import { IncomeStreamsSettingsModal } from "@/features/income-streams";
 
 interface BudgetSectionModalsProps {
   month: string;
-  currency: 'DOP' | 'USD';
+  currency: "DOP" | "USD";
   summary: BudgetSummaryDto | null;
   managerOpen: boolean;
   setManagerOpen: (open: boolean) => void;
@@ -29,7 +29,10 @@ interface BudgetSectionModalsProps {
   handleDelete: () => Promise<void>;
   recurringActions: {
     create: { isPending: boolean; mutateAsync: (input: any) => Promise<any> };
-    update: { isPending: boolean; mutateAsync: (params: { id: string; input: any }) => Promise<any> };
+    update: {
+      isPending: boolean;
+      mutateAsync: (params: { id: string; input: any }) => Promise<any>;
+    };
     linkTransaction: { isPending: boolean };
     deleteBill: { isPending: boolean };
   };
@@ -77,7 +80,7 @@ export function BudgetSectionModals({
       />
 
       <RecurringEditorDialog
-        key={editingRecurring?.id || 'closed-recurring-editor'}
+        key={editingRecurring?.id || "closed-recurring-editor"}
         bill={editingRecurring}
         open={Boolean(editingRecurring)}
         saving={recurringActions.update.isPending}

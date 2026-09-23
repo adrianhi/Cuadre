@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import type { TransactionFinancialRole } from '@bills/contracts';
-import type { Transaction } from '@/entities/transaction';
+import { useState } from "react";
+import type { TransactionFinancialRole } from "@bills/contracts";
+import type { Transaction } from "@/entities/transaction";
 
 interface UseEditTransactionFormParams {
   transaction: Transaction | null;
@@ -26,32 +26,32 @@ export function useEditTransactionForm({
   onSuggestRule,
 }: UseEditTransactionFormParams) {
   const [merchant, setMerchant] = useState(
-    () => transaction?.merchant || transaction?.rawMerchant || '',
+    () => transaction?.merchant || transaction?.rawMerchant || "",
   );
   const [category, setCategory] = useState(
-    () => transaction?.category || 'Otros',
+    () => transaction?.category || "Otros",
   );
-  const [notes, setNotes] = useState(() => transaction?.notes || '');
+  const [notes, setNotes] = useState(() => transaction?.notes || "");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [generalError, setGeneralError] = useState('');
+  const [generalError, setGeneralError] = useState("");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [suggestRule, setSuggestRule] = useState(false);
   const [financialRole, setFinancialRole] = useState<TransactionFinancialRole>(
-    transaction?.financialRole || 'EXPENSE',
+    transaction?.financialRole || "EXPENSE",
   );
   const [roleReviewed, setRoleReviewed] = useState(false);
 
   const validate = (): boolean => {
     const errors: Record<string, string> = {};
     if (!merchant.trim()) {
-      errors.merchant = 'El nombre del comercio es requerido';
+      errors.merchant = "El nombre del comercio es requerido";
     } else if (merchant.trim().length > 100) {
-      errors.merchant = 'El nombre no puede superar 100 caracteres';
+      errors.merchant = "El nombre no puede superar 100 caracteres";
     }
     if (notes.trim().length > 250) {
-      errors.notes = 'Las notas no pueden superar 250 caracteres';
+      errors.notes = "Las notas no pueden superar 250 caracteres";
     }
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
@@ -60,7 +60,7 @@ export function useEditTransactionForm({
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!transaction || !validate()) return;
-    setGeneralError('');
+    setGeneralError("");
     setSaving(true);
     try {
       await onSave(
@@ -76,7 +76,9 @@ export function useEditTransactionForm({
       }
     } catch (err) {
       setGeneralError(
-        err instanceof Error ? err.message : 'Error al actualizar la transacción',
+        err instanceof Error
+          ? err.message
+          : "Error al actualizar la transacción",
       );
     } finally {
       setSaving(false);
@@ -94,14 +96,14 @@ export function useEditTransactionForm({
       return;
     }
     if (!onDelete) return;
-    setGeneralError('');
+    setGeneralError("");
     setDeleting(true);
     try {
       await onDelete(transaction.id);
       onClose();
     } catch (err) {
       setGeneralError(
-        err instanceof Error ? err.message : 'Error al eliminar la transacción',
+        err instanceof Error ? err.message : "Error al eliminar la transacción",
       );
       setDeleting(false);
       setConfirmDelete(false);
@@ -112,22 +114,22 @@ export function useEditTransactionForm({
     if (!transaction) return;
     setFinancialRole(
       checked
-        ? 'INTERNAL_TRANSFER'
-        : transaction.financialRole === 'INCOME'
-          ? 'INCOME'
-          : 'EXPENSE',
+        ? "INTERNAL_TRANSFER"
+        : transaction.financialRole === "INCOME"
+          ? "INCOME"
+          : "EXPENSE",
     );
     if (checked) {
-      setCategory('Transferencias Propias');
-    } else if (category === 'Transferencias Propias') {
-      setCategory('Transferencias');
+      setCategory("Transferencias Propias");
+    } else if (category === "Transferencias Propias") {
+      setCategory("Transferencias");
     }
     setRoleReviewed(true);
   };
 
   const handleConfirmRoleSuggestion = () => {
-    setFinancialRole('INTERNAL_TRANSFER');
-    setCategory('Transferencias Propias');
+    setFinancialRole("INTERNAL_TRANSFER");
+    setCategory("Transferencias Propias");
     setRoleReviewed(true);
   };
 
