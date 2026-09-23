@@ -89,7 +89,7 @@ export function BudgetManagerDialog(props: {
                     : "outline"
                 }
                 onClick={() => model.setPropagation("THIS_MONTH_ONLY")}
-                className="rounded-xl text-xs"
+                className="h-auto min-h-10 py-2.5 px-3 rounded-xl text-xs font-semibold whitespace-normal leading-snug text-center transition-all"
               >
                 Solo este mes
               </Button>
@@ -102,7 +102,7 @@ export function BudgetManagerDialog(props: {
                 }
                 disabled={model.pastMonth}
                 onClick={() => model.setPropagation("CURRENT_AND_FUTURE")}
-                className="rounded-xl text-xs"
+                className="h-auto min-h-10 py-2.5 px-3 rounded-xl text-xs font-semibold whitespace-normal leading-snug text-center transition-all"
               >
                 Este y próximos
               </Button>
@@ -112,10 +112,27 @@ export function BudgetManagerDialog(props: {
                   model.propagation === "ALL_HISTORY" ? "default" : "outline"
                 }
                 onClick={() => model.setPropagation("ALL_HISTORY")}
-                className="rounded-xl text-xs"
+                className="h-auto min-h-10 py-2.5 px-3 rounded-xl text-xs font-semibold whitespace-normal leading-snug text-center transition-all"
               >
-                Todo mi histórico (incluye meses pasados)
+                Todo mi histórico
               </Button>
+            </div>
+            <div className="rounded-xl bg-muted/40 border border-border/40 p-2.5 text-xs text-muted-foreground leading-relaxed">
+              {model.propagation === "ALL_HISTORY" && (
+                <p>
+                  💡 <strong>Todo mi histórico:</strong> Actualiza los límites y recalcula automáticamente los consumos de este mes y de todos los meses pasados registrados.
+                </p>
+              )}
+              {model.propagation === "CURRENT_AND_FUTURE" && (
+                <p>
+                  💡 <strong>Este y próximos:</strong> Se aplicará a este mes y se mantendrá automáticamente como regla recurrente para los meses futuros.
+                </p>
+              )}
+              {(model.propagation === "THIS_MONTH_ONLY" || model.propagation === "CURRENT_MONTH") && (
+                <p>
+                  💡 <strong>Solo este mes:</strong> Modifica únicamente la meta de {monthTitle}, sin alterar meses anteriores ni posteriores.
+                </p>
+              )}
             </div>
           </div>
 

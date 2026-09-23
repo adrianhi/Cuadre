@@ -1,7 +1,16 @@
-import { useState } from 'react';
-import { ArrowRight, CheckCircle2, History, PauseCircle, PlayCircle, SlidersHorizontal, Trash2, Edit3 } from 'lucide-react';
-import type { CategoryRuleDto } from '@/entities/category-rule';
-import { Badge, Button, Card, CardContent } from '@/shared/ui';
+import { useState } from "react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Edit3,
+  History,
+  PauseCircle,
+  PlayCircle,
+  SlidersHorizontal,
+  Trash2,
+} from "lucide-react";
+import type { CategoryRuleDto } from "@/entities/category-rule";
+import { Badge, Button, Card, CardContent } from "@/shared/ui";
 
 interface RuleListProps {
   rules: CategoryRuleDto[];
@@ -31,7 +40,8 @@ export function RuleList({
             Tus reglas configuradas ({rules.length})
           </h3>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Se aplican automáticamente cuando ingresan nuevas transacciones desde tus bancos.
+            Se aplican automáticamente cuando ingresan nuevas transacciones
+            desde tus bancos.
           </p>
         </div>
       </div>
@@ -43,7 +53,10 @@ export function RuleList({
               Aún no tienes reglas personalizadas
             </p>
             <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
-              La clasificación inteligente base de Cuadre sigue funcionando. Puedes crear tu primera regla arriba para comercios recurrentes (ej. PedidosYa, Netflix, tu barbero) para que nunca tengas que clasificarlos a mano.
+              La clasificación inteligente base de Cuadre sigue funcionando.
+              Puedes crear tu primera regla arriba para comercios recurrentes
+              (ej. PedidosYa, Netflix, tu barbero) para que nunca tengas que
+              clasificarlos a mano.
             </p>
           </CardContent>
         </Card>
@@ -52,13 +65,21 @@ export function RuleList({
       {rules.length > 0 && (
         <div className="space-y-2.5">
           {rules.map((rule) => (
-            <Card key={rule.id} className="border border-border/60 bg-card shadow-2xs">
+            <Card
+              key={rule.id}
+              className="border border-border/60 bg-card shadow-2xs"
+            >
               <CardContent className="p-3.5 sm:p-4 space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="space-y-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <Badge variant="outline" className="text-[10px] font-semibold text-muted-foreground">
-                        {rule.matchType === 'MERCHANT' ? 'Comercio exacto' : 'Contiene'}
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] font-semibold text-muted-foreground"
+                      >
+                        {rule.matchType === "MERCHANT"
+                          ? "Comercio exacto"
+                          : "Contiene"}
                       </Badge>
                       <span className="font-bold text-sm text-foreground break-all">
                         {rule.pattern}
@@ -83,11 +104,17 @@ export function RuleList({
 
                   <div className="shrink-0">
                     {rule.isActive ? (
-                      <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 gap-1 text-[11px]">
+                      <Badge
+                        variant="outline"
+                        className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 gap-1 text-[11px]"
+                      >
                         <CheckCircle2 className="h-3 w-3" /> Activa
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="bg-muted text-muted-foreground gap-1 text-[11px]">
+                      <Badge
+                        variant="outline"
+                        className="bg-muted text-muted-foreground gap-1 text-[11px]"
+                      >
                         <PauseCircle className="h-3 w-3" /> Pausada
                       </Badge>
                     )}
@@ -113,8 +140,12 @@ export function RuleList({
                     onClick={() => onToggle(rule)}
                     className="h-8 gap-1.5 text-xs"
                   >
-                    {rule.isActive ? <PauseCircle className="h-3.5 w-3.5" /> : <PlayCircle className="h-3.5 w-3.5" />}
-                    {rule.isActive ? 'Pausar' : 'Activar'}
+                    {rule.isActive ? (
+                      <PauseCircle className="h-3.5 w-3.5" />
+                    ) : (
+                      <PlayCircle className="h-3.5 w-3.5" />
+                    )}
+                    {rule.isActive ? "Pausar" : "Activar"}
                   </Button>
 
                   <Button
@@ -145,7 +176,8 @@ export function RuleList({
                       ¿Seguro que deseas eliminar esta regla?
                     </p>
                     <p className="text-muted-foreground">
-                      Los movimientos clasificados previamente en el pasado no se verán afectados.
+                      Los movimientos clasificados previamente en el pasado no
+                      se verán afectados.
                     </p>
                     <div className="flex gap-2">
                       <Button
@@ -159,7 +191,11 @@ export function RuleList({
                       >
                         Eliminar regla
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={() => setRemovingId(null)}>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setRemovingId(null)}
+                      >
                         Cancelar
                       </Button>
                     </div>

@@ -1,13 +1,20 @@
-import { Button, Checkbox, Input } from '@/shared/ui';
-import { History, Sparkles } from 'lucide-react';
-import type { useRuleHistory } from '../model/useRuleHistory';
-import { RuleHistoryItem } from './RuleHistoryItem';
+import { Button, Checkbox, Input } from "@/shared/ui";
+import { History, Sparkles } from "lucide-react";
+import type { useRuleHistory } from "../model/useRuleHistory";
+import { RuleHistoryItem } from "./RuleHistoryItem";
 
-export function RuleHistoryPanel({ model }: { model: ReturnType<typeof useRuleHistory> }) {
+export function RuleHistoryPanel({
+  model,
+}: {
+  model: ReturnType<typeof useRuleHistory>;
+}) {
   const hasJobs = model.jobs.length > 0;
 
   return (
-    <section className="space-y-4 pt-4 border-t border-border/40" aria-label="Aplicación histórica">
+    <section
+      className="space-y-4 pt-4 border-t border-border/40"
+      aria-label="Aplicación histórica"
+    >
       <div>
         <div className="flex items-center gap-2">
           <History className="h-4 w-4 text-primary" />
@@ -16,7 +23,8 @@ export function RuleHistoryPanel({ model }: { model: ReturnType<typeof useRuleHi
           </h3>
         </div>
         <p className="text-xs text-muted-foreground mt-0.5">
-          Revisa cómo tus reglas han reclasificado compras anteriores y actualizado tus presupuestos pasados.
+          Revisa cómo tus reglas han reclasificado compras anteriores y
+          actualizado tus presupuestos pasados.
         </p>
       </div>
 
@@ -25,11 +33,13 @@ export function RuleHistoryPanel({ model }: { model: ReturnType<typeof useRuleHi
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-primary" />
             <h4 className="font-bold text-xs sm:text-sm text-foreground">
-              Preparar aplicación al historial
+              Preparar vista previa
             </h4>
           </div>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Revisaremos tus movimientos pasados para identificar cuáles coinciden con esta regla y mostrarte los cambios antes de aplicarlos.
+            Revisaremos tus movimientos pasados para identificar cuáles
+            coinciden con esta regla y mostrarte los cambios antes de
+            aplicarlos.
           </p>
 
           <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
@@ -58,21 +68,25 @@ export function RuleHistoryPanel({ model }: { model: ReturnType<typeof useRuleHi
           <label className="flex cursor-pointer items-start gap-2 text-xs text-muted-foreground pt-1">
             <Checkbox
               checked={model.includeUnknown}
-              onChange={(event) => model.setIncludeUnknown(event.target.checked)}
+              onChange={(event) =>
+                model.setIncludeUnknown(event.target.checked)
+              }
+              aria-label="Incluir registros anteriores sin origen conocido"
               className="mt-0.5"
             />
-            <span>Incluir también transacciones anteriores sin origen conocido</span>
+            <span>Incluir registros anteriores sin origen conocido</span>
           </label>
 
           <p className="text-[11px] text-muted-foreground">
-            🔒 <strong>Seguridad:</strong> Los movimientos que hayas clasificado manualmente a mano nunca serán modificados.
+            🔒 <strong>Seguridad:</strong> Las correcciones manuales registradas
+            están protegidas. Sin fechas se revisa todo el histórico visible.
           </p>
 
           <div className="flex gap-2 pt-1">
             <Button
               size="sm"
               disabled={model.pending || model.active}
-              onClick={() => model.run('preview')}
+              onClick={() => model.run("preview")}
               className="gap-1.5"
             >
               <Sparkles className="h-3.5 w-3.5" />
@@ -81,7 +95,7 @@ export function RuleHistoryPanel({ model }: { model: ReturnType<typeof useRuleHi
             <Button
               size="sm"
               variant="outline"
-              onClick={() => model.setRuleId('')}
+              onClick={() => model.setRuleId("")}
             >
               Cancelar
             </Button>
@@ -90,7 +104,10 @@ export function RuleHistoryPanel({ model }: { model: ReturnType<typeof useRuleHi
       )}
 
       {model.error && (
-        <p role="alert" className="rounded-xl border border-destructive/20 bg-destructive/5 p-3 text-xs text-destructive">
+        <p
+          role="alert"
+          className="rounded-xl border border-destructive/20 bg-destructive/5 p-3 text-xs text-destructive"
+        >
           {model.error}
         </p>
       )}
@@ -102,15 +119,17 @@ export function RuleHistoryPanel({ model }: { model: ReturnType<typeof useRuleHi
               key={job.id}
               job={job}
               disabled={model.pending || model.active}
-              onConfirm={(id) => model.run('confirm', id)}
-              onRetry={(id) => model.run('retry', id)}
+              onConfirm={(id) => model.run("confirm", id)}
+              onRetry={(id) => model.run("retry", id)}
             />
           ))}
         </div>
       ) : (
         !model.ruleId && (
           <p className="rounded-xl border border-dashed border-border/60 p-4 text-center text-xs text-muted-foreground">
-            Aún no has aplicado reglas a meses pasados. Cuando presiones "Aplicar al histórico" en una regla, verás el registro y confirmación aquí.
+            Aún no has aplicado reglas a meses pasados. Cuando presiones
+            &quot;Aplicar al histórico&quot; en una regla, verás el registro y
+            confirmación aquí.
           </p>
         )
       )}

@@ -1,16 +1,25 @@
-import React, { useState } from 'react';
-import type { ProductGuideState, TransactionFinancialRole } from '@bills/contracts';
-import type { Transaction } from '@/entities/transaction';
-import type { PeriodSelection } from '@/entities/period';
-import type { AppSection } from '@/widgets/bottom-nav';
-import { QuickAddTransactionModal } from '@/features/quick-add';
-import { DeleteTransactionModal, EditTransactionModal } from '@/features/edit-transaction';
-import { RulesManagerModal, type RuleSuggestion } from '@/features/manage-rules';
-import { AccountSettingsModal } from '@/features/account-settings';
-import { ProductTour, ProductTourInvite } from '@/features/product-guide';
-import { ExportModal } from '@/features/export-center';
-import { CategoryManagerPanel } from '@/features/manage-categories';
-import { IncomeStreamsSettingsModal } from '@/features/income-streams';
+import React, { useState } from "react";
+import type {
+  ProductGuideState,
+  TransactionFinancialRole,
+} from "@bills/contracts";
+import type { Transaction } from "@/entities/transaction";
+import type { PeriodSelection } from "@/entities/period";
+import type { AppSection } from "@/widgets/bottom-nav";
+import { QuickAddTransactionModal } from "@/features/quick-add";
+import {
+  DeleteTransactionModal,
+  EditTransactionModal,
+} from "@/features/edit-transaction";
+import {
+  RulesManagerModal,
+  type RuleSuggestion,
+} from "@/features/manage-rules";
+import { AccountSettingsModal } from "@/features/account-settings";
+import { ProductTour, ProductTourInvite } from "@/features/product-guide";
+import { ExportModal } from "@/features/export-center";
+import { CategoryManagerPanel } from "@/features/manage-categories";
+import { IncomeStreamsSettingsModal } from "@/features/income-streams";
 
 interface DashboardModalsProps {
   authToken: string;
@@ -25,7 +34,13 @@ interface DashboardModalsProps {
   setEditingTransaction: (transaction: Transaction | null) => void;
   deletingTransaction?: Transaction | null;
   setDeletingTransaction?: (transaction: Transaction | null) => void;
-  onSaveTransaction: (id: string, merchant: string, category: string, notes: string, financialRole?: TransactionFinancialRole) => Promise<void>;
+  onSaveTransaction: (
+    id: string,
+    merchant: string,
+    category: string,
+    notes: string,
+    financialRole?: TransactionFinancialRole,
+  ) => Promise<void>;
   onDeleteTransaction?: (id: string) => Promise<void>;
   // Rules Manager
   isRulesModalOpen: boolean;
@@ -93,7 +108,7 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
   currency,
   filters,
   onOpenCoro,
-  onOpenRules,
+  onOpenRules: _onOpenRules,
 }) => {
   const [ruleSuggestion, setRuleSuggestion] = useState<RuleSuggestion>();
   const [incomeSettingsOpen, setIncomeSettingsOpen] = useState(false);
@@ -106,7 +121,7 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
         authToken={authToken}
       />
       <EditTransactionModal
-        key={editingTransaction?.id ?? 'no-transaction'}
+        key={editingTransaction?.id ?? "no-transaction"}
         transaction={editingTransaction}
         isOpen={Boolean(editingTransaction)}
         onClose={() => setEditingTransaction(null)}
@@ -116,10 +131,13 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
           setEditingTransaction(null);
           setDeletingTransaction?.(t);
         }}
-        onSuggestRule={(transactionId, category) => { setRuleSuggestion({ transactionId, category }); setIsRulesModalOpen(true); }}
+        onSuggestRule={(transactionId, category) => {
+          setRuleSuggestion({ transactionId, category });
+          setIsRulesModalOpen(true);
+        }}
       />
       <DeleteTransactionModal
-        key={deletingTransaction?.id ?? 'no-delete-transaction'}
+        key={deletingTransaction?.id ?? "no-delete-transaction"}
         transaction={deletingTransaction ?? null}
         isOpen={Boolean(deletingTransaction)}
         onClose={() => setDeletingTransaction?.(null)}
@@ -131,10 +149,13 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
         }}
       />
       <RulesManagerModal
-        key={`${isRulesModalOpen}:${ruleSuggestion?.transactionId || ''}`}
+        key={`${isRulesModalOpen}:${ruleSuggestion?.transactionId || ""}`}
         suggestion={ruleSuggestion}
         isOpen={isRulesModalOpen}
-        onClose={() => { setIsRulesModalOpen(false); setRuleSuggestion(undefined); }}
+        onClose={() => {
+          setIsRulesModalOpen(false);
+          setRuleSuggestion(undefined);
+        }}
         authToken={authToken}
       />
       <AccountSettingsModal
@@ -144,19 +165,39 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
         onAccountDeleted={onAccountDeleted}
         darkMode={darkMode}
         setDarkMode={setDarkMode}
-        onRepeatTour={() => { setIsSettingsOpen(false); setIsTourInviteOpen(false); setIsTourOpen(true); }}
+        onRepeatTour={() => {
+          setIsSettingsOpen(false);
+          setIsTourInviteOpen(false);
+          setIsTourOpen(true);
+        }}
         onOpenRules={() => {
           setIsSettingsOpen(false);
-          onOpenRules?.();
+          setIsRulesModalOpen(true);
         }}
-        onOpenExport={() => { setIsSettingsOpen(false); setIsExportModalOpen(true); }}
-        onOpenIncomeSettings={() => { setIsSettingsOpen(false); setIncomeSettingsOpen(true); }}
-        onOpenCoro={() => { setIsSettingsOpen(false); onOpenCoro(); }}
-        categoryManagement={<CategoryManagerPanel enabled={isSettingsOpen && !requiresBankSelection} />}
+        onOpenExport={() => {
+          setIsSettingsOpen(false);
+          setIsExportModalOpen(true);
+        }}
+        onOpenIncomeSettings={() => {
+          setIsSettingsOpen(false);
+          setIncomeSettingsOpen(true);
+        }}
+        onOpenCoro={() => {
+          setIsSettingsOpen(false);
+          onOpenCoro();
+        }}
+        categoryManagement={
+          <CategoryManagerPanel
+            enabled={isSettingsOpen && !requiresBankSelection}
+          />
+        }
         onLock={onLock}
       />
-      <IncomeStreamsSettingsModal open={incomeSettingsOpen} onOpenChange={setIncomeSettingsOpen}
-        currency={currency === 'USD' ? 'USD' : 'DOP'} />
+      <IncomeStreamsSettingsModal
+        open={incomeSettingsOpen}
+        onOpenChange={setIncomeSettingsOpen}
+        currency={currency === "USD" ? "USD" : "DOP"}
+      />
       <ProductTourInvite
         open={
           isTourInviteOpen &&
@@ -173,8 +214,8 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
         activeSection={activeSection}
         onOpenChange={setIsTourOpen}
         onNavigate={(section) => {
-          if (section === 'budget' || section === 'analytics') {
-            onNavigate('control');
+          if (section === "budget" || section === "analytics") {
+            onNavigate("control");
           } else {
             onNavigate(section);
           }
