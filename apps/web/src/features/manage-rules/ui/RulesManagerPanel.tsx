@@ -4,6 +4,7 @@ import type { RuleSuggestion } from '../model/rule-editor';
 import { RuleEditorForm } from './RuleEditorForm';
 import { RuleList } from './RuleList';
 import { RuleHistoryPanel } from './RuleHistoryPanel';
+import { RulesHeaderGuide } from './RulesHeaderGuide';
 
 interface RulesManagerPanelProps {
   suggestion?: RuleSuggestion;
@@ -16,6 +17,7 @@ export function RulesManagerPanel({ suggestion, enabled = true }: RulesManagerPa
 
   return (
     <div className="space-y-4">
+      <RulesHeaderGuide />
       <div>
         <h3 className="font-bold text-base">Reglas de clasificación</h3>
         <p className="text-xs text-muted-foreground mt-0.5">
