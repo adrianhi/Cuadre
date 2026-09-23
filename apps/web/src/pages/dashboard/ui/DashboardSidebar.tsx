@@ -1,5 +1,4 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Download, Plus, Settings, SlidersHorizontal, Users } from 'lucide-react';
 import { APP_SECTIONS, type AppSection } from '@/widgets/bottom-nav';
 import { Button } from '@/shared/ui';
@@ -32,7 +31,6 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   userEmail,
   connection,
 }) => {
-  const navigate = useNavigate();
   const accountLabel = userEmail || connection?.email || 'Tu cuenta';
   const initial = accountLabel.charAt(0).toUpperCase();
   return (
@@ -74,11 +72,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
           <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Herramientas</p>
           <button
             type="button"
-            onClick={() => {
-              navigate('/app/control?view=categories');
-              onSelectSection('control');
-              onOpenRules?.();
-            }}
+            onClick={onOpenRules}
             className="flex min-h-10 w-full items-center gap-3 rounded-xl px-3 text-sm font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground"
           >
             <SlidersHorizontal className="h-4 w-4" />

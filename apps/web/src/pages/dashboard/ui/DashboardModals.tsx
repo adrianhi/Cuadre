@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import type { ProductGuideState, TransactionFinancialRole } from '@bills/contracts';
 import type { Transaction } from '@/entities/transaction';
 import type { PeriodSelection } from '@/entities/period';
@@ -58,6 +57,7 @@ interface DashboardModalsProps {
     search?: string;
   };
   onOpenCoro: () => void;
+  onOpenRules?: () => void;
 }
 
 export const DashboardModals: React.FC<DashboardModalsProps> = ({
@@ -93,8 +93,8 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
   currency,
   filters,
   onOpenCoro,
+  onOpenRules,
 }) => {
-  const navigate = useNavigate();
   const [ruleSuggestion, setRuleSuggestion] = useState<RuleSuggestion>();
   const [incomeSettingsOpen, setIncomeSettingsOpen] = useState(false);
   return (
@@ -147,8 +147,7 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
         onRepeatTour={() => { setIsSettingsOpen(false); setIsTourInviteOpen(false); setIsTourOpen(true); }}
         onOpenRules={() => {
           setIsSettingsOpen(false);
-          navigate('/app/control?view=categories');
-          onNavigate('control');
+          onOpenRules?.();
         }}
         onOpenExport={() => { setIsSettingsOpen(false); setIsExportModalOpen(true); }}
         onOpenIncomeSettings={() => { setIsSettingsOpen(false); setIncomeSettingsOpen(true); }}

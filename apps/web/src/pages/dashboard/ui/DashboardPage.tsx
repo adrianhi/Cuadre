@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import type { ProductGuideState } from '@bills/contracts';
 import type { Transaction } from '@/entities/transaction';
 import { Navbar } from '@/widgets/navbar';
@@ -56,19 +56,13 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
     navigate(coroId ? `/app/coro/${encodeURIComponent(coroId)}` : '/app/coro');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-  const handleOpenCategories = () => {
-    navigate('/app/control?view=categories');
-    selectSection('control');
+  const handleOpenRules = () => {
+    navigate('/app/control?view=categories&tab=rules');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-  const [, setSearchParams] = useSearchParams();
   const openBudgetTab = (tab?: string) => {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev);
-      next.set('view', 'budget');
-      if (tab) next.set('tab', tab); else next.delete('tab');
-      return next;
-    });
-    selectSection('control');
+    navigate(tab ? `/app/control?view=budget&tab=${encodeURIComponent(tab)}` : '/app/control?view=budget');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   const activeFiltersCount = [categoryFilter, statusFilter, organizationFilter, typeFilter].filter(Boolean).length;
   const periodToolbarNode = (
@@ -97,7 +91,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         onSelectSection={selectSection}
         onQuickAdd={() => setIsQuickAddOpen(true)}
         activeFiltersCount={activeFiltersCount}
-        onOpenRules={handleOpenCategories} onOpenCoro={() => handleOpenCoro()} onOpenExport={() => setIsExportModalOpen(true)}
+        onOpenRules={handleOpenRules} onOpenCoro={() => handleOpenCoro()} onOpenExport={() => setIsExportModalOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)} userEmail={userEmail} connection={primaryConnection}
       />
       <div className="flex min-h-screen min-w-0 w-full flex-col lg:pl-64">
@@ -170,7 +164,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
             {!isCoroRoute && activeSection === 'hub' && (
               <HubSection
                 onOpenCoro={handleOpenCoro}
-                onOpenRules={handleOpenCategories}
+                onOpenRules={handleOpenRules}
                 onOpenConnections={() => setIsSettingsOpen(true)}
                 onOpenExport={() => setIsExportModalOpen(true)}
                 stats={stats}
@@ -204,6 +198,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         currentPeriod={currentPeriod} currency={currency}
         filters={activeSection === 'transactions' ? currentFilters : {}}
         onOpenCoro={() => handleOpenCoro()}
+        onOpenRules={handleOpenRules}
       />
     </div>
   );

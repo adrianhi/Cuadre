@@ -19,6 +19,8 @@ function sectionFromPath(pathname: string): AppSection | null {
   if (pathname.includes('/hub')) return 'hub';
   if (pathname.includes('/analytics') || pathname.includes('/analitica')) return 'control';
   if (pathname.includes('/budget') || pathname.includes('/presupuesto') || pathname.includes('/recurring')) return 'control';
+  if (pathname.includes('/categories') || pathname.includes('/categorias')) return 'control';
+  if (pathname.includes('/rules') || pathname.includes('/reglas')) return 'control';
   if (pathname.includes('/more') || pathname.includes('/mas')) return 'hub';
   if (pathname.includes('/home') || pathname.includes('/inicio')) return 'home';
   return null;
@@ -104,6 +106,14 @@ export function useDashboardShell(productGuide: ProductGuideState) {
     }
     if (location.pathname.includes('/analitica') || location.pathname.includes('/analytics')) {
       navigate('/app/control?view=analytics', { replace: true });
+      return;
+    }
+    if (location.pathname.includes('/reglas') || location.pathname.includes('/rules')) {
+      navigate('/app/control?view=categories&tab=rules', { replace: true });
+      return;
+    }
+    if (location.pathname.includes('/categorias') || location.pathname.includes('/categories')) {
+      navigate('/app/control?view=categories', { replace: true });
       return;
     }
     if (!sectionFromPath(location.pathname) && !isCoroRoute) {
