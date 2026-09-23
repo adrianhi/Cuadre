@@ -70,3 +70,28 @@ export async function copyToClipboard(text: string): Promise<boolean> {
     return false;
   }
 }
+
+export function parseWhatsAppParticipantsList(text: string): string[] {
+  if (!text || typeof text !== 'string') return [];
+  const lines = text.split(/[\r\n,;]+/);
+  const result: string[] = [];
+  const seen = new Set<string>();
+
+  for (const rawLine of lines) {
+    let cleaned = rawLine.trim();
+    if (!cleaned || cleaned.endsWith(':')) continue;
+    cleaned = cleaned.replace(/^[\p{Extended_Pictographic}\uFE0F\u200D\s]+/u, '');
+    cleaned = cleaned
+      .replace(/^[\s\d]+[.)\-:]\s*/, '')
+      .replace(/^[-*•–—►▪▫]+\s*/, '')
+      .trim();
+    if (!cleaned || cleaned.endsWith(':')) continue;
+    const key = cleaned.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+    if (key && !seen.has(key) && cleaned.length <= 80) {
+      seen.add(key);
+      result.push(cleaned);
+    }
+  }
+  return result;
+}
+

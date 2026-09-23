@@ -309,6 +309,7 @@ model CoroParticipant {
   paidExpenses            CoroExpense[]      @relation("CoroExpensePayer")
   createdExpenses         CoroExpense[]      @relation("CoroExpenseCreator")
   splits                  CoroExpenseSplit[]
+  expensePayerShares      CoroExpensePayer[]
   settlementsFrom         CoroSettlement[]   @relation("CoroSettlementFrom")
   settlementsTo           CoroSettlement[]   @relation("CoroSettlementTo")
   confirmedSettlements    CoroSettlement[]   @relation("CoroSettlementConfirmer")
@@ -339,6 +340,7 @@ model CoroExpense {
   createdBy              CoroParticipant    @relation("CoroExpenseCreator", fields: [createdByParticipantId], references: [id], onDelete: Restrict)
   transaction            Transaction?       @relation(fields: [transactionId], references: [id], onDelete: SetNull)
   splits                 CoroExpenseSplit[]
+  payers                 CoroExpensePayer[]
   createdAt              DateTime           @default(now()) @map("created_at")
   updatedAt              DateTime           @updatedAt @map("updated_at")
 
@@ -361,6 +363,19 @@ model CoroExpenseSplit {
   @@map("coro_expense_splits")
 }
 
+model CoroExpensePayer {
+  id            String          @id @default(uuid()) @db.Uuid
+  expenseId     String          @map("expense_id") @db.Uuid
+  participantId String          @map("participant_id") @db.Uuid
+  amount        Decimal         @db.Decimal(18, 2)
+  expense       CoroExpense     @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  participant   CoroParticipant @relation(fields: [participantId], references: [id], onDelete: Restrict)
+
+  @@unique([expenseId, participantId])
+  @@index([participantId])
+  @@map("coro_expense_payers")
+}
+
 model CoroSettlement {
   id                       String               @id @default(uuid()) @db.Uuid
   coroGroupId              String               @map("coro_group_id") @db.Uuid
@@ -369,6 +384,7 @@ model CoroSettlement {
   confirmedByParticipantId String?              @map("confirmed_by_participant_id") @db.Uuid
   amount                   Decimal              @db.Decimal(18, 2)
   status                   CoroSettlementStatus @default(PENDING)
+  paymentNote              String?              @map("payment_note")
   markedPaidAt             DateTime?            @map("marked_paid_at")
   confirmedAt              DateTime?            @map("confirmed_at")
   coroGroup                CoroGroup            @relation(fields: [coroGroupId], references: [id], onDelete: Cascade)

@@ -12,14 +12,18 @@ export class PrismaCoroSettlementStore {
     await prisma.$transaction(async (tx) => {
       const group = await tx.coroGroup.findFirst({ where: { id, workspaceId }, include: {
         participants: true,
-        expenses: { where: { deletedAt: null }, include: { splits: true } },
+        expenses: { where: { deletedAt: null }, include: { splits: true, payers: true } },
       } });
       if (!group) throw new AppError(404, 'CORO_NOT_FOUND', 'Coro no encontrado.');
       if (group.status !== 'ACTIVE') throw new AppError(409, 'CORO_LOCKED', 'Este coro ya fue cerrado.');
       const balances = calculateBalances(group.participants.map((item) => item.id), group.expenses.map((expense) => ({
         id: expense.id, title: expense.title, currency: expense.currency,
         amountCents: Math.round(Number(expense.amount) * 100), expenseDate: expense.expenseDate,
-        paidById: expense.paidById, splits: expense.splits.map((split) => ({
+        paidById: expense.paidById,
+        payers: expense.payers.length > 0
+          ? expense.payers.map((p) => ({ participantId: p.participantId, amountCents: Math.round(Number(p.amount) * 100) }))
+          : undefined,
+        splits: expense.splits.map((split) => ({
           participantId: split.participantId, amountCents: Math.round(Number(split.assignedAmount) * 100),
         })),
       })));
@@ -57,12 +61,12 @@ export class PrismaCoroSettlementStore {
     return { group, viewer, settlement };
   }
 
-  async markPaid(slug: string, token: string, settlementId: string) {
+  async markPaid(slug: string, token: string, settlementId: string, note?: string | null) {
     const { viewer, settlement } = await this.guestContext(slug, token, settlementId);
     if (settlement.fromParticipantId !== viewer.id) throw new AppError(403, 'CORO_SETTLEMENT_FORBIDDEN', 'Solo el deudor puede marcar este pago.');
     if (settlement.status === 'CONFIRMED') throw new AppError(409, 'CORO_SETTLEMENT_CONFIRMED', 'Este pago ya fue confirmado.');
     if (settlement.status === 'PENDING') await prisma.coroSettlement.update({ where: { id: settlementId },
-      data: { status: 'MARKED_PAID', markedPaidAt: new Date() } });
+      data: { status: 'MARKED_PAID', markedPaidAt: new Date(), paymentNote: note ?? null } });
     logger.info('coro_settlement_marked_paid', { coroGroupId: settlement.coroGroupId, settlementId });
     return this.groups.publicDetail(slug, token);
   }
@@ -90,13 +94,13 @@ export class PrismaCoroSettlementStore {
     return this.groups.detail(workspaceId, profileId, groupId);
   }
 
-  async markPaidOwner(workspaceId: string, profileId: string, groupId: string, settlementId: string) {
+  async markPaidOwner(workspaceId: string, profileId: string, groupId: string, settlementId: string, note?: string | null) {
     const group = await prisma.coroGroup.findFirst({ where: { id: groupId, workspaceId }, include: { participants: true } });
     const owner = group?.participants.find((item) => item.profileId === profileId && item.isOwner);
     if (!group || !owner) throw new AppError(404, 'CORO_NOT_FOUND', 'Coro no encontrado.');
     const result = await prisma.coroSettlement.updateMany({ where: {
       id: settlementId, coroGroupId: groupId, fromParticipantId: owner.id, status: 'PENDING',
-    }, data: { status: 'MARKED_PAID', markedPaidAt: new Date() } });
+    }, data: { status: 'MARKED_PAID', markedPaidAt: new Date(), paymentNote: note ?? null } });
     if (!result.count) throw new AppError(409, 'CORO_SETTLEMENT_FORBIDDEN', 'Este pago no puede marcarse desde tu cuenta.');
     return this.groups.detail(workspaceId, profileId, groupId);
   }

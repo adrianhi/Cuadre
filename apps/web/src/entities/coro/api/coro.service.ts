@@ -72,8 +72,8 @@ export const coroService = {
     const response = await httpClient.post(`/coro/${id}/settlements/${settlementId}/confirm`);
     return parseResponse(coroPublicDetailSchema, response.data?.data);
   },
-  async markOwnerSettlementPaid(id: string, settlementId: string) {
-    const response = await httpClient.post(`/coro/${id}/settlements/${settlementId}/mark-paid`);
+  async markOwnerSettlementPaid(id: string, settlementId: string, input?: { paymentNote?: string }) {
+    const response = await httpClient.post(`/coro/${id}/settlements/${settlementId}/mark-paid`, input ?? {});
     return parseResponse(coroPublicDetailSchema, response.data?.data);
   },
   async publicDetail(slug: string, token?: string, signal?: AbortSignal) {
@@ -100,8 +100,8 @@ export const coroService = {
     const response = await publicClient.delete(`/public/coro/${encodeURIComponent(slug)}/expenses/${id}`, { headers: tokenHeaders(token) });
     return parseResponse(coroPublicDetailSchema, response.data?.data);
   },
-  async settlement(slug: string, token: string, id: string, action: 'mark-paid' | 'confirm') {
-    const response = await publicClient.post(`/public/coro/${encodeURIComponent(slug)}/settlements/${id}/${action}`, {}, { headers: tokenHeaders(token) });
+  async settlement(slug: string, token: string, id: string, action: 'mark-paid' | 'confirm', input?: { paymentNote?: string }) {
+    const response = await publicClient.post(`/public/coro/${encodeURIComponent(slug)}/settlements/${id}/${action}`, input ?? {}, { headers: tokenHeaders(token) });
     return parseResponse(coroPublicDetailSchema, response.data?.data);
   },
 };

@@ -28,6 +28,14 @@ export function useCoroExpenseEditForm({
   const [amount, setAmount] = useState(String(expense.amount));
   const [category, setCategory] = useState(expense.category);
   const [paidById, setPaidById] = useState(expense.paidById);
+  const initialIsMulti = Boolean(expense.payers && expense.payers.length > 1);
+  const [isMultiPayer, setIsMultiPayer] = useState(initialIsMulti);
+  const [payers, setPayers] = useState<Array<{ participantId: string; amount: number }>>(() => {
+    if (expense.payers && expense.payers.length > 0) {
+      return expense.payers.map((p) => ({ participantId: p.participantId, amount: p.amount }));
+    }
+    return [{ participantId: expense.paidById, amount: expense.amount }];
+  });
   const [expenseDate, setExpenseDate] = useState(() => {
     try {
       return toDateValue(new Date(expense.expenseDate));
@@ -55,7 +63,15 @@ export function useCoroExpenseEditForm({
     const numericAmount = Number(parseAmountInput(amount));
     if (!title.trim()) return setError('Escribe el concepto del gasto.');
     if (!Number.isFinite(numericAmount) || numericAmount <= 0) return setError('Ingresa un monto mayor que cero.');
-    if (!paidById || !participants.some((item) => item.id === paidById)) return setError('Selecciona quién pagó.');
+    if (isMultiPayer) {
+      if (!payers.length) return setError('Selecciona al menos un pagador.');
+      const totalPaid = payers.reduce((sum, p) => sum + p.amount, 0);
+      if (Math.abs(numericAmount - totalPaid) > 0.01) {
+        return setError('La suma de los pagos debe ser igual al total del gasto.');
+      }
+    } else {
+      if (!paidById || !participants.some((item) => item.id === paidById)) return setError('Selecciona quién pagó.');
+    }
     if (!splitIds.length) return setError('Selecciona al menos un participante para dividir.');
     if (!expenseDate || isFutureLocalDateTime(expenseDate)) return setError('Selecciona una fecha válida que no esté en el futuro.');
 
@@ -65,7 +81,8 @@ export function useCoroExpenseEditForm({
       const input: UpdateCoroExpenseInput = {
         title: title.trim(),
         amount: numericAmount,
-        paidById,
+        paidById: isMultiPayer ? payers[0]?.participantId : paidById,
+        payers: isMultiPayer ? payers : undefined,
         category,
         expenseDate: new Date(expenseDate).toISOString(),
         notes: notes.trim() ? notes.trim() : null,
@@ -99,26 +116,10 @@ export function useCoroExpenseEditForm({
   const perPerson = splitIds.length > 0 ? validAmount / splitIds.length : 0;
 
   return {
-    title,
-    setTitle,
-    amount,
-    setAmount,
-    category,
-    setCategory,
-    paidById,
-    setPaidById,
-    expenseDate,
-    setExpenseDate,
-    notes,
-    setNotes,
-    splitIds,
-    toggleSplit,
-    selectAllSplits,
-    duplicates,
-    setDuplicates,
-    saving,
-    error,
-    perPerson,
-    submit,
+    title, setTitle, amount, setAmount, category, setCategory,
+    paidById, setPaidById, isMultiPayer, setIsMultiPayer, payers, setPayers,
+    expenseDate, setExpenseDate, notes, setNotes,
+    splitIds, toggleSplit, selectAllSplits, duplicates, setDuplicates,
+    saving, error, perPerson, submit,
   };
 }

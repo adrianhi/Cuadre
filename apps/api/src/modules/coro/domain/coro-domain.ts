@@ -4,7 +4,8 @@ export interface CoroBalance { participantId: string; paidCents: number; owedCen
 export interface CoroTransfer { fromId: string; toId: string; amountCents: number }
 export interface CoroExpenseValue {
   id: string; title: string; amountCents: number; currency: string; expenseDate: Date;
-  paidById: string; splits: Array<{ participantId: string; amountCents: number }>;
+  paidById?: string; payers?: Array<{ participantId: string; amountCents: number }>;
+  splits: Array<{ participantId: string; amountCents: number }>;
 }
 
 const STOP_WORDS = new Set(['de', 'del', 'la', 'el', 'los', 'las', 'un', 'una', 'y', 'en', 'por', 'para']);
@@ -12,6 +13,29 @@ const STOP_WORDS = new Set(['de', 'del', 'la', 'el', 'los', 'las', 'un', 'una', 
 export function normalizeCoroName(value: string): string {
   return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
     .replace(/[^a-z0-9]+/g, ' ').trim().replace(/\s+/g, ' ');
+}
+
+export function parseWhatsAppParticipantsList(text: string): string[] {
+  if (!text || typeof text !== 'string') return [];
+  const lines = text.split(/[\r\n,;]+/);
+  const result: string[] = [];
+  const seen = new Set<string>();
+  for (const rawLine of lines) {
+    let cleaned = rawLine.trim();
+    if (!cleaned || cleaned.endsWith(':')) continue;
+    cleaned = cleaned.replace(/^[\p{Extended_Pictographic}\uFE0F\u200D\s]+/u, '');
+    cleaned = cleaned
+      .replace(/^[\s\d]+[.)\-:]\s*/, '')
+      .replace(/^[-*•–—►▪▫]+\s*/, '')
+      .trim();
+    if (!cleaned || cleaned.endsWith(':')) continue;
+    const key = normalizeCoroName(cleaned);
+    if (key && !seen.has(key) && cleaned.length <= 80) {
+      seen.add(key);
+      result.push(cleaned);
+    }
+  }
+  return result;
 }
 
 export function createCoroSlug(name: string): string {
@@ -45,9 +69,19 @@ export function calculateBalances(participantIds: string[], expenses: CoroExpens
   const balances = new Map(participantIds.map((participantId) => [participantId,
     { participantId, paidCents: 0, owedCents: 0, netCents: 0 }]));
   for (const expense of expenses) {
-    const payer = balances.get(expense.paidById);
-    if (!payer) throw new Error('INVALID_CORO_PAYER');
-    payer.paidCents += expense.amountCents;
+    if (expense.payers && expense.payers.length > 0) {
+      for (const payer of expense.payers) {
+        const balance = balances.get(payer.participantId);
+        if (!balance) throw new Error('INVALID_CORO_PAYER');
+        balance.paidCents += payer.amountCents;
+      }
+    } else if (expense.paidById) {
+      const payer = balances.get(expense.paidById);
+      if (!payer) throw new Error('INVALID_CORO_PAYER');
+      payer.paidCents += expense.amountCents;
+    } else {
+      throw new Error('INVALID_CORO_PAYER');
+    }
     for (const split of expense.splits) {
       const participant = balances.get(split.participantId);
       if (!participant) throw new Error('INVALID_CORO_SPLIT_PARTICIPANT');

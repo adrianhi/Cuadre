@@ -82,6 +82,9 @@ export function CoroExpensesTab({ detail, onRefresh }: { detail: CoroPublicDetai
           const isExpanded = expandedExpenseId === item.id;
           const splitMembers = detail.participants.filter((p) => item.splitParticipantIds.includes(p.id));
           const perPerson = item.splitParticipantIds.length > 0 ? item.amount / item.splitParticipantIds.length : item.amount;
+          const payerSummary = item.payers && item.payers.length > 1
+            ? `Pagaron ${item.payers.map((p) => `${p.participantName} (${formatCurrency(p.amount, detail.currency)})`).join(' + ')}`
+            : `Pagó ${item.paidByName}`;
           return (
             <div
               key={item.id}
@@ -93,7 +96,7 @@ export function CoroExpensesTab({ detail, onRefresh }: { detail: CoroPublicDetai
               <div className="flex min-w-0 items-center justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-bold text-foreground">{item.title}</p>
-                  <p className="truncate text-xs text-muted-foreground">Pagó {item.paidByName} · {item.category}</p>
+                  <p className="truncate text-xs text-muted-foreground">{payerSummary} · {item.category}</p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <strong className="text-sm font-black text-foreground">{formatCurrency(item.amount, detail.currency)}</strong>
@@ -137,6 +140,19 @@ export function CoroExpensesTab({ detail, onRefresh }: { detail: CoroPublicDetai
                       </span>
                     </div>
                   </div>
+                  {item.payers && item.payers.length > 1 && (
+                    <div className="rounded-lg bg-muted/40 p-2 text-[11px] space-y-1">
+                      <span className="font-semibold text-foreground block">Aportes de los pagadores:</span>
+                      <div className="space-y-0.5">
+                        {item.payers.map((p) => (
+                          <div key={p.participantId} className="flex justify-between text-muted-foreground">
+                            <span>{p.participantName}</span>
+                            <span className="font-medium text-foreground">{formatCurrency(p.amount, detail.currency)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <div className="rounded-lg bg-muted/40 p-2 text-[11px] space-y-1">
                     <span className="font-semibold text-foreground block">
                       Dividido entre {item.splitParticipantIds.length} {item.splitParticipantIds.length === 1 ? 'persona' : 'personas'} ({formatCurrency(perPerson, detail.currency)} c/u):

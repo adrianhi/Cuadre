@@ -1,14 +1,13 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import type { CoroParticipant, CreateCoroExpenseInput } from '@/entities/coro';
-import { coroKeys, coroService } from '@/entities/coro';
+import type { CoroParticipant, CreateCoroExpenseInput, PayerShare } from '@/entities/coro';
+import { coroKeys, coroService, CoroMultiPayerSection } from '@/entities/coro';
 import { CategoryPicker } from '@/entities/category';
 import { ApiClientError } from '@/shared/api';
 import { currentLocalDateTime, formatCurrency, isFutureLocalDateTime, parseAmountInput, toDateValue } from '@/shared/lib';
 import {
   Button, Checkbox, CurrencyAmountInput, DateTimePickerField, Dialog, DialogContent, DialogDescription,
-  DialogFooter, DialogHeader, DialogTitle, Input, Select, SelectContent, SelectItem,
-  SelectTrigger, SelectValue, toast,
+  DialogFooter, DialogHeader, DialogTitle, Input, toast,
 } from '@/shared/ui';
 import { CoroConfirmDialog } from './CoroConfirmDialog';
 
@@ -31,6 +30,8 @@ export function CoroManualExpenseDialog(props: Props) {
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('Varios');
   const [paidById, setPaidById] = useState(ownerId);
+  const [isMultiPayer, setIsMultiPayer] = useState(false);
+  const [payers, setPayers] = useState<PayerShare[]>([]);
   const [expenseDate, setExpenseDate] = useState(currentLocalDateTime());
   const [splitIds, setSplitIds] = useState<string[]>(props.participants.map((item) => item.id));
   const [duplicates, setDuplicates] = useState<DuplicateCandidate[]>([]);
@@ -41,15 +42,25 @@ export function CoroManualExpenseDialog(props: Props) {
     const numericAmount = Number(parseAmountInput(amount));
     if (!title.trim()) return setError('Escribe el concepto del gasto.');
     if (!Number.isFinite(numericAmount) || numericAmount <= 0) return setError('Ingresa un monto mayor que cero.');
-    if (!paidById || !props.participants.some((item) => item.id === paidById)) return setError('Selecciona quién pagó.');
+    if (isMultiPayer) {
+      if (!payers.length) return setError('Selecciona al menos un pagador.');
+      const totalPaid = payers.reduce((sum, p) => sum + p.amount, 0);
+      if (Math.abs(numericAmount - totalPaid) > 0.01) {
+        return setError('La suma de los pagos debe ser igual al total del gasto.');
+      }
+    } else {
+      if (!paidById || !props.participants.some((item) => item.id === paidById)) return setError('Selecciona quién pagó.');
+    }
     if (!splitIds.length) return setError('Selecciona al menos un participante.');
     if (!expenseDate || isFutureLocalDateTime(expenseDate)) return setError('Selecciona una fecha válida que no esté en el futuro.');
     setSaving(true);
     setError('');
     try {
       const input: CreateCoroExpenseInput = {
-        title: title.trim(), amount: numericAmount, paidById, category,
-        expenseDate: new Date(expenseDate).toISOString(), notes: null,
+        title: title.trim(), amount: numericAmount,
+        paidById: isMultiPayer ? payers[0]?.participantId : paidById,
+        payers: isMultiPayer ? payers : undefined,
+        category, expenseDate: new Date(expenseDate).toISOString(), notes: null,
         splitParticipantIds: splitIds, allowPossibleDuplicate,
       };
       const detail = await coroService.createOwnerExpense(props.coroId, input);
@@ -99,12 +110,17 @@ export function CoroManualExpenseDialog(props: Props) {
               <CurrencyAmountInput aria-label={`Monto (${props.currency})`} value={amount} onValueChange={setAmount} placeholder="0.00" className="pl-11 font-bold" />
             </div>
           </label>
-          <label className="grid gap-1.5 text-xs font-semibold">Quién pagó
-            <Select value={paidById} onValueChange={setPaidById}>
-              <SelectTrigger aria-label="Quién pagó"><SelectValue /></SelectTrigger>
-              <SelectContent>{props.participants.map((item) => <SelectItem key={item.id} value={item.id}>{item.name}{item.isOwner ? ' (Anfitrión)' : ''}</SelectItem>)}</SelectContent>
-            </Select>
-          </label>
+          <CoroMultiPayerSection
+            participants={props.participants}
+            currency={props.currency}
+            totalAmount={Number(parseAmountInput(amount)) || 0}
+            singlePaidById={paidById}
+            onSinglePaidByIdChange={setPaidById}
+            isMultiPayer={isMultiPayer}
+            onIsMultiPayerChange={setIsMultiPayer}
+            payers={payers}
+            onPayersChange={setPayers}
+          />
           <div className="grid gap-1.5 text-xs font-semibold">Categoría
             <CategoryPicker value={category} onValueChange={setCategory} ariaLabel="Categoría del gasto" />
           </div>

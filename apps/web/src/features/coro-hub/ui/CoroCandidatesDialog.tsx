@@ -3,8 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { ChevronDown, Link2, Plus, Search, X } from 'lucide-react';
 import { coroService } from '@/entities/coro';
 import { ApiClientError } from '@/shared/api';
-import { formatCurrency, formatRelativeDate } from '@/shared/lib';
-import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input, toast } from '@/shared/ui';
+import { formatCurrency, formatRelativeDate, parseAmountInput } from '@/shared/lib';
+import { Button, CurrencyAmountInput, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input, toast } from '@/shared/ui';
 import { bankMeta } from '../model/bank-style';
 import { CoroConfirmDialog } from './CoroConfirmDialog';
 
@@ -23,6 +23,7 @@ export function CoroCandidatesDialog(props: CoroCandidatesDialogProps) {
   const [search, setSearch] = useState('');
   const [selectedBank, setSelectedBank] = useState<string>('ALL');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [customAmounts, setCustomAmounts] = useState<Record<string, string>>({});
 
   const candidates = useQuery({
     queryKey: ['coro', 'candidates', props.coroId],
@@ -45,8 +46,12 @@ export function CoroCandidatesDialog(props: CoroCandidatesDialogProps) {
   const link = async (transactionId: string, allowPossibleDuplicate = false) => {
     setLinkingId(transactionId);
     try {
+      const customStr = customAmounts[transactionId];
+      const parsedCustom = customStr !== undefined ? Number(parseAmountInput(customStr)) : undefined;
+      const customAmount = parsedCustom !== undefined && Number.isFinite(parsedCustom) && parsedCustom > 0 ? parsedCustom : undefined;
+
       await coroService.linkTransaction(props.coroId, {
-        transactionId, splitParticipantIds: props.participantIds, allowPossibleDuplicate,
+        transactionId, splitParticipantIds: props.participantIds, allowPossibleDuplicate, customAmount,
       });
       setDuplicateId(undefined);
       await Promise.all([props.onRefresh(), candidates.refetch()]);
@@ -187,8 +192,16 @@ export function CoroCandidatesDialog(props: CoroCandidatesDialogProps) {
                         <div><span className="text-muted-foreground block">Categoría</span><span className="font-semibold text-foreground">{item.category} {item.transactionType ? `(${item.transactionType})` : ''}</span></div>
                         {item.cardLast4 && <div className="col-span-2"><span className="text-muted-foreground block">Tarjeta</span><span className="font-semibold text-foreground">•••• {item.cardLast4} ({item.institutionCode})</span></div>}
                       </div>
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-medium text-muted-foreground">Monto a aplicar al coro (puedes ajustar si fue parcial):</label>
+                        <CurrencyAmountInput
+                          value={customAmounts[item.id] ?? item.amount.toString()}
+                          onValueChange={(val) => setCustomAmounts((prev) => ({ ...prev, [item.id]: val }))}
+                          className="h-8 text-xs rounded-lg"
+                        />
+                      </div>
                       <div className="rounded-lg bg-primary/10 p-2 text-[11px] text-primary font-medium">
-                        Se dividirá entre {splitMembers} personas ({formatCurrency(item.amount / splitMembers, item.currency)} c/u).
+                        Se dividirá entre {splitMembers} personas ({formatCurrency((Number(parseAmountInput(customAmounts[item.id] ?? item.amount.toString())) || item.amount) / splitMembers, item.currency)} c/u).
                       </div>
                       <Button
                         size="sm" disabled={linkingId === item.id} onClick={() => void link(item.id)}

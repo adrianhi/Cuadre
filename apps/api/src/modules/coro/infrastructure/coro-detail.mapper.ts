@@ -7,7 +7,7 @@ export const coroDetailInclude = {
   participants: { orderBy: { createdAt: 'asc' as const } },
   expenses: {
     where: { deletedAt: null }, orderBy: { expenseDate: 'desc' as const },
-    include: { paidBy: true, splits: true },
+    include: { paidBy: true, splits: true, payers: { include: { participant: true } } },
   },
   settlements: {
     orderBy: { createdAt: 'asc' as const },
@@ -27,6 +27,9 @@ function expenseValues(group: CoroDetailRecord): CoroExpenseValue[] {
   return group.expenses.map((expense) => ({
     id: expense.id, title: expense.title, amountCents: Math.round(Number(expense.amount) * 100),
     currency: expense.currency, expenseDate: expense.expenseDate, paidById: expense.paidById,
+    payers: expense.payers.length > 0
+      ? expense.payers.map((p) => ({ participantId: p.participantId, amountCents: Math.round(Number(p.amount) * 100) }))
+      : undefined,
     splits: expense.splits.map((split) => ({
       participantId: split.participantId, amountCents: Math.round(Number(split.assignedAmount) * 100),
     })),
@@ -45,12 +48,14 @@ export function mapCoroDetail(
     id: item.id, fromId: item.fromParticipantId, fromName: item.fromParticipant.name,
     toId: item.toParticipantId, toName: item.toParticipant.name,
     amount: Number(item.amount), status: item.status,
+    paymentNote: item.paymentNote ?? null,
   }));
   const provisional = simplifyBalances(balances).map((item) => ({
     id: null, fromId: item.fromId,
     fromName: group.participants.find((p) => p.id === item.fromId)!.name,
     toId: item.toId, toName: group.participants.find((p) => p.id === item.toId)!.name,
     amount: item.amountCents / 100, status: 'PENDING' as const,
+    paymentNote: null,
   }));
   const settlements = group.status === 'ACTIVE' ? provisional : persisted;
   return {
@@ -80,6 +85,11 @@ export function mapCoroDetail(
       splitParticipantIds: expense.splits.map((split) => split.participantId),
       transactionId: expense.transactionId,
       canEdit: ownerAccess || viewerParticipantId === expense.createdByParticipantId,
+      payers: expense.payers.map((p) => ({
+        participantId: p.participantId,
+        participantName: p.participant.name,
+        amount: Number(p.amount),
+      })),
     })),
     settlements: settlements.map((item) => {
       const destination = group.participants.find((p) => p.id === item.toId)?.paymentDetailsEncrypted;
