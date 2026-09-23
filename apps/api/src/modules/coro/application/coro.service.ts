@@ -33,10 +33,10 @@ interface ExpenseStore {
 interface SettlementStore {
   lock(workspaceId: string, profileId: string, id: string): Promise<unknown>;
   archive(workspaceId: string, profileId: string, id: string): Promise<unknown>;
-  markPaid(slug: string, token: string, id: string): Promise<unknown>;
+  markPaid(slug: string, token: string, id: string, note?: string | null): Promise<unknown>;
   confirm(slug: string, token: string, id: string): Promise<unknown>;
   confirmOwner(workspaceId: string, profileId: string, groupId: string, id: string): Promise<unknown>;
-  markPaidOwner(workspaceId: string, profileId: string, groupId: string, id: string): Promise<unknown>;
+  markPaidOwner(workspaceId: string, profileId: string, groupId: string, id: string, note?: string | null): Promise<unknown>;
 }
 
 export class CoroService {
@@ -60,7 +60,7 @@ export class CoroService {
   lock(actor: CoroActor, id: string) { this.owner(actor); return this.settlements.lock(actor.workspaceId, actor.userId, id); }
   archive(actor: CoroActor, id: string) { this.owner(actor); return this.settlements.archive(actor.workspaceId, actor.userId, id); }
   confirmOwner(actor: CoroActor, id: string, settlementId: string) { this.owner(actor); return this.settlements.confirmOwner(actor.workspaceId, actor.userId, id, settlementId); }
-  markPaidOwner(actor: CoroActor, id: string, settlementId: string) { this.owner(actor); return this.settlements.markPaidOwner(actor.workspaceId, actor.userId, id, settlementId); }
+  markPaidOwner(actor: CoroActor, id: string, settlementId: string, note?: string | null) { this.owner(actor); return this.settlements.markPaidOwner(actor.workspaceId, actor.userId, id, settlementId, note); }
   publicDetail(slug: string, token?: string) { return this.groups.publicDetail(slug, token); }
   claim(slug: string, input: ClaimCoroParticipantInput) { return this.groups.claim(slug, input); }
   updatePayment(slug: string, token: string, payment: CoroPaymentDestination | null) { return this.groups.updatePayment(slug, token, payment); }
@@ -68,6 +68,6 @@ export class CoroService {
   createExpense(slug: string, token: string, input: CreateCoroExpenseInput) { return this.expenses.create(slug, token, input); }
   updateExpense(slug: string, token: string, id: string, input: UpdateCoroExpenseInput) { return this.expenses.updatePublic(slug, token, id, input); }
   removeExpense(slug: string, token: string, id: string) { return this.expenses.removePublic(slug, token, id); }
-  markPaid(slug: string, token: string, id: string) { return this.settlements.markPaid(slug, token, id); }
+  markPaid(slug: string, token: string, id: string, note?: string | null) { return this.settlements.markPaid(slug, token, id, note); }
   confirm(slug: string, token: string, id: string) { return this.settlements.confirm(slug, token, id); }
 }

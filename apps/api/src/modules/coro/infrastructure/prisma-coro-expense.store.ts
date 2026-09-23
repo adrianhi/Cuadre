@@ -20,11 +20,35 @@ export class PrismaCoroExpenseStore {
     return { group, viewer };
   }
 
-  private validateParticipants(participants: Array<{ id: string }>, paidById: string, splitIds: string[]) {
+  private validateParticipants(
+    participants: Array<{ id: string }>,
+    paidById: string,
+    splitIds: string[],
+    payers?: Array<{ participantId: string; amount: number }>,
+  ) {
     const valid = new Set(participants.map((item) => item.id));
     if (!valid.has(paidById) || splitIds.some((id) => !valid.has(id))) {
       throw new AppError(400, 'INVALID_CORO_PARTICIPANT', 'Todos los participantes deben pertenecer al coro.');
     }
+    if (payers && payers.some((p) => !valid.has(p.participantId))) {
+      throw new AppError(400, 'INVALID_CORO_PARTICIPANT', 'Todos los pagadores deben pertenecer al coro.');
+    }
+  }
+
+  private resolvePayers(input: {
+    amount: number;
+    paidById?: string;
+    payers?: Array<{ participantId: string; amount: number }>;
+  }) {
+    if (input.payers && input.payers.length > 0) {
+      const sum = input.payers.reduce((acc, p) => acc + p.amount, 0);
+      if (Math.abs(sum - input.amount) > 0.01) {
+        throw new AppError(400, 'INVALID_CORO_PAYERS_SUM', 'La suma de los pagos debe ser igual al total del gasto.');
+      }
+      return { primaryPaidById: input.paidById ?? input.payers[0].participantId, payers: input.payers };
+    }
+    if (!input.paidById) throw new AppError(400, 'MISSING_CORO_PAYER', 'Debes indicar quién pagó el gasto.');
+    return { primaryPaidById: input.paidById, payers: [{ participantId: input.paidById, amount: input.amount }] };
   }
 
   private async duplicates(groupId: string, input: { title: string; amount: number; expenseDate: string }, currency: string, excludeId?: string) {
@@ -49,18 +73,20 @@ export class PrismaCoroExpenseStore {
 
   async create(slug: string, token: string, input: CreateCoroExpenseInput) {
     const { group, viewer } = await this.publicContext(slug, token);
-    this.validateParticipants(group.participants, input.paidById, input.splitParticipantIds);
+    const { primaryPaidById, payers } = this.resolvePayers(input);
+    this.validateParticipants(group.participants, primaryPaidById, input.splitParticipantIds, payers);
     const count = await prisma.coroExpense.count({ where: { coroGroupId: group.id, deletedAt: null } });
     if (count >= MAX_EXPENSES) throw new AppError(409, 'CORO_EXPENSE_LIMIT', 'El coro alcanzó 1,000 gastos.');
     await this.assertNoDuplicate(group.id, input, group.currency);
     const cents = Math.round(input.amount * 100);
     const created = await prisma.coroExpense.create({ data: {
-      coroGroupId: group.id, paidById: input.paidById, createdByParticipantId: viewer.id,
+      coroGroupId: group.id, paidById: primaryPaidById, createdByParticipantId: viewer.id,
       title: input.title, amount: new Prisma.Decimal(input.amount), currency: group.currency,
       category: input.category, expenseDate: new Date(input.expenseDate), notes: input.notes ?? null,
       splits: { create: splitAmountCents(cents, input.splitParticipantIds).map((split) => ({
         participantId: split.participantId, assignedAmount: new Prisma.Decimal(split.amountCents).div(100),
       })) },
+      payers: { create: payers.map((p) => ({ participantId: p.participantId, amount: new Prisma.Decimal(p.amount) })) },
     } });
     logger.info('coro_expense_created', { coroGroupId: group.id, expenseId: created.id });
     return this.groups.publicDetail(slug, token);
@@ -74,17 +100,19 @@ export class PrismaCoroExpenseStore {
     if (group.status !== 'ACTIVE') throw new AppError(409, 'CORO_LOCKED', 'Este coro ya no admite cambios.');
     const owner = group.participants.find((item) => item.profileId === profileId && item.isOwner);
     if (!owner) throw new AppError(403, 'CORO_OWNER_REQUIRED', 'Anfitrión no encontrado.');
-    this.validateParticipants(group.participants, input.paidById, input.splitParticipantIds);
+    const { primaryPaidById, payers } = this.resolvePayers(input);
+    this.validateParticipants(group.participants, primaryPaidById, input.splitParticipantIds, payers);
     const count = await prisma.coroExpense.count({ where: { coroGroupId: groupId, deletedAt: null } });
     if (count >= MAX_EXPENSES) throw new AppError(409, 'CORO_EXPENSE_LIMIT', 'El coro alcanzó 1,000 gastos.');
     await this.assertNoDuplicate(groupId, input, group.currency);
     const splits = splitAmountCents(Math.round(input.amount * 100), input.splitParticipantIds);
     const created = await prisma.coroExpense.create({ data: {
-      coroGroupId: groupId, paidById: input.paidById, createdByParticipantId: owner.id,
+      coroGroupId: groupId, paidById: primaryPaidById, createdByParticipantId: owner.id,
       title: input.title, amount: new Prisma.Decimal(input.amount), currency: group.currency,
       category: input.category, expenseDate: new Date(input.expenseDate), notes: input.notes ?? null,
       splits: { create: splits.map((item) => ({ participantId: item.participantId,
         assignedAmount: new Prisma.Decimal(item.amountCents).div(100) })) },
+      payers: { create: payers.map((p) => ({ participantId: p.participantId, amount: new Prisma.Decimal(p.amount) })) },
     } });
     logger.info('coro_owner_expense_created', { workspaceId, coroGroupId: groupId, expenseId: created.id });
     return this.groups.detail(workspaceId, profileId, groupId);
@@ -93,28 +121,35 @@ export class PrismaCoroExpenseStore {
   async updatePublic(slug: string, token: string, expenseId: string, input: UpdateCoroExpenseInput) {
     const { group, viewer } = await this.publicContext(slug, token);
     const existing = await prisma.coroExpense.findFirst({
-      where: { id: expenseId, coroGroupId: group.id, deletedAt: null }, include: { splits: true },
+      where: { id: expenseId, coroGroupId: group.id, deletedAt: null }, include: { splits: true, payers: true },
     });
     if (!existing) throw new AppError(404, 'CORO_EXPENSE_NOT_FOUND', 'Gasto no encontrado.');
     if (existing.createdByParticipantId !== viewer.id) throw new AppError(403, 'CORO_EXPENSE_FORBIDDEN', 'Solo puedes editar los gastos que registraste.');
     const merged: CreateCoroExpenseInput = {
       title: input.title ?? existing.title, amount: input.amount ?? Number(existing.amount),
-      paidById: input.paidById ?? existing.paidById, category: input.category ?? existing.category,
+      paidById: input.paidById ?? existing.paidById,
+      payers: input.payers ?? (existing.payers.length ? existing.payers.map((p) => ({ participantId: p.participantId, amount: Number(p.amount) })) : undefined),
+      category: input.category ?? existing.category,
       expenseDate: input.expenseDate ?? existing.expenseDate.toISOString(), notes: input.notes ?? existing.notes,
       splitParticipantIds: input.splitParticipantIds ?? existing.splits.map((item) => item.participantId),
       allowPossibleDuplicate: input.allowPossibleDuplicate,
     };
-    this.validateParticipants(group.participants, merged.paidById, merged.splitParticipantIds);
+    const { primaryPaidById, payers } = this.resolvePayers(merged);
+    this.validateParticipants(group.participants, primaryPaidById, merged.splitParticipantIds, payers);
     await this.assertNoDuplicate(group.id, merged, group.currency, expenseId);
     const splits = splitAmountCents(Math.round(merged.amount * 100), merged.splitParticipantIds);
     await prisma.$transaction(async (tx) => {
       await tx.coroExpense.update({ where: { id: expenseId }, data: {
-        title: merged.title, amount: new Prisma.Decimal(merged.amount), paidById: merged.paidById,
+        title: merged.title, amount: new Prisma.Decimal(merged.amount), paidById: primaryPaidById,
         category: merged.category, expenseDate: new Date(merged.expenseDate), notes: merged.notes ?? null,
       } });
       await tx.coroExpenseSplit.deleteMany({ where: { expenseId } });
       await tx.coroExpenseSplit.createMany({ data: splits.map((split) => ({
         expenseId, participantId: split.participantId, assignedAmount: new Prisma.Decimal(split.amountCents).div(100),
+      })) });
+      await tx.coroExpensePayer.deleteMany({ where: { expenseId } });
+      await tx.coroExpensePayer.createMany({ data: payers.map((p) => ({
+        expenseId, participantId: p.participantId, amount: new Prisma.Decimal(p.amount),
       })) });
     });
     return this.groups.publicDetail(slug, token);
@@ -142,21 +177,28 @@ export class PrismaCoroExpenseStore {
     const group = await prisma.coroGroup.findFirst({ where: { id: groupId, workspaceId }, include: { participants: true } });
     if (!group) throw new AppError(404, 'CORO_NOT_FOUND', 'Coro no encontrado.');
     if (group.status !== 'ACTIVE') throw new AppError(409, 'CORO_LOCKED', 'Este coro ya no admite cambios.');
-    const existing = await prisma.coroExpense.findFirst({ where: { id: expenseId, coroGroupId: groupId, deletedAt: null }, include: { splits: true } });
+    const existing = await prisma.coroExpense.findFirst({ where: { id: expenseId, coroGroupId: groupId, deletedAt: null }, include: { splits: true, payers: true } });
     if (!existing) throw new AppError(404, 'CORO_EXPENSE_NOT_FOUND', 'Gasto no encontrado.');
-    const merged: CreateCoroExpenseInput = { title: input.title ?? existing.title, amount: input.amount ?? Number(existing.amount),
-      paidById: input.paidById ?? existing.paidById, category: input.category ?? existing.category,
+    const merged: CreateCoroExpenseInput = {
+      title: input.title ?? existing.title, amount: input.amount ?? Number(existing.amount),
+      paidById: input.paidById ?? existing.paidById,
+      payers: input.payers ?? (existing.payers.length ? existing.payers.map((p) => ({ participantId: p.participantId, amount: Number(p.amount) })) : undefined),
+      category: input.category ?? existing.category,
       expenseDate: input.expenseDate ?? existing.expenseDate.toISOString(), notes: input.notes ?? existing.notes,
-      splitParticipantIds: input.splitParticipantIds ?? existing.splits.map((item) => item.participantId), allowPossibleDuplicate: input.allowPossibleDuplicate };
-    this.validateParticipants(group.participants, merged.paidById, merged.splitParticipantIds);
+      splitParticipantIds: input.splitParticipantIds ?? existing.splits.map((item) => item.participantId), allowPossibleDuplicate: input.allowPossibleDuplicate,
+    };
+    const { primaryPaidById, payers } = this.resolvePayers(merged);
+    this.validateParticipants(group.participants, primaryPaidById, merged.splitParticipantIds, payers);
     await this.assertNoDuplicate(groupId, merged, group.currency, expenseId);
     const splits = splitAmountCents(Math.round(merged.amount * 100), merged.splitParticipantIds);
     await prisma.$transaction(async (tx) => {
       await tx.coroExpense.update({ where: { id: expenseId }, data: { title: merged.title, amount: new Prisma.Decimal(merged.amount),
-        paidById: merged.paidById, category: merged.category, expenseDate: new Date(merged.expenseDate), notes: merged.notes ?? null } });
+        paidById: primaryPaidById, category: merged.category, expenseDate: new Date(merged.expenseDate), notes: merged.notes ?? null } });
       await tx.coroExpenseSplit.deleteMany({ where: { expenseId } });
       await tx.coroExpenseSplit.createMany({ data: splits.map((item) => ({ expenseId, participantId: item.participantId,
         assignedAmount: new Prisma.Decimal(item.amountCents).div(100) })) });
+      await tx.coroExpensePayer.deleteMany({ where: { expenseId } });
+      await tx.coroExpensePayer.createMany({ data: payers.map((p) => ({ expenseId, participantId: p.participantId, amount: new Prisma.Decimal(p.amount) })) });
     });
   }
 
@@ -182,16 +224,19 @@ export class PrismaCoroExpenseStore {
     } });
     if (!owner || !transaction || transaction.currency !== group.currency) throw new AppError(400, 'INVALID_CORO_TRANSACTION', 'El movimiento no puede vincularse a este coro.');
     this.validateParticipants(group.participants, owner.id, input.splitParticipantIds);
-    const expenseInput: CreateCoroExpenseInput = { title: transaction.merchant, amount: Number(transaction.amount), paidById: owner.id,
+    const finalAmount = input.customAmount && input.customAmount > 0 && input.customAmount <= Number(transaction.amount)
+      ? input.customAmount : Number(transaction.amount);
+    const expenseInput: CreateCoroExpenseInput = { title: transaction.merchant, amount: finalAmount, paidById: owner.id,
       category: transaction.category, expenseDate: transaction.transactionDate.toISOString(), notes: null,
       splitParticipantIds: input.splitParticipantIds, allowPossibleDuplicate: input.allowPossibleDuplicate };
     await this.assertNoDuplicate(group.id, expenseInput, group.currency);
-    const splits = splitAmountCents(Math.round(Number(transaction.amount) * 100), input.splitParticipantIds);
+    const splits = splitAmountCents(Math.round(finalAmount * 100), input.splitParticipantIds);
     await prisma.coroExpense.create({ data: {
       coroGroupId: group.id, paidById: owner.id, createdByParticipantId: owner.id,
-      transactionId: transaction.id, title: transaction.merchant, amount: transaction.amount,
+      transactionId: transaction.id, title: transaction.merchant, amount: new Prisma.Decimal(finalAmount),
       currency: transaction.currency, category: transaction.category, expenseDate: transaction.transactionDate,
       splits: { create: splits.map((item) => ({ participantId: item.participantId, assignedAmount: new Prisma.Decimal(item.amountCents).div(100) })) },
+      payers: { create: [{ participantId: owner.id, amount: new Prisma.Decimal(finalAmount) }] },
     } });
     logger.info('coro_transaction_linked', { workspaceId, coroGroupId: groupId, transactionId: transaction.id });
   }

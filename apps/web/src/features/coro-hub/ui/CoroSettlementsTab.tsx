@@ -5,14 +5,15 @@ import { coroService } from '@/entities/coro';
 import { formatCurrency } from '@/shared/lib';
 import { Button, toast } from '@/shared/ui';
 import { buildSettlementsWhatsAppText, copyToClipboard } from '../model/coro-share';
+import { CoroCelebrationCard } from './CoroCelebrationCard';
 import { CoroPaymentDestinationBadge } from './CoroPaymentDestinationBadge';
 
 export function CoroSettlementsTab({ detail, onRefresh }: { detail: CoroPublicDetail; onRefresh: () => Promise<void> }) {
   const [copied, setCopied] = useState(false);
 
-  const update = async (id: string, action: 'mark' | 'confirm') => {
+  const update = async (id: string, action: 'mark' | 'confirm', paymentNote?: string) => {
     try {
-      if (action === 'mark') await coroService.markOwnerSettlementPaid(detail.id, id);
+      if (action === 'mark') await coroService.markOwnerSettlementPaid(detail.id, id, { paymentNote });
       else await coroService.confirmOwnerSettlement(detail.id, id);
       await onRefresh();
       toast.success(action === 'mark' ? 'Pago marcado como enviado.' : 'Pago confirmado.');
@@ -80,6 +81,8 @@ export function CoroSettlementsTab({ detail, onRefresh }: { detail: CoroPublicDe
         </p>
       )}
 
+      <CoroCelebrationCard detail={detail} />
+
       <div className="space-y-3">
         {detail.settlements.map((item, index) => (
           <div
@@ -99,6 +102,9 @@ export function CoroSettlementsTab({ detail, onRefresh }: { detail: CoroPublicDe
                     ? 'Marcado como enviado'
                     : 'Confirmado'}
                 </p>
+                {item.paymentNote && (
+                  <p className="mt-1 text-xs text-muted-foreground italic">&ldquo;{item.paymentNote}&rdquo;</p>
+                )}
               </div>
 
               <div className="flex flex-wrap items-center gap-2">

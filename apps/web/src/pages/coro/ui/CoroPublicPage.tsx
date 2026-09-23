@@ -4,7 +4,7 @@ import { LockKeyhole, Plus, Share2 } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import type { CoroExpense, CoroPaymentDestination, CoroPublicDetail } from '@/entities/coro';
 import { clearCoroToken, coroKeys, coroService, getCoroToken, saveCoroToken } from '@/entities/coro';
-import { CoroClaimCard, CoroExpenseDialog, CoroTabs } from '@/features/coro-public';
+import { CoroClaimCard, CoroExpenseDialog, CoroGuestHeroCard, CoroTabs } from '@/features/coro-public';
 import { ApiClientError } from '@/shared/api';
 import { formatCurrency } from '@/shared/lib';
 import { Button, LoadingScreen, toast } from '@/shared/ui';
@@ -44,10 +44,19 @@ export function CoroPublicPage() {
           <span className={`rounded-full px-3 py-1 text-xs font-bold ${detail.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-muted text-muted-foreground'}`}>{detail.status === 'ACTIVE' ? 'Activo' : <><LockKeyhole className="mr-1 inline h-3 w-3" />{detail.status === 'LOCKED' ? 'Cuadrado' : 'Archivado'}</>}</span></div>
       </header>
       {!detail.viewerParticipantId && detail.status !== 'ARCHIVED' && <div className="mt-5"><CoroClaimCard participants={detail.participants} pending={claim.isPending} onClaim={(input) => claim.mutate(input)} /></div>}
+      {detail.viewerParticipantId && (
+        <CoroGuestHeroCard
+          detail={detail}
+          onSettlement={async (id, action, input) => {
+            if (!participantToken) return;
+            update(await coroService.settlement(slug, participantToken, id, action, input));
+          }}
+        />
+      )}
       <CoroTabs detail={detail}
         onDeleteExpense={async (id) => { if (!participantToken) return; update(await coroService.removeExpense(slug, participantToken, id)); }}
         onEditExpense={(id) => { setEditing(detail.expenses.find((item) => item.id === id) ?? null); setExpenseOpen(true); }}
-        onSettlement={async (id, action) => { if (!participantToken) return; update(await coroService.settlement(slug, participantToken, id, action)); }}
+        onSettlement={async (id, action, input) => { if (!participantToken) return; update(await coroService.settlement(slug, participantToken, id, action, input)); }}
         onSavePayment={async (value: CoroPaymentDestination | null) => { if (!participantToken) return; update(await coroService.updatePayment(slug, participantToken, value)); }} />
       {mutable && <Button className="fixed bottom-5 left-1/2 h-12 -translate-x-1/2 rounded-full px-6 shadow-xl sm:bottom-8" onClick={() => { setEditing(null); setExpenseOpen(true); }}><Plus className="mr-2 h-5 w-5" />Agregar gasto</Button>}
       {detail.viewerParticipantId && expenseOpen && <CoroExpenseDialog open={expenseOpen} onOpenChange={setExpenseOpen} participants={detail.participants}

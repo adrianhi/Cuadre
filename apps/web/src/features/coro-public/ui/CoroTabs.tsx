@@ -6,25 +6,14 @@ import {
   Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
   Tabs, TabsContent, TabsList, TabsTrigger, toast,
 } from '@/shared/ui';
+import { copyPaymentDestination } from '../model/coro-payment';
 
 interface Props {
   detail: CoroPublicDetail;
   onDeleteExpense: (id: string) => Promise<void>;
   onEditExpense: (id: string) => void;
-  onSettlement: (id: string, action: 'mark-paid' | 'confirm') => Promise<void>;
+  onSettlement: (id: string, action: 'mark-paid' | 'confirm', input?: { paymentNote?: string }) => Promise<void>;
   onSavePayment: (value: CoroPaymentDestination | null) => Promise<void>;
-}
-
-async function copyPayment(destination: CoroPaymentDestination) {
-  const text = destination.kind === 'QIK'
-    ? `Qik: ${destination.phoneNumber} | ${destination.accountHolder}`
-    : `${destination.bankCode} ${destination.accountType === 'SAVINGS' ? 'Ahorros' : 'Corriente'}: ${destination.accountNumber} | ${destination.accountHolder}`;
-  if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(text);
-  else {
-    const area = document.createElement('textarea'); area.value = text; document.body.appendChild(area);
-    area.select(); document.execCommand('copy'); area.remove();
-  }
-  toast.success('Cuenta copiada al portapapeles.');
 }
 
 function PaymentEditor({ current, onSave }: { current?: CoroPaymentDestination | null; onSave: Props['onSavePayment'] }) {
@@ -72,21 +61,44 @@ export function CoroTabs({ detail, onDeleteExpense, onEditExpense, onSettlement,
     </TabsList>
     <TabsContent value="expenses" className="mt-4 space-y-3">
       {detail.expenses.length === 0 && <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">Todavía no hay gastos.</div>}
-      {detail.expenses.map((expense) => <article key={expense.id} className="flex items-center gap-3 rounded-2xl border bg-card p-4">
-        <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10 text-lg">🧾</div>
-        <div className="min-w-0 flex-1"><p className="truncate font-bold">{expense.title}</p><p className="text-xs text-muted-foreground">Pagó {expense.paidByName} · {formatRelativeDate(expense.expenseDate)} · entre {expense.splitParticipantIds.length}</p></div>
-        <p className="font-black">{formatCurrency(expense.amount, detail.currency)}</p>
-        {expense.canEdit && detail.status === 'ACTIVE' && <><Button size="icon" variant="ghost" aria-label={`Editar ${expense.title}`} onClick={() => onEditExpense(expense.id)}><Pencil className="h-4 w-4" /></Button><Button size="icon" variant="ghost" aria-label={`Eliminar ${expense.title}`} onClick={() => void onDeleteExpense(expense.id)}><Trash2 className="h-4 w-4" /></Button></>}
-      </article>)}
+      {detail.expenses.map((expense) => {
+        const payerText = expense.payers && expense.payers.length > 1
+          ? `Pagaron ${expense.payers.map((p) => `${p.participantName} (${formatCurrency(p.amount, detail.currency)})`).join(' + ')}`
+          : `Pagó ${expense.paidByName}`;
+        return (
+          <article key={expense.id} className="flex items-center gap-3 rounded-2xl border bg-card p-4">
+            <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10 text-lg">🧾</div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-bold">{expense.title}</p>
+              <p className="text-xs text-muted-foreground">{payerText} · {formatRelativeDate(expense.expenseDate)} · entre {expense.splitParticipantIds.length}</p>
+            </div>
+            <p className="font-black">{formatCurrency(expense.amount, detail.currency)}</p>
+            {expense.canEdit && detail.status === 'ACTIVE' && (
+              <>
+                <Button size="icon" variant="ghost" aria-label={`Editar ${expense.title}`} onClick={() => onEditExpense(expense.id)}><Pencil className="h-4 w-4" /></Button>
+                <Button size="icon" variant="ghost" aria-label={`Eliminar ${expense.title}`} onClick={() => void onDeleteExpense(expense.id)}><Trash2 className="h-4 w-4" /></Button>
+              </>
+            )}
+          </article>
+        );
+      })}
     </TabsContent>
     <TabsContent value="settlements" className="mt-4 space-y-3">
       {detail.status === 'ACTIVE' && <p className="rounded-xl bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-300">Vista previa: los pagos quedarán fijos cuando el anfitrión cierre el coro.</p>}
       {detail.settlements.length === 0 && <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">Todo está cuadrado.</div>}
+      {detail.settlements.length > 0 && detail.settlements.every((s) => s.status === 'CONFIRMED') && (
+        <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-center">
+          <p className="text-xl">🎉🥂</p>
+          <p className="font-bold text-emerald-700 dark:text-emerald-300">¡Todas las transferencias confirmadas!</p>
+          <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">El coro está 100% saldado. Nadie le debe a nadie.</p>
+        </div>
+      )}
       {detail.settlements.map((item, index) => <article key={item.id ?? `${item.fromId}-${item.toId}-${index}`} className="rounded-2xl border bg-card p-4">
         <p><strong>{item.fromName}</strong> le paga a <strong>{item.toName}</strong></p>
         <p className="mt-1 text-2xl font-black text-primary">{formatCurrency(item.amount, detail.currency)}</p>
+        {item.paymentNote && <p className="mt-1 text-xs text-muted-foreground italic">&ldquo;{item.paymentNote}&rdquo;</p>}
         <div className="mt-3 flex flex-wrap gap-2">
-          {item.toPaymentDestination && <Button size="sm" variant="outline" onClick={() => void copyPayment(item.toPaymentDestination!)}><Copy className="mr-2 h-4 w-4" />Copiar cuenta</Button>}
+          {item.toPaymentDestination && <Button size="sm" variant="outline" onClick={() => void copyPaymentDestination(item.toPaymentDestination!)}><Copy className="mr-2 h-4 w-4" />Copiar cuenta</Button>}
           {item.id && item.canMarkPaid && <Button size="sm" onClick={() => void onSettlement(item.id!, 'mark-paid')}><Check className="mr-2 h-4 w-4" />Marcar enviado</Button>}
           {item.id && item.canConfirm && <Button size="sm" onClick={() => void onSettlement(item.id!, 'confirm')}>Confirmar recibido</Button>}
           {item.status === 'CONFIRMED' && <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-600">Pagado</span>}

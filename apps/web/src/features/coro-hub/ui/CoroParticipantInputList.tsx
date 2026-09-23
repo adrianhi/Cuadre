@@ -1,6 +1,7 @@
 import React, { useId, useMemo, useRef, useState } from 'react';
-import { Plus, Search, Users, X } from 'lucide-react';
+import { ClipboardList, Plus, Search, Users, X } from 'lucide-react';
 import { Button, Input, toast } from '@/shared/ui';
+import { CoroWhatsAppImportDialog } from './CoroWhatsAppImportDialog';
 
 interface CoroParticipantInputListProps {
   participants: string[];
@@ -34,6 +35,7 @@ export function CoroParticipantInputList({
 }: CoroParticipantInputListProps) {
   const [inputValue, setInputValue] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [importOpen, setImportOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const searchInputId = useId();
 
@@ -41,15 +43,8 @@ export function CoroParticipantInputList({
     const trimmed = inputValue.trim();
     if (!trimmed) return;
 
-    const exists = participants.some(
-      (p) => p.localeCompare(trimmed, undefined, { sensitivity: 'accent' }) === 0
-    );
-
-    if (exists) {
-      toast.error(`"${trimmed}" ya está en la lista.`);
-      return;
-    }
-
+    const exists = participants.some((p) => p.localeCompare(trimmed, undefined, { sensitivity: 'accent' }) === 0);
+    if (exists) { toast.error(`"${trimmed}" ya está en la lista.`); return; }
     onChange([...participants, trimmed]);
     setInputValue('');
     inputRef.current?.focus();
@@ -80,9 +75,21 @@ export function CoroParticipantInputList({
     <div className="space-y-3">
       {/* Input row: Type name and press Enter */}
       <div>
-        <label className="mb-1 block text-xs font-semibold text-foreground">
-          Añadir personas al coro
-        </label>
+        <div className="mb-1 flex items-center justify-between gap-2">
+          <label className="text-xs font-semibold text-foreground">
+            Añadir personas al coro
+          </label>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setImportOpen(true)}
+            className="h-6 gap-1 px-2 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 hover:bg-emerald-500/10 rounded-lg"
+          >
+            <ClipboardList className="h-3 w-3" />
+            <span>Pegar de WhatsApp</span>
+          </Button>
+        </div>
         <div className="flex gap-2">
           <div className="relative flex-1">
             <Input
@@ -222,6 +229,11 @@ export function CoroParticipantInputList({
           </div>
         )}
       </div>
+
+      <CoroWhatsAppImportDialog
+        open={importOpen} onOpenChange={setImportOpen} existingNames={participants}
+        onImport={(newNames) => onChange([...participants, ...newNames])}
+      />
     </div>
   );
 }

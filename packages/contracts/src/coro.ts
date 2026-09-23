@@ -36,6 +36,12 @@ export const coroParticipantSchema = z.object({
   netBalance: z.number(),
 });
 
+export const coroExpensePayerSchema = z.object({
+  participantId: z.string().uuid(),
+  participantName: z.string(),
+  amount: moneySchema,
+});
+
 export const coroExpenseSchema = z.object({
   id: z.string().uuid(),
   paidById: z.string().uuid(),
@@ -50,6 +56,7 @@ export const coroExpenseSchema = z.object({
   splitParticipantIds: z.array(z.string().uuid()),
   transactionId: z.string().nullable(),
   canEdit: z.boolean(),
+  payers: z.array(coroExpensePayerSchema).default([]),
 });
 
 export const coroTransferSuggestionSchema = z.object({
@@ -63,6 +70,7 @@ export const coroTransferSuggestionSchema = z.object({
   toPaymentDestination: coroPaymentDestinationSchema.nullable().optional(),
   canMarkPaid: z.boolean(),
   canConfirm: z.boolean(),
+  paymentNote: z.string().nullable().optional(),
 });
 
 export const coroPublicDetailSchema = z.object({
@@ -123,10 +131,16 @@ export const updateCoroParticipantInputSchema = z.object({
   name: z.string().trim().min(1).max(80),
 });
 
-export const createCoroExpenseInputSchema = z.object({
+export const coroExpensePayerInputSchema = z.object({
+  participantId: z.string().uuid(),
+  amount: moneySchema,
+});
+
+const baseExpenseFields = z.object({
   title: z.string().trim().min(2).max(120),
   amount: moneySchema,
-  paidById: z.string().uuid(),
+  paidById: z.string().uuid().optional(),
+  payers: z.array(coroExpensePayerInputSchema).min(1).optional(),
   category: z.string().trim().min(1).max(60).default('Varios'),
   expenseDate: z.string().datetime(),
   notes: z.string().trim().max(500).nullable().optional(),
@@ -134,7 +148,12 @@ export const createCoroExpenseInputSchema = z.object({
   allowPossibleDuplicate: z.boolean().default(false),
 });
 
-export const updateCoroExpenseInputSchema = createCoroExpenseInputSchema
+export const createCoroExpenseInputSchema = baseExpenseFields.refine(
+  (data) => Boolean(data.paidById) || Boolean(data.payers && data.payers.length > 0),
+  { message: 'Debes indicar quién pagó el gasto', path: ['paidById'] }
+);
+
+export const updateCoroExpenseInputSchema = baseExpenseFields
   .omit({ allowPossibleDuplicate: true })
   .partial()
   .extend({ allowPossibleDuplicate: z.boolean().default(false) })
@@ -144,10 +163,15 @@ export const updateCoroPaymentInputSchema = z.object({
   paymentDestination: coroPaymentDestinationSchema.nullable(),
 });
 
+export const markCoroSettlementPaidInputSchema = z.object({
+  paymentNote: z.string().trim().max(140).nullable().optional(),
+});
+
 export const linkCoroTransactionInputSchema = z.object({
   transactionId: z.string().min(1),
   splitParticipantIds: z.array(z.string().uuid()).min(1).max(50),
   allowPossibleDuplicate: z.boolean().default(false),
+  customAmount: moneySchema.optional(),
 });
 
 export type CoroStatus = z.infer<typeof coroStatusSchema>;
@@ -155,6 +179,8 @@ export type CoroSettlementStatus = z.infer<typeof coroSettlementStatusSchema>;
 export type CoroPaymentDestination = z.infer<typeof coroPaymentDestinationSchema>;
 export type CoroParticipant = z.infer<typeof coroParticipantSchema>;
 export type CoroExpense = z.infer<typeof coroExpenseSchema>;
+export type CoroExpensePayer = z.infer<typeof coroExpensePayerSchema>;
+export type CoroExpensePayerInput = z.infer<typeof coroExpensePayerInputSchema>;
 export type CoroTransferSuggestion = z.infer<typeof coroTransferSuggestionSchema>;
 export type CoroPublicDetail = z.infer<typeof coroPublicDetailSchema>;
 export type CoroGroupSummary = z.infer<typeof coroGroupSummarySchema>;
@@ -167,3 +193,4 @@ export type UpdateCoroParticipantInput = z.infer<typeof updateCoroParticipantInp
 export type CreateCoroExpenseInput = z.infer<typeof createCoroExpenseInputSchema>;
 export type UpdateCoroExpenseInput = z.infer<typeof updateCoroExpenseInputSchema>;
 export type LinkCoroTransactionInput = z.infer<typeof linkCoroTransactionInputSchema>;
+export type MarkCoroSettlementPaidInput = z.infer<typeof markCoroSettlementPaidInputSchema>;

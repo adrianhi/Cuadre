@@ -1,10 +1,10 @@
 import type { CoroExpense, CoroParticipant } from '@/entities/coro';
 import { CategoryPicker } from '@/entities/category';
 import { formatCurrency } from '@/shared/lib';
+import { CoroMultiPayerSection } from '@/entities/coro';
 import {
   Button, CurrencyAmountInput, DateTimePickerField, Dialog, DialogContent, DialogDescription,
-  DialogFooter, DialogHeader, DialogTitle, Input, Select, SelectContent, SelectItem,
-  SelectTrigger, SelectValue,
+  DialogFooter, DialogHeader, DialogTitle, Input,
 } from '@/shared/ui';
 import { useCoroExpenseEditForm } from '../model/useCoroExpenseEditForm';
 import { CoroConfirmDialog } from './CoroConfirmDialog';
@@ -30,7 +30,8 @@ export function CoroEditExpenseDialog({
 }: CoroEditExpenseDialogProps) {
   const {
     title, setTitle, amount, setAmount, category, setCategory,
-    paidById, setPaidById, expenseDate, setExpenseDate, notes, setNotes,
+    paidById, setPaidById, isMultiPayer, setIsMultiPayer, payers, setPayers,
+    expenseDate, setExpenseDate, notes, setNotes,
     splitIds, toggleSplit, selectAllSplits, duplicates, setDuplicates,
     saving, error, perPerson, submit,
   } = useCoroExpenseEditForm({
@@ -98,30 +99,22 @@ export function CoroEditExpenseDialog({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-foreground">
-                  Quién pagó <span className="text-primary">*</span>
-                </label>
-                <Select value={paidById} onValueChange={setPaidById}>
-                  <SelectTrigger className="w-full text-xs sm:text-sm h-9">
-                    <SelectValue placeholder="Selecciona pagador" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {participants.map((p) => (
-                      <SelectItem key={p.id} value={p.id} className="text-xs sm:text-sm">
-                        {p.name} {p.isOwner ? '(Anfitrión)' : ''}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-foreground">Fecha del gasto</label>
-                <DateTimePickerField value={expenseDate} onChange={setExpenseDate} />
-              </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-foreground">Fecha del gasto</label>
+              <DateTimePickerField value={expenseDate} onChange={setExpenseDate} />
             </div>
+
+            <CoroMultiPayerSection
+              participants={participants}
+              currency={currency}
+              totalAmount={Number(amount) || 0}
+              singlePaidById={paidById}
+              onSinglePaidByIdChange={setPaidById}
+              isMultiPayer={isMultiPayer}
+              onIsMultiPayerChange={setIsMultiPayer}
+              payers={payers}
+              onPayersChange={setPayers}
+            />
 
             <div className="space-y-2 rounded-xl border border-border/60 bg-muted/20 p-3">
               <div className="flex items-center justify-between">

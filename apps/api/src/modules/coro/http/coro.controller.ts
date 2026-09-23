@@ -66,7 +66,8 @@ export class CoroController {
   confirmOwner = async (req: Request, res: Response) => data(res,
     await this.service.confirmOwner(requestContext(req).actor, String(req.params.id), String(req.params.settlementId)));
   markPaidOwner = async (req: Request, res: Response) => data(res,
-    await this.service.markPaidOwner(requestContext(req).actor, String(req.params.id), String(req.params.settlementId)));
+    await this.service.markPaidOwner(requestContext(req).actor, String(req.params.id), String(req.params.settlementId),
+      typeof req.body?.paymentNote === 'string' ? req.body.paymentNote : undefined));
   publicDetail = async (req: Request, res: Response) => data(res,
     await this.service.publicDetail(String(req.params.slug), typeof req.headers['x-coro-participant-token'] === 'string'
       ? req.headers['x-coro-participant-token'] : undefined));
@@ -83,7 +84,8 @@ export class CoroController {
   removeExpense = async (req: Request, res: Response) => data(res,
     await this.service.removeExpense(String(req.params.slug), token(req), String(req.params.expenseId)));
   markPaid = async (req: Request, res: Response) => data(res,
-    await this.service.markPaid(String(req.params.slug), token(req), String(req.params.settlementId)));
+    await this.service.markPaid(String(req.params.slug), token(req), String(req.params.settlementId),
+      typeof req.body?.paymentNote === 'string' ? req.body.paymentNote : undefined));
   confirm = async (req: Request, res: Response) => data(res,
     await this.service.confirm(String(req.params.slug), token(req), String(req.params.settlementId)));
 }
