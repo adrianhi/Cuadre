@@ -8,17 +8,20 @@ import {
   Play,
   Trash2,
   Unlink2,
-} from 'lucide-react';
-import type { RecurringBillDto } from '@/entities/recurring-bill';
-import { formatCurrency } from '@/shared/lib';
-import { Button } from '@/shared/ui';
-import { CADENCE_LABELS, getServiceIcon } from '../lib/recurring-display';
+} from "lucide-react";
+import type { RecurringBillDto } from "@/entities/recurring-bill";
+import { formatCurrency } from "@/shared/lib";
+import { Button } from "@/shared/ui";
+import { CADENCE_LABELS, getServiceIcon } from "../lib/recurring-display";
 
 interface RecurringBillRowProps {
   bill: RecurringBillDto;
   hideBalances: boolean;
   onEdit: (bill: RecurringBillDto) => void;
-  onStatus: (bill: RecurringBillDto, status: 'CONFIRMED' | 'PAUSED' | 'DISMISSED') => void;
+  onStatus: (
+    bill: RecurringBillDto,
+    status: "CONFIRMED" | "PAUSED" | "DISMISSED",
+  ) => void;
   onAcknowledgeAlert: (alertId: string) => void;
   onLink?: (bill: RecurringBillDto) => void;
   onUnlink?: (bill: RecurringBillDto) => void;
@@ -26,7 +29,6 @@ interface RecurringBillRowProps {
   isUnlinking?: boolean;
   isDeleting?: boolean;
 }
-
 
 export function RecurringBillRow({
   bill,
@@ -40,9 +42,9 @@ export function RecurringBillRow({
   isUnlinking = false,
   isDeleting = false,
 }: RecurringBillRowProps) {
-  const isPaid = bill.monthStatus === 'PAID';
-  const isOverdue = bill.monthStatus === 'OVERDUE';
-  const isPaused = bill.status === 'PAUSED';
+  const isPaid = bill.monthStatus === "PAID";
+  const isOverdue = bill.monthStatus === "OVERDUE";
+  const isPaused = bill.status === "PAUSED";
   const isBusy = isUnlinking || isDeleting;
 
   return (
@@ -75,20 +77,26 @@ export function RecurringBillRow({
               ) : (
                 <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300">
                   <Clock className="h-3 w-3" />
-                  {bill.daysRemaining === 0 ? 'Hoy' : `En ${bill.daysRemaining} días`}
+                  {bill.daysRemaining === 0
+                    ? "Hoy"
+                    : `En ${bill.daysRemaining} días`}
                 </span>
               )}
             </div>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              {CADENCE_LABELS[bill.cadence]} · Próximo cobro: {bill.nextExpectedDate}
+              {CADENCE_LABELS[bill.cadence]} · Próximo cobro:{" "}
+              {bill.nextExpectedDate}
               {isPaid && bill.lastPaidAmount && (
                 <span className="text-emerald-600 dark:text-emerald-400">
-                  {' '}· Cobrado: {formatCurrency(bill.lastPaidAmount, bill.currency)}
+                  {" "}
+                  · Cobrado:{" "}
+                  {formatCurrency(bill.lastPaidAmount, bill.currency)}
                 </span>
               )}
               {isPaid && bill.linkedTransactionName && (
                 <span className="text-muted-foreground">
-                  {' '}· Pagado con: {bill.linkedTransactionName}
+                  {" "}
+                  · Pagado con: {bill.linkedTransactionName}
                 </span>
               )}
             </p>
@@ -99,11 +107,11 @@ export function RecurringBillRow({
         <div className="flex items-center justify-between gap-4 sm:justify-end">
           <div className="text-left sm:text-right">
             <p className="text-base font-black text-foreground sm:text-lg">
-              {hideBalances ? '••••••' : formatCurrency(bill.expectedAmount, bill.currency)}
+              {hideBalances
+                ? "••••••"
+                : formatCurrency(bill.expectedAmount, bill.currency)}
             </p>
-            <p className="text-[10px] text-muted-foreground">
-              monto estimado
-            </p>
+            <p className="text-[10px] text-muted-foreground">monto estimado</p>
           </div>
 
           <div className="flex items-center gap-1">
@@ -153,7 +161,7 @@ export function RecurringBillRow({
                 variant="ghost"
                 size="sm"
                 disabled={isBusy}
-                onClick={() => onStatus(bill, 'CONFIRMED')}
+                onClick={() => onStatus(bill, "CONFIRMED")}
                 className="h-8 rounded-lg px-2 text-xs font-semibold text-emerald-600 hover:text-emerald-700"
               >
                 <Play className="mr-1 h-3 w-3" />
@@ -164,7 +172,7 @@ export function RecurringBillRow({
                 variant="ghost"
                 size="sm"
                 disabled={isBusy}
-                onClick={() => onStatus(bill, 'PAUSED')}
+                onClick={() => onStatus(bill, "PAUSED")}
                 className="h-8 rounded-lg px-2 text-xs text-muted-foreground hover:text-foreground"
               >
                 Pausar
@@ -191,7 +199,6 @@ export function RecurringBillRow({
         </div>
       </div>
 
-
       {/* Alerts (Price hike or missing) */}
       {bill.alerts.map((alert) => (
         <div
@@ -201,11 +208,13 @@ export function RecurringBillRow({
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
             <span>
-              {alert.kind === 'PRICE_HIKE'
+              {alert.kind === "PRICE_HIKE"
                 ? `Variación detectada: Este cobro subió a ${
-                    alert.observedAmount ? formatCurrency(alert.observedAmount, bill.currency) : 'un monto mayor'
+                    alert.observedAmount
+                      ? formatCurrency(alert.observedAmount, bill.currency)
+                      : "un monto mayor"
                   }.`
-                : 'No vimos este cobro en la fecha esperada.'}
+                : "No vimos este cobro en la fecha esperada."}
             </span>
           </div>
           <button

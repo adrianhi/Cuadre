@@ -1,9 +1,9 @@
-import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Link2, Loader2, Search } from 'lucide-react';
-import type { RecurringBillDto } from '@/entities/recurring-bill';
-import { transactionKeys, transactionService } from '@/entities/transaction';
-import { formatCurrency, formatDate } from '@/shared/lib';
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Link2, Loader2, Search } from "lucide-react";
+import type { RecurringBillDto } from "@/entities/recurring-bill";
+import { transactionKeys, transactionService } from "@/entities/transaction";
+import { formatCurrency, formatDate } from "@/shared/lib";
 import {
   Button,
   Dialog,
@@ -12,13 +12,16 @@ import {
   DialogHeader,
   DialogTitle,
   Input,
-} from '@/shared/ui';
+} from "@/shared/ui";
 
 export interface LinkRecurringTransactionDialogProps {
   bill: RecurringBillDto | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onLink: (recurringBillId: string, transactionId: string) => Promise<void> | void;
+  onLink: (
+    recurringBillId: string,
+    transactionId: string,
+  ) => Promise<void> | void;
   linking?: boolean;
 }
 
@@ -29,22 +32,26 @@ export function LinkRecurringTransactionDialog({
   onLink,
   linking = false,
 }: LinkRecurringTransactionDialogProps) {
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [linkingTxId, setLinkingTxId] = useState<string | null>(null);
   const currentMonthPrefix = new Date().toISOString().slice(0, 7);
-  const currency = bill?.currency ?? 'DOP';
+  const currency = bill?.currency ?? "DOP";
   const isBusy = linking || Boolean(linkingTxId);
 
-  const filters = useMemo(() => ({
-    page: 1,
-    limit: 50,
-    currency,
-    month: currentMonthPrefix,
-  }), [currency, currentMonthPrefix]);
+  const filters = useMemo(
+    () => ({
+      page: 1,
+      limit: 50,
+      currency,
+      month: currentMonthPrefix,
+    }),
+    [currency, currentMonthPrefix],
+  );
 
   const query = useQuery({
     queryKey: transactionKeys.list(filters),
-    queryFn: ({ signal }) => transactionService.listTransactions(filters, signal),
+    queryFn: ({ signal }) =>
+      transactionService.listTransactions(filters, signal),
     enabled: open && Boolean(bill),
   });
 
@@ -53,10 +60,14 @@ export function LinkRecurringTransactionDialog({
     if (!search.trim()) return list;
     const term = search.toLowerCase().trim();
     return list.filter((tx) => {
-      const merchant = (tx.merchant || tx.rawMerchant || '').toLowerCase();
-      const notes = (tx.notes || '').toLowerCase();
-      const category = (tx.category || '').toLowerCase();
-      return merchant.includes(term) || notes.includes(term) || category.includes(term);
+      const merchant = (tx.merchant || tx.rawMerchant || "").toLowerCase();
+      const notes = (tx.notes || "").toLowerCase();
+      const category = (tx.category || "").toLowerCase();
+      return (
+        merchant.includes(term) ||
+        notes.includes(term) ||
+        category.includes(term)
+      );
     });
   }, [query.data?.data, search]);
 
@@ -71,14 +82,19 @@ export function LinkRecurringTransactionDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(val) => { if (!isBusy) onOpenChange(val); }}>
-      <DialogContent className="sm:max-w-xl overflow-hidden">
+    <Dialog
+      open={open}
+      onOpenChange={(val) => {
+        if (!isBusy) onOpenChange(val);
+      }}
+    >
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>Vincular movimiento</DialogTitle>
           <DialogDescription>
             {bill
               ? `Asocia un movimiento de tu cuenta a ${bill.displayName} para marcarlo como pagado este mes.`
-              : 'Asocia un movimiento a tu cobro recurrente.'}
+              : "Asocia un movimiento a tu cobro recurrente."}
           </DialogDescription>
         </DialogHeader>
 
@@ -101,7 +117,9 @@ export function LinkRecurringTransactionDialog({
             </div>
           ) : query.isError ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
-              <p className="text-sm font-semibold text-destructive">Error al cargar movimientos</p>
+              <p className="text-sm font-semibold text-destructive">
+                Error al cargar movimientos
+              </p>
               <Button
                 variant="outline"
                 size="sm"
@@ -113,11 +131,13 @@ export function LinkRecurringTransactionDialog({
             </div>
           ) : transactions.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-8 text-center text-muted-foreground">
-              <p className="text-sm font-medium">No se encontraron movimientos</p>
+              <p className="text-sm font-medium">
+                No se encontraron movimientos
+              </p>
               <p className="mt-1 text-xs">
                 {search
-                  ? 'Intenta con otro término de búsqueda.'
-                  : 'No hay movimientos registrados para este período.'}
+                  ? "Intenta con otro término de búsqueda."
+                  : "No hay movimientos registrados para este período."}
               </p>
             </div>
           ) : (
@@ -125,21 +145,23 @@ export function LinkRecurringTransactionDialog({
               {transactions.map((tx) => (
                 <div
                   key={tx.id}
-                  className="flex w-full min-w-0 items-center justify-between gap-3 overflow-hidden rounded-xl border border-border/50 bg-card p-3 transition-colors hover:bg-muted/40"
+                  className="flex flex-col gap-2 rounded-xl border border-border/50 bg-card p-3 transition-colors hover:bg-muted/40 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
                 >
-                  <div className="min-w-0 flex-1 overflow-hidden">
-                    <div className="flex min-w-0 items-center gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
                       <p className="truncate text-sm font-semibold text-foreground">
                         {tx.merchant || tx.rawMerchant}
                       </p>
                       {tx.category && (
-                        <span className="inline-flex shrink-0 items-center rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                        <span className="shrink-0 rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
                           {tx.category}
                         </span>
                       )}
                     </div>
-                    <div className="mt-0.5 flex min-w-0 items-center gap-2 truncate text-xs text-muted-foreground">
-                      <span className="shrink-0">{formatDate(tx.transactionDate)}</span>
+                    <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
+                      <span className="shrink-0">
+                        {formatDate(tx.transactionDate)}
+                      </span>
                       {tx.notes && (
                         <span className="truncate" title={tx.notes}>
                           · {tx.notes}
@@ -147,7 +169,7 @@ export function LinkRecurringTransactionDialog({
                       )}
                     </div>
                   </div>
-                  <div className="flex shrink-0 items-center gap-3">
+                  <div className="flex shrink-0 items-center justify-between gap-3 border-t border-border/40 pt-2 sm:border-t-0 sm:pt-0 sm:justify-end">
                     <span className="whitespace-nowrap text-sm font-bold tabular-nums text-foreground">
                       {formatCurrency(tx.amount, tx.currency)}
                     </span>

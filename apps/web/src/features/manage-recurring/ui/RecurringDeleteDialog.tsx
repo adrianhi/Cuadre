@@ -1,5 +1,5 @@
-import { Loader2 } from 'lucide-react';
-import type { RecurringBillDto } from '@/entities/recurring-bill';
+import { Loader2 } from "lucide-react";
+import type { RecurringBillDto } from "@/entities/recurring-bill";
 import {
   Button,
   Dialog,
@@ -8,7 +8,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/shared/ui';
+} from "@/shared/ui";
 
 export interface RecurringDeleteDialogProps {
   bill: RecurringBillDto | null;
@@ -28,12 +28,19 @@ export function RecurringDeleteDialog({
   if (!bill) return null;
 
   return (
-    <Dialog open={open} onOpenChange={(val) => { if (!deleting) onOpenChange(val); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(val) => {
+        if (!deleting) onOpenChange(val);
+      }}
+    >
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>¿Eliminar gasto fijo?</DialogTitle>
           <DialogDescription>
-            ¿Estás seguro de que deseas eliminar &ldquo;{bill.displayName}&rdquo;? Dejará de proyectarse en tu presupuesto y sus ocurrencias vinculadas se eliminarán.
+            ¿Estás seguro de que deseas eliminar &ldquo;{bill.displayName}
+            &rdquo;? Dejará de proyectarse en tu presupuesto y sus ocurrencias
+            vinculadas se eliminarán.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2 sm:gap-0">

@@ -1,8 +1,11 @@
-import type { RecurringBillDto, RecurringRadarDto } from '@/entities/recurring-bill';
-import { Card, CardContent } from '@/shared/ui';
-import { RecurringBurdenKpiCard } from './RecurringBurdenKpiCard';
-import { RecurringSuggestionsCard } from './RecurringSuggestionsCard';
-import { RecurringTimelineList } from './RecurringTimelineList';
+import type {
+  RecurringBillDto,
+  RecurringRadarDto,
+} from "@/entities/recurring-bill";
+import { Card, CardContent } from "@/shared/ui";
+import { RecurringBurdenKpiCard } from "./RecurringBurdenKpiCard";
+import { RecurringSuggestionsCard } from "./RecurringSuggestionsCard";
+import { RecurringTimelineList } from "./RecurringTimelineList";
 
 interface RecurringExpensesHubProps {
   radar: RecurringRadarDto | null;
@@ -12,7 +15,10 @@ interface RecurringExpensesHubProps {
   onOpenAddModal: () => void;
   onOpenIncomeModal: () => void;
   onEdit: (bill: RecurringBillDto) => void;
-  onStatus: (bill: RecurringBillDto, status: 'CONFIRMED' | 'PAUSED' | 'DISMISSED') => void;
+  onStatus: (
+    bill: RecurringBillDto,
+    status: "CONFIRMED" | "PAUSED" | "DISMISSED",
+  ) => void;
   onAcknowledgeAlert: (alertId: string) => void;
   onLink?: (bill: RecurringBillDto) => void;
   onUnlink?: (bill: RecurringBillDto) => void;
@@ -37,7 +43,6 @@ export function RecurringExpensesHub({
   unlinkingBillId,
   deletingBillId,
 }: RecurringExpensesHubProps) {
-
   if (loading) {
     return (
       <div className="space-y-4">
@@ -51,14 +56,19 @@ export function RecurringExpensesHub({
     return (
       <Card>
         <CardContent className="p-8 text-center text-sm text-muted-foreground">
-          No pudimos consultar tus gastos recurrentes. Intenta recargar la página.
+          No pudimos consultar tus gastos recurrentes. Intenta recargar la
+          página.
         </CardContent>
       </Card>
     );
   }
 
-  const allConfirmedAndPaused = [...(radar.allConfirmed || radar.upcoming), ...(radar.paused || [])]
-    .filter((bill, index, array) => array.findIndex((b) => b.id === bill.id) === index);
+  const allConfirmedAndPaused = [
+    ...(radar.allConfirmed || radar.upcoming),
+    ...(radar.paused || []),
+  ].filter(
+    (bill, index, array) => array.findIndex((b) => b.id === bill.id) === index,
+  );
 
   return (
     <div className="space-y-5">
@@ -75,8 +85,8 @@ export function RecurringExpensesHub({
       <RecurringSuggestionsCard
         suggestions={radar.suggestions || []}
         hideBalances={hideBalances}
-        onConfirm={(bill) => onStatus(bill, 'CONFIRMED')}
-        onDismiss={(bill) => onStatus(bill, 'DISMISSED')}
+        onConfirm={(bill) => onStatus(bill, "CONFIRMED")}
+        onDismiss={(bill) => onStatus(bill, "DISMISSED")}
       />
 
       {/* Timeline List of Recurring Bills */}

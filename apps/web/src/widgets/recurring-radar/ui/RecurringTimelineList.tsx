@@ -1,14 +1,17 @@
-import { useState } from 'react';
-import { Calendar } from 'lucide-react';
-import type { RecurringBillDto } from '@/entities/recurring-bill';
-import { Card, CardContent } from '@/shared/ui';
-import { RecurringBillRow } from './RecurringBillRow';
+import { useState } from "react";
+import { Calendar } from "lucide-react";
+import type { RecurringBillDto } from "@/entities/recurring-bill";
+import { Card, CardContent } from "@/shared/ui";
+import { RecurringBillRow } from "./RecurringBillRow";
 
 interface RecurringTimelineListProps {
   bills: RecurringBillDto[];
   hideBalances: boolean;
   onEdit: (bill: RecurringBillDto) => void;
-  onStatus: (bill: RecurringBillDto, status: 'CONFIRMED' | 'PAUSED' | 'DISMISSED') => void;
+  onStatus: (
+    bill: RecurringBillDto,
+    status: "CONFIRMED" | "PAUSED" | "DISMISSED",
+  ) => void;
   onAcknowledgeAlert: (alertId: string) => void;
   onLink?: (bill: RecurringBillDto) => void;
   onUnlink?: (bill: RecurringBillDto) => void;
@@ -29,15 +32,16 @@ export function RecurringTimelineList({
   unlinkingBillId,
   deletingBillId,
 }: RecurringTimelineListProps) {
-
-
-  const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'PAID' | 'PAUSED'>('ALL');
+  const [filter, setFilter] = useState<"ALL" | "PENDING" | "PAID" | "PAUSED">(
+    "ALL",
+  );
 
   const filteredBills = bills.filter((b) => {
-    if (filter === 'PAUSED') return b.status === 'PAUSED';
-    if (b.status === 'PAUSED') return false;
-    if (filter === 'PAID') return b.monthStatus === 'PAID';
-    if (filter === 'PENDING') return b.monthStatus === 'UPCOMING' || b.monthStatus === 'OVERDUE';
+    if (filter === "PAUSED") return b.status === "PAUSED";
+    if (b.status === "PAUSED") return false;
+    if (filter === "PAID") return b.monthStatus === "PAID";
+    if (filter === "PENDING")
+      return b.monthStatus === "UPCOMING" || b.monthStatus === "OVERDUE";
     return true;
   });
 
@@ -58,48 +62,54 @@ export function RecurringTimelineList({
           <div className="flex flex-wrap gap-1 rounded-xl bg-muted/60 p-1">
             <button
               type="button"
-              onClick={() => setFilter('ALL')}
+              onClick={() => setFilter("ALL")}
               className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
-                filter === 'ALL'
-                  ? 'bg-background text-foreground shadow-xs'
-                  : 'text-muted-foreground hover:text-foreground'
+                filter === "ALL"
+                  ? "bg-background text-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              Todos ({bills.filter((b) => b.status !== 'PAUSED').length})
+              Todos ({bills.filter((b) => b.status !== "PAUSED").length})
             </button>
             <button
               type="button"
-              onClick={() => setFilter('PENDING')}
+              onClick={() => setFilter("PENDING")}
               className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
-                filter === 'PENDING'
-                  ? 'bg-background text-foreground shadow-xs'
-                  : 'text-muted-foreground hover:text-foreground'
+                filter === "PENDING"
+                  ? "bg-background text-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              Pendientes ({bills.filter((b) => b.status !== 'PAUSED' && b.monthStatus !== 'PAID').length})
+              Pendientes (
+              {
+                bills.filter(
+                  (b) => b.status !== "PAUSED" && b.monthStatus !== "PAID",
+                ).length
+              }
+              )
             </button>
             <button
               type="button"
-              onClick={() => setFilter('PAID')}
+              onClick={() => setFilter("PAID")}
               className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
-                filter === 'PAID'
-                  ? 'bg-background text-foreground shadow-xs'
-                  : 'text-muted-foreground hover:text-foreground'
+                filter === "PAID"
+                  ? "bg-background text-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              Pagados ({bills.filter((b) => b.monthStatus === 'PAID').length})
+              Pagados ({bills.filter((b) => b.monthStatus === "PAID").length})
             </button>
-            {bills.some((b) => b.status === 'PAUSED') && (
+            {bills.some((b) => b.status === "PAUSED") && (
               <button
                 type="button"
-                onClick={() => setFilter('PAUSED')}
+                onClick={() => setFilter("PAUSED")}
                 className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
-                  filter === 'PAUSED'
-                    ? 'bg-background text-foreground shadow-xs'
-                    : 'text-muted-foreground hover:text-foreground'
+                  filter === "PAUSED"
+                    ? "bg-background text-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                Pausados ({bills.filter((b) => b.status === 'PAUSED').length})
+                Pausados ({bills.filter((b) => b.status === "PAUSED").length})
               </button>
             )}
           </div>
@@ -113,11 +123,11 @@ export function RecurringTimelineList({
               No hay cobros en este filtro
             </p>
             <p className="text-xs text-muted-foreground/80">
-              {filter === 'PAID'
-                ? 'Aún no hemos detectado cobros pagados este mes.'
-                : filter === 'PENDING'
-                ? '¡Excelente! No tienes cobros pendientes este mes.'
-                : 'Registra tus cobros fijos para llevar un control automático.'}
+              {filter === "PAID"
+                ? "Aún no hemos detectado cobros pagados este mes."
+                : filter === "PENDING"
+                  ? "¡Excelente! No tienes cobros pendientes este mes."
+                  : "Registra tus cobros fijos para llevar un control automático."}
             </p>
           </div>
         ) : (

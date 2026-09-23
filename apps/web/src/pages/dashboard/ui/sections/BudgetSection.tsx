@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Layers, Lightbulb, Repeat } from 'lucide-react';
+import { Layers, Repeat } from 'lucide-react';
 import { currentBudgetMonth, useBudgetSummary } from '@/entities/budget';
 import { useRecurringRadar, type RecurringBillDto } from '@/entities/recurring-bill';
 import { BudgetManagerDialog } from '@/features/budget-manager';
@@ -12,13 +12,13 @@ import {
   useManageRecurring,
 } from '@/features/manage-recurring';
 import { IncomeStreamsSettingsModal } from '@/features/income-streams';
-import { BudgetOverviewCard, BudgetProgressList } from '@/widgets/budget-overview';
 import { RecurringExpensesHub } from '@/widgets/recurring-radar';
-import { formatCurrency } from '@/shared/lib';
-import { AsyncErrorState, Card, CardContent, LoadingScreen, toast } from '@/shared/ui';
+import { LoadingScreen, toast } from '@/shared/ui';
 import type { PeriodSelection } from '@/entities/period';
+import { BudgetCategoriesTab } from './BudgetCategoriesTab';
 
-const getMonthFromSelection = (s?: PeriodSelection) => s?.month || s?.startDate?.slice(0, 7) || currentBudgetMonth();
+const getMonthFromSelection = (s?: PeriodSelection) =>
+  s?.month || s?.startDate?.slice(0, 7) || currentBudgetMonth();
 
 export function BudgetSection(props: {
   periodToolbar: ReactNode;
@@ -88,7 +88,6 @@ export function BudgetSection(props: {
     }
   };
 
-
   if (query.isLoading && !summary && currentTab === 'categories') {
     return <LoadingScreen message="Cargando presupuesto…" description="Calculando tus límites y consumos del mes." fullPage />;
   }
@@ -113,13 +112,15 @@ export function BudgetSection(props: {
         {props.periodToolbar}
       </div>
 
-      {/* Primary Tab Switcher */}
+      {/* Tab Switcher */}
       <div className="flex gap-2 border-b border-border/70 pb-1">
         <button
           type="button"
           onClick={() => setTab('categories')}
           className={`flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-bold transition-all ${
-            currentTab === 'categories' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'
+            currentTab === 'categories'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
           <Layers className="h-4 w-4" />
@@ -129,7 +130,9 @@ export function BudgetSection(props: {
           type="button"
           onClick={() => setTab('recurring')}
           className={`flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-bold transition-all ${
-            currentTab === 'recurring' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'
+            currentTab === 'recurring'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
           <Repeat className="h-4 w-4" />
@@ -142,48 +145,18 @@ export function BudgetSection(props: {
         </button>
       </div>
 
-      {/* Tab 1: Categories / Variable Limits */}
+      {/* Tab 1: Categories */}
       {currentTab === 'categories' && (
-        <>
-          {query.isError ? (
-            <Card>
-              <CardContent className="p-0">
-                <AsyncErrorState title="No pudimos cargar tu presupuesto" description="Tus límites guardados siguen disponibles." onRetry={() => void query.refetch()} error={query.error} area="presupuesto" />
-              </CardContent>
-            </Card>
-          ) : (
-            <>
-              <BudgetOverviewCard
-                summary={summary}
-                loading={query.isLoading}
-                hideBalances={props.hideBalances}
-                onManage={() => setManagerOpen(true)}
-              />
-              {summary?.hasBudget && (
-                <Card className="border-border/60 shadow-sm">
-                  <CardContent className="p-5">
-                    <div className="mb-4 flex items-center justify-between">
-                      <div>
-                        <p className="font-bold">Límites por categoría</p>
-                        <p className="text-xs text-muted-foreground">Los pendientes se muestran sin consumir el límite.</p>
-                      </div>
-                      <Lightbulb className="h-5 w-5 text-amber-500" />
-                    </div>
-                    <BudgetProgressList items={summary.categories} currency={currency} hideBalances={props.hideBalances} />
-                    {summary.unbudgetedSpent > 0 && (
-                      <div className="mt-4 rounded-xl bg-muted/60 p-3">
-                        <p className="text-xs font-bold">Gasto en categorías sin límite</p>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {props.hideBalances ? '••••••' : formatCurrency(summary.unbudgetedSpent, currency)} · incluido en el límite global.
-                        </p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-            </>
-          )}
-        </>
+        <BudgetCategoriesTab
+          summary={summary}
+          loading={query.isLoading}
+          isError={query.isError}
+          error={query.error}
+          currency={currency}
+          hideBalances={props.hideBalances}
+          onRefetch={() => void query.refetch()}
+          onManage={() => setManagerOpen(true)}
+        />
       )}
 
       {/* Tab 2: Recurring Bills & Subscriptions */}
@@ -208,34 +181,11 @@ export function BudgetSection(props: {
 
       {/* Dialogs */}
       <BudgetManagerDialog open={managerOpen} onOpenChange={setManagerOpen} month={month} currency={currency} summary={summary} />
-      <RecurringCreatorDialog
-        open={creatorOpen} currency={currency} saving={recurringActions.create.isPending}
-        onOpenChange={setCreatorOpen}
-        onSave={async (input) => { await recurringActions.create.mutateAsync(input); setCreatorOpen(false); }}
-      />
-      <RecurringEditorDialog
-        key={editingRecurring?.id || 'closed-recurring-editor'}
-        bill={editingRecurring} open={Boolean(editingRecurring)} saving={recurringActions.update.isPending}
-        onOpenChange={(open) => { if (!open) setEditingRecurring(null); }}
-        onSave={async (input) => {
-          if (!editingRecurring) return;
-          await recurringActions.update.mutateAsync({ id: editingRecurring.id, input });
-          setEditingRecurring(null);
-        }}
-      />
-      <LinkRecurringTransactionDialog
-        bill={linkingBill} open={Boolean(linkingBill)}
-        onOpenChange={(open) => { if (!open) setLinkingBill(null); }}
-        onLink={handleLink} linking={recurringActions.linkTransaction.isPending}
-      />
-      <RecurringDeleteDialog
-        bill={deletingBill} open={Boolean(deletingBill)}
-        onOpenChange={(open) => { if (!open) setDeletingBill(null); }}
-        onConfirm={handleDelete} deleting={recurringActions.deleteBill.isPending}
-      />
+      <RecurringCreatorDialog open={creatorOpen} currency={currency} saving={recurringActions.create.isPending} onOpenChange={setCreatorOpen} onSave={async (input) => { await recurringActions.create.mutateAsync(input); setCreatorOpen(false); }} />
+      <RecurringEditorDialog key={editingRecurring?.id || 'closed-recurring-editor'} bill={editingRecurring} open={Boolean(editingRecurring)} saving={recurringActions.update.isPending} onOpenChange={(open) => { if (!open) setEditingRecurring(null); }} onSave={async (input) => { if (!editingRecurring) return; await recurringActions.update.mutateAsync({ id: editingRecurring.id, input }); setEditingRecurring(null); }} />
+      <LinkRecurringTransactionDialog bill={linkingBill} open={Boolean(linkingBill)} onOpenChange={(open) => { if (!open) setLinkingBill(null); }} onLink={handleLink} linking={recurringActions.linkTransaction.isPending} />
+      <RecurringDeleteDialog bill={deletingBill} open={Boolean(deletingBill)} onOpenChange={(open) => { if (!open) setDeletingBill(null); }} onConfirm={handleDelete} deleting={recurringActions.deleteBill.isPending} />
       <IncomeStreamsSettingsModal open={incomeModalOpen} onOpenChange={setIncomeModalOpen} currency={currency} />
     </>
   );
 }
-
-
