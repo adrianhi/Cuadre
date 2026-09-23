@@ -89,12 +89,12 @@ export function PaydayRitualCard(props: {
       <Card className="overflow-hidden border-emerald-500/30 bg-emerald-500/5 shadow-xs">
         <CardContent className="p-5">
           <div className="flex items-start justify-between gap-3">
-            <div className="flex gap-2.5">
-              <span className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+            <div className="flex items-start gap-2.5 min-w-0 flex-1">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
                 <CheckCircle2 className="h-5 w-5" />
               </span>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 break-words line-clamp-1">
                   {cycleTitle}
                 </p>
                 <h3 className="text-lg font-black text-foreground">
@@ -104,31 +104,31 @@ export function PaydayRitualCard(props: {
             </div>
           </div>
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div>
-              <p className="text-xs text-muted-foreground">
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground truncate">
                 Ingreso planificado
               </p>
-              <p className="font-bold">{money(ritual.plannedIncome)}</p>
+              <p className="font-bold truncate">{money(ritual.plannedIncome)}</p>
               <p className="mt-0.5 text-[10px] leading-snug text-muted-foreground">
                 Ingreso planificado para esta quincena según tus fuentes
                 declaradas
               </p>
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Gastos fijos</p>
-              <p className="font-bold">
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground truncate">Gastos fijos</p>
+              <p className="font-bold truncate">
                 {money(ritual.paidFixed + ritual.futureFixed)}
               </p>
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Otros gastos</p>
-              <p className="font-bold">{money(ritual.otherSpent)}</p>
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground truncate">Otros gastos</p>
+              <p className="font-bold truncate">{money(ritual.otherSpent)}</p>
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground">
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground truncate">
                 Libre según tu plan
               </p>
-              <p className="font-black text-primary">
+              <p className="font-black text-primary truncate">
                 {money(ritual.available)}
               </p>
             </div>
@@ -146,12 +146,12 @@ export function PaydayRitualCard(props: {
     <Card className="overflow-hidden border-violet-400/30 bg-gradient-to-br from-violet-500/15 via-card to-primary/10 shadow-xs">
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-3">
-          <div className="flex gap-2.5">
-            <span className="grid h-10 w-10 place-items-center rounded-xl bg-violet-500/15 text-violet-600 dark:text-violet-300">
+          <div className="flex items-start gap-2.5 min-w-0 flex-1">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-violet-500/15 text-violet-600 dark:text-violet-300">
               <Sparkles className="h-5 w-5" />
             </span>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-violet-600 dark:text-violet-300">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold uppercase tracking-wider text-violet-600 dark:text-violet-300 break-words line-clamp-1">
                 {cycleTitle}
               </p>
               <h3 className="text-lg font-black">Tu quincena está lista</h3>
@@ -159,27 +159,27 @@ export function PaydayRitualCard(props: {
           </div>
         </div>
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div>
-            <p className="text-xs text-muted-foreground">Ingreso planificado</p>
-            <p className="font-bold">{money(ritual.plannedIncome)}</p>
+          <div className="min-w-0">
+            <p className="text-xs text-muted-foreground truncate">Ingreso planificado</p>
+            <p className="font-bold truncate">{money(ritual.plannedIncome)}</p>
             <p className="mt-0.5 text-[10px] leading-snug text-muted-foreground">
               Ingreso planificado para esta quincena según tus fuentes
               declaradas
             </p>
           </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Gastos fijos</p>
-            <p className="font-bold">
+          <div className="min-w-0">
+            <p className="text-xs text-muted-foreground truncate">Gastos fijos</p>
+            <p className="font-bold truncate">
               {money(ritual.paidFixed + ritual.futureFixed)}
             </p>
           </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Otros gastos</p>
-            <p className="font-bold">{money(ritual.otherSpent)}</p>
+          <div className="min-w-0">
+            <p className="text-xs text-muted-foreground truncate">Otros gastos</p>
+            <p className="font-bold truncate">{money(ritual.otherSpent)}</p>
           </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Libre según tu plan</p>
-            <p className="font-black text-primary">{money(ritual.available)}</p>
+          <div className="min-w-0">
+            <p className="text-xs text-muted-foreground truncate">Libre según tu plan</p>
+            <p className="font-black text-primary truncate">{money(ritual.available)}</p>
           </div>
         </div>
         <p className="mt-3 text-xs text-muted-foreground">

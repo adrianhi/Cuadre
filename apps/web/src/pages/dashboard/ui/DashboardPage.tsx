@@ -84,7 +84,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
     [categoryFilter, statusFilter, organizationFilter, typeFilter, search]
   );
   return (
-    <div className="min-h-screen bg-background text-foreground antialiased">
+    <div className="min-h-screen bg-background text-foreground antialiased overflow-x-clip">
       <DashboardSidebar
         activeSection={isCoroRoute ? null : activeSection}
         coroActive={isCoroRoute}
@@ -94,7 +94,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         onOpenRules={handleOpenRules} onOpenCoro={() => handleOpenCoro()} onOpenExport={() => setIsExportModalOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)} userEmail={userEmail} connection={primaryConnection}
       />
-      <div className="flex min-h-screen min-w-0 w-full flex-col lg:pl-64">
+      <div className="flex min-h-screen min-w-0 w-full flex-col lg:pl-64 overflow-x-clip">
         <Navbar
           title={isCoroRoute ? 'Modo Coro' : DASHBOARD_SECTION_TITLES[activeSection]}
           hideBalances={hideBalances}
@@ -106,7 +106,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           refreshing={refreshing || refreshingStats}
           connection={primaryConnection}
         />
-        <main className="flex-1 min-w-0 w-full px-4 py-5 pb-[calc(9rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-8 lg:px-8 2xl:px-12 lg:pb-10">
+        <main className="flex-1 min-w-0 w-full px-4 py-5 pb-[calc(9rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-8 lg:px-8 2xl:px-12 lg:pb-10 overflow-x-clip">
           <div className="mx-auto w-full min-w-0 max-w-7xl 2xl:max-w-[1600px] 3xl:max-w-[1880px] space-y-6">
             {isCoroRoute && <CoroHubPage />}
             {!isCoroRoute && activeSection === 'home' && (

@@ -78,59 +78,59 @@ export const ControlSection: React.FC<ControlSectionProps> = ({
   return (
     <div className="w-full space-y-6">
       {/* Sticky Segmented Control */}
-      <div className="sticky top-0 z-20 -mx-4 sm:-mx-6 lg:-mx-8 2xl:-mx-12 px-4 sm:px-6 lg:px-8 2xl:px-12 py-2.5 bg-background/90 backdrop-blur-md border-b border-border/40">
-        <div className="mx-auto max-w-lg 2xl:max-w-xl rounded-2xl bg-muted/80 p-1 text-xs 2xl:text-sm font-semibold text-muted-foreground shadow-inner flex gap-1">
+      <div className="sticky top-0 z-20 -mx-4 sm:-mx-6 lg:-mx-8 2xl:-mx-12 px-4 sm:px-6 lg:px-8 2xl:px-12 py-2.5 bg-background/90 backdrop-blur-md border-b border-border/40 overflow-x-clip">
+        <div className="mx-auto w-full max-w-lg 2xl:max-w-xl rounded-2xl bg-muted/80 p-1 text-xs 2xl:text-sm font-semibold text-muted-foreground shadow-inner flex gap-1">
           <button
             type="button"
             onClick={() => handleSelectView('budget')}
-            className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 2xl:py-2.5 transition-all ${
+            className={`flex flex-1 min-w-0 items-center justify-center gap-1 sm:gap-1.5 rounded-xl px-1.5 sm:px-2.5 py-2 2xl:py-2.5 transition-all ${
               activeView === 'budget'
                 ? 'bg-card text-foreground font-bold shadow-sm'
                 : 'hover:text-foreground hover:bg-card/40'
             }`}
             aria-pressed={activeView === 'budget'}
           >
-            <WalletCards className="h-4 w-4" />
-            <span>Presupuesto</span>
+            <WalletCards className="h-4 w-4 shrink-0" />
+            <span className="truncate">Presupuesto</span>
           </button>
           <button
             type="button"
             onClick={() => handleSelectView('categories')}
-            className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 2xl:py-2.5 transition-all ${
+            className={`flex flex-1 min-w-0 items-center justify-center gap-1 sm:gap-1.5 rounded-xl px-1.5 sm:px-2.5 py-2 2xl:py-2.5 transition-all ${
               activeView === 'categories'
                 ? 'bg-card text-foreground font-bold shadow-sm'
                 : 'hover:text-foreground hover:bg-card/40'
             }`}
             aria-pressed={activeView === 'categories'}
           >
-            <FolderTree className="h-4 w-4" />
-            <span>Categorías</span>
+            <FolderTree className="h-4 w-4 shrink-0" />
+            <span className="truncate">Categorías</span>
           </button>
           <button
             type="button"
             onClick={() => handleSelectView('analytics')}
-            className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 2xl:py-2.5 transition-all ${
+            className={`flex flex-1 min-w-0 items-center justify-center gap-1 sm:gap-1.5 rounded-xl px-1.5 sm:px-2.5 py-2 2xl:py-2.5 transition-all ${
               activeView === 'analytics'
                 ? 'bg-card text-foreground font-bold shadow-sm'
                 : 'hover:text-foreground hover:bg-card/40'
             }`}
             aria-pressed={activeView === 'analytics'}
           >
-            <BarChart3 className="h-4 w-4" />
-            <span>Analítica</span>
+            <BarChart3 className="h-4 w-4 shrink-0" />
+            <span className="truncate">Analítica</span>
           </button>
           <button
             type="button"
             onClick={() => handleSelectView('quincena')}
-            className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 2xl:py-2.5 transition-all ${
+            className={`flex flex-1 min-w-0 items-center justify-center gap-1 sm:gap-1.5 rounded-xl px-1.5 sm:px-2.5 py-2 2xl:py-2.5 transition-all ${
               activeView === 'quincena'
                 ? 'bg-card text-foreground font-bold shadow-sm'
                 : 'hover:text-foreground hover:bg-card/40'
             }`}
             aria-pressed={activeView === 'quincena'}
           >
-            <CalendarCheck className="h-4 w-4" />
-            <span>Quincena</span>
+            <CalendarCheck className="h-4 w-4 shrink-0" />
+            <span className="truncate">Quincena</span>
           </button>
         </div>
       </div>
