@@ -57,8 +57,9 @@
     "db:sync-from-supabase": "node scripts/sync-supabase-to-local.js",
     "db:clean-supabase": "node scripts/clean-supabase.js",
     "build:workflow": "node scripts/build-workflow.js",
-    "reset:me": "node scripts/reset-prod-user.js",
-    "reset:user": "node scripts/reset-prod-user.js"
+    "reset:me": "node scripts/reset-dev-user.js",
+    "reset:user": "node scripts/reset-dev-user.js",
+    "reset:prod:user": "node scripts/reset-prod-user.js"
   },
   "keywords": [
     "bhd",

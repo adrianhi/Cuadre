@@ -63,7 +63,30 @@ async function main() {
         `DELETE FROM "recurring_occurrences" WHERE "recurring_bill_id" IN (SELECT "id" FROM "recurring_bills" WHERE "workspace_id" = $1::uuid);`,
         wsId
       );
-      const recurring = await prisma.$executeRawUnsafe(`DELETE FROM "recurring_bills" WHERE "workspace_id" = $1::uuid;`, wsId);
+      await prisma.$executeRawUnsafe(`DELETE FROM "recurring_bills" WHERE "workspace_id" = $1::uuid;`, wsId);
+      await prisma.$executeRawUnsafe(
+        `DELETE FROM "coro_expense_splits" WHERE "expense_id" IN (SELECT "id" FROM "coro_expenses" WHERE "coro_group_id" IN (SELECT "id" FROM "coro_groups" WHERE "workspace_id" = $1::uuid));`,
+        wsId
+      );
+      await prisma.$executeRawUnsafe(
+        `DELETE FROM "coro_expense_payers" WHERE "expense_id" IN (SELECT "id" FROM "coro_expenses" WHERE "coro_group_id" IN (SELECT "id" FROM "coro_groups" WHERE "workspace_id" = $1::uuid));`,
+        wsId
+      );
+      await prisma.$executeRawUnsafe(
+        `DELETE FROM "coro_settlements" WHERE "coro_group_id" IN (SELECT "id" FROM "coro_groups" WHERE "workspace_id" = $1::uuid);`,
+        wsId
+      ).catch(() => {});
+      await prisma.$executeRawUnsafe(
+        `DELETE FROM "coro_expenses" WHERE "coro_group_id" IN (SELECT "id" FROM "coro_groups" WHERE "workspace_id" = $1::uuid);`,
+        wsId
+      );
+      await prisma.$executeRawUnsafe(
+        `DELETE FROM "coro_participants" WHERE "coro_group_id" IN (SELECT "id" FROM "coro_groups" WHERE "workspace_id" = $1::uuid);`,
+        wsId
+      );
+      await prisma.$executeRawUnsafe(`DELETE FROM "coro_groups" WHERE "workspace_id" = $1::uuid;`, wsId);
+      await prisma.$executeRawUnsafe(`DELETE FROM "credit_cards" WHERE "workspace_id" = $1::uuid;`, wsId);
+      await prisma.$executeRawUnsafe(`DELETE FROM "workspace_categories" WHERE "workspace_id" = $1::uuid;`, wsId);
       await prisma.$executeRawUnsafe(`DELETE FROM "income_streams" WHERE "workspace_id" = $1::uuid;`, wsId);
       const limits = await prisma.$executeRawUnsafe(`DELETE FROM "spending_budget_limits" WHERE "workspace_id" = $1::uuid;`, wsId);
       await prisma.$executeRawUnsafe(`DELETE FROM "rule_applications" WHERE "workspace_id" = $1::uuid;`, wsId);
