@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { ArrowRight, CreditCard, Download, Gift, Landmark, SlidersHorizontal, Sparkles } from 'lucide-react';
+import { ArrowRight, CreditCard, Download, Gift, HelpCircle, Landmark, SlidersHorizontal, Sparkles } from 'lucide-react';
 import type { StatsSummary } from '@/entities/stat';
 import { CoroPromoCard } from '@/features/coro-hub';
 import { Button, Card, CardContent } from '@/shared/ui';
 import { CardTrafficLightModal } from '@/features/credit-cards';
 import { DobleSueldoDialog } from '../modals/DobleSueldoDialog';
 import { CuadreDelMesModal } from '@/features/cuadre-del-mes';
+import { AppExplainerDialog } from '@/features/first-run-guide';
 
 interface HubSectionProps {
   onOpenCoro: (coroId?: string) => void;
@@ -88,14 +89,27 @@ export function HubSection({
   const [isTrafficLightOpen, setIsTrafficLightOpen] = useState(false);
   const [isDobleSueldoOpen, setIsDobleSueldoOpen] = useState(false);
   const [isWrappedOpen, setIsWrappedOpen] = useState(false);
+  const [isExplainerOpen, setIsExplainerOpen] = useState(false);
 
   return (
     <div className="space-y-8 animate-in fade-in-0 duration-200">
-      <div>
-        <h2 className="text-xl font-bold tracking-tight sm:text-2xl">Hub de Cuadre</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Herramientas inteligentes, experiencias y utilidades para tus finanzas dominicanas.
-        </p>
+      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+        <div>
+          <h2 className="text-xl font-bold tracking-tight sm:text-2xl">Hub de Cuadre</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Herramientas inteligentes, experiencias y utilidades para tus finanzas dominicanas.
+          </p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setIsExplainerOpen(true)}
+          className="self-start sm:self-auto gap-2 rounded-xl text-xs font-bold text-primary"
+        >
+          <HelpCircle className="h-4 w-4" />
+          ¿Cómo funciona Cuadre?
+        </Button>
       </div>
 
       <div className="space-y-3">
@@ -180,6 +194,7 @@ export function HubSection({
       <CardTrafficLightModal open={isTrafficLightOpen} onOpenChange={setIsTrafficLightOpen} />
       <DobleSueldoDialog open={isDobleSueldoOpen} onOpenChange={setIsDobleSueldoOpen} currency={currency} />
       <CuadreDelMesModal open={isWrappedOpen} onOpenChange={setIsWrappedOpen} initialStats={stats} currency={currency} />
+      <AppExplainerDialog open={isExplainerOpen} onOpenChange={setIsExplainerOpen} />
     </div>
   );
 }

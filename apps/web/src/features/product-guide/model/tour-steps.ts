@@ -14,18 +14,35 @@ export const PRODUCT_TOUR_STEPS: readonly TourStep[] = [
     section: 'home',
     target: 'safe-to-spend',
     title: 'Tu Margen Seguro Diario',
-    description: 'Este número te dice cuánto puedes gastar hoy sin salirte de tu límite mensual ni olvidar tus compromisos.',
+    description:
+      'El corazón de Cuadre. Te dice exactamente cuánto dinero libre tienes para gastar hoy sin descuadrar tu presupuesto ni tus compromisos.',
+  },
+  {
+    section: 'home',
+    target: 'quick-actions',
+    title: 'Acciones Rápidas & Superpoderes',
+    description:
+      'Accede al Semáforo de tarjetas (hasta 54 días a costo cero), Modo Coro, Cuadre del Mes o simula un gasto antes de comprar.',
   },
   {
     section: 'home',
     target: 'connection-health',
-    title: 'Tus movimientos mantienen el margen actualizado',
-    description: 'Aquí puedes comprobar si Gmail está conectado, sincronizando o necesita tu atención. También puedes usar Cuadre manualmente.',
+    title: 'Tus movimientos al día',
+    description:
+      'Cuadre procesa las alertas de tus bancos dominicanos (Banreservas, Popular, BHD, Qik, etc.) de forma 100% segura y automática.',
   },
   {
     section: 'transactions',
     target: 'transactions',
-    title: 'Revisa los movimientos que forman el cálculo',
-    description: 'Aquí puedes verificar y corregir cualquier movimiento. Los cobros fijos confirmados ya se reservan dentro de tu Margen Seguro.',
+    title: 'Tus Movimientos Unificados',
+    description:
+      'Consulta todos tus gastos e ingresos en RD$ y USD, organiza tus categorías y crea reglas automáticas.',
+  },
+  {
+    section: 'transactions',
+    target: 'new-movement',
+    title: 'Registra en segundos',
+    description:
+      '¿Pagaste en efectivo o con un método no conectado? Añade un gasto o ingreso manual rápidamente con este botón.',
   },
 ] as const;

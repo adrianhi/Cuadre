@@ -130,6 +130,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                 onOpenBudget={() => openBudgetTab()}
                 onOpenRecurring={() => openBudgetTab('recurring')}
                 onOpenCoro={handleOpenCoro}
+                onStartTour={() => setIsTourOpen(true)}
               />
             )}
             {!isCoroRoute && activeSection === 'transactions' && (
