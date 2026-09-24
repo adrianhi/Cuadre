@@ -118,10 +118,11 @@ export const HomeSection: React.FC<HomeSectionProps> = ({
         {periodToolbar}
       </div>
 
+      {/* Full-width starter hero banner for new users */}
+      <StarterHeroBanner {...guideOptions} onStartTour={onStartTour} />
+
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
         <div className="space-y-6 xl:col-span-7 2xl:col-span-8">
-          <StarterHeroBanner {...guideOptions} onStartTour={onStartTour} />
-
           <SafeToSpendDial
             value={safeToSpend.data || null}
             loading={safeToSpend.isLoading}
