@@ -34,6 +34,13 @@ interface ControlSectionProps {
   ) => Promise<void>;
 }
 
+const VIEW_DESCRIPTIONS: Record<ControlTab, string> = {
+  budget: 'Fija límites mensuales y monitorea cuánto te queda por gastar.',
+  categories: 'Clasifica tus movimientos y crea reglas automáticas por comercio.',
+  analytics: 'Visualiza la distribución de tu dinero con gráficos y tendencias.',
+  quincena: 'Organiza tus ingresos del 15 y 30 y aparta tus compromisos fijos.',
+};
+
 export const ControlSection: React.FC<ControlSectionProps> = ({
   periodToolbar,
   currentPeriod,
@@ -133,6 +140,9 @@ export const ControlSection: React.FC<ControlSectionProps> = ({
             <span className="truncate">Quincena</span>
           </button>
         </div>
+        <p className="mx-auto mt-1.5 max-w-lg 2xl:max-w-xl text-center text-[11px] text-muted-foreground truncate">
+          {VIEW_DESCRIPTIONS[activeView]}
+        </p>
       </div>
 
       {/* View Content */}

@@ -21,6 +21,7 @@ import { RecentTransactionsCard } from "./RecentTransactionsCard";
 import { QuickActionRail } from "./QuickActionRail";
 import { CardTrafficLightModal } from "@/features/credit-cards";
 import { CuadreDelMesModal } from "@/features/cuadre-del-mes";
+import { FirstRunGuideCard } from "@/features/first-run-guide";
 
 interface HomeSectionProps {
   periodToolbar: ReactNode;
@@ -42,6 +43,7 @@ interface HomeSectionProps {
   onOpenBudget: () => void;
   onOpenRecurring?: () => void;
   onOpenCoro?: (coroId?: string) => void;
+  onStartTour?: () => void;
 }
 
 export const HomeSection: React.FC<HomeSectionProps> = ({
@@ -63,6 +65,7 @@ export const HomeSection: React.FC<HomeSectionProps> = ({
   onOpenBudget,
   onOpenRecurring,
   onOpenCoro,
+  onStartTour,
 }) => {
   const activeCurrency = currency === 'USD' ? 'USD' : 'DOP';
   const safeToSpend = useSafeToSpend(activeCurrency);
@@ -102,6 +105,23 @@ export const HomeSection: React.FC<HomeSectionProps> = ({
             loading={safeToSpend.isLoading}
             hideBalances={hideBalances}
             onManageBudget={onOpenBudget}
+          />
+
+          <FirstRunGuideCard
+            hasTransactions={transactions.length > 0}
+            hasConnection={Boolean(primaryConnection && primaryConnection.status === 'ACTIVE')}
+            hasBudget={Boolean(
+              safeToSpend.data &&
+                safeToSpend.data.status !== 'UNSET' &&
+                safeToSpend.data.globalLimit !== null &&
+                safeToSpend.data.globalLimit > 0
+            )}
+            onOpenConnections={onOpenConnections}
+            onAddManual={onAddManual}
+            onOpenTrafficLight={() => setIsTrafficLightOpen(true)}
+            onOpenBudget={onOpenBudget}
+            onOpenCoro={() => onOpenCoro?.()}
+            onStartTour={onStartTour}
           />
 
           <QuickActionRail

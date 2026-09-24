@@ -53,25 +53,31 @@ export const RecentTransactionsCard: React.FC<RecentTransactionsCardProps> = ({
             ))}
           </div>
         ) : recentList.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 p-10 text-center">
-            <ReceiptText className="h-8 w-8 text-muted-foreground" />
-            <p className="text-sm font-semibold">
+          <div className="flex flex-col items-center gap-2.5 p-8 sm:p-10 text-center">
+            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-muted/60 text-muted-foreground">
+              <ReceiptText className="h-6 w-6" />
+            </span>
+            <p className="text-sm font-bold text-foreground">
               Aún no hay movimientos en este período
             </p>
-            <p className="max-w-sm text-xs text-muted-foreground">
-              Si conectaste Gmail, revisa el estado de importación y los bancos
-              seleccionados. También puedes registrar uno manualmente.
+            <p className="max-w-md text-xs text-muted-foreground leading-relaxed">
+              Conecta tu correo para sincronizar compras de <strong>Banreservas, Popular, BHD, Qik o Scotia</strong> de forma automática, o registra tus pagos en efectivo manualmente.
             </p>
-            <div className="mt-2 flex flex-wrap justify-center gap-2">
+            <div className="mt-3 flex flex-wrap justify-center gap-2.5">
               <Button
                 variant="outline"
+                size="sm"
                 onClick={onOpenConnections}
-                className="min-h-11"
+                className="min-h-10 text-xs font-semibold"
               >
-                Revisar conexión
+                Conectar bancos
               </Button>
-              <Button onClick={onAddManual} className="min-h-11">
-                Registrar manual
+              <Button
+                size="sm"
+                onClick={onAddManual}
+                className="min-h-10 text-xs font-bold"
+              >
+                + Registrar gasto manual
               </Button>
             </div>
           </div>

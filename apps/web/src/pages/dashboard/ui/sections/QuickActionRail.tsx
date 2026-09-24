@@ -57,7 +57,10 @@ export function QuickActionRail({
   ];
 
   return (
-    <div className="relative -mx-4 px-4 sm:-mx-6 sm:px-6 xl:mx-0 xl:px-0">
+    <div
+      className="relative -mx-4 px-4 sm:-mx-6 sm:px-6 xl:mx-0 xl:px-0"
+      data-product-tour="quick-actions"
+    >
       <div className="flex gap-2.5 overflow-x-auto pb-1 pt-1 no-scrollbar snap-x snap-mandatory xl:grid xl:grid-cols-4 xl:gap-3 xl:overflow-visible xl:p-0">
         {actions.map((action) => {
           const Icon = action.icon;
