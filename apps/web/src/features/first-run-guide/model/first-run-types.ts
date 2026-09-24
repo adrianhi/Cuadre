@@ -12,6 +12,7 @@ export interface FirstRunGuideOptions {
   hasTransactions: boolean;
   hasConnection: boolean;
   hasBudget: boolean;
+  hasUncategorized?: boolean;
   onOpenConnections: () => void;
   onAddManual: () => void;
   onOpenTrafficLight: () => void;

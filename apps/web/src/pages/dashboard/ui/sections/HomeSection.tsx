@@ -21,7 +21,11 @@ import { RecentTransactionsCard } from "./RecentTransactionsCard";
 import { QuickActionRail } from "./QuickActionRail";
 import { CardTrafficLightModal } from "@/features/credit-cards";
 import { CuadreDelMesModal } from "@/features/cuadre-del-mes";
-import { FirstRunGuideCard } from "@/features/first-run-guide";
+import {
+  FirstRunGuideCard,
+  StarterHeroBanner,
+  type FirstRunGuideOptions,
+} from "@/features/first-run-guide";
 
 interface HomeSectionProps {
   periodToolbar: ReactNode;
@@ -88,6 +92,22 @@ export const HomeSection: React.FC<HomeSectionProps> = ({
     properties: { currency: activeCurrency, status: safeToSpend.data.status },
   } : null);
 
+  const guideOptions: FirstRunGuideOptions = {
+    hasTransactions: transactions.length > 0,
+    hasConnection: Boolean(primaryConnection && primaryConnection.status === 'ACTIVE'),
+    hasBudget: Boolean(
+      safeToSpend.data &&
+        safeToSpend.data.status !== 'UNSET' &&
+        safeToSpend.data.globalLimit !== null &&
+        safeToSpend.data.globalLimit > 0
+    ),
+    onOpenConnections,
+    onAddManual,
+    onOpenTrafficLight: () => setIsTrafficLightOpen(true),
+    onOpenBudget,
+    onOpenCoro: () => onOpenCoro?.(),
+  };
+
   return (
     <>
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
@@ -100,6 +120,8 @@ export const HomeSection: React.FC<HomeSectionProps> = ({
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
         <div className="space-y-6 xl:col-span-7 2xl:col-span-8">
+          <StarterHeroBanner {...guideOptions} onStartTour={onStartTour} />
+
           <SafeToSpendDial
             value={safeToSpend.data || null}
             loading={safeToSpend.isLoading}
@@ -107,22 +129,7 @@ export const HomeSection: React.FC<HomeSectionProps> = ({
             onManageBudget={onOpenBudget}
           />
 
-          <FirstRunGuideCard
-            hasTransactions={transactions.length > 0}
-            hasConnection={Boolean(primaryConnection && primaryConnection.status === 'ACTIVE')}
-            hasBudget={Boolean(
-              safeToSpend.data &&
-                safeToSpend.data.status !== 'UNSET' &&
-                safeToSpend.data.globalLimit !== null &&
-                safeToSpend.data.globalLimit > 0
-            )}
-            onOpenConnections={onOpenConnections}
-            onAddManual={onAddManual}
-            onOpenTrafficLight={() => setIsTrafficLightOpen(true)}
-            onOpenBudget={onOpenBudget}
-            onOpenCoro={() => onOpenCoro?.()}
-            onStartTour={onStartTour}
-          />
+          <FirstRunGuideCard {...guideOptions} onStartTour={onStartTour} />
 
           <QuickActionRail
             onOpenTrafficLight={() => setIsTrafficLightOpen(true)}

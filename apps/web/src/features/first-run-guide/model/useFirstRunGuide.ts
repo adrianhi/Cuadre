@@ -9,11 +9,13 @@ import {
   readStoredSet,
   writeStoredSet,
 } from './first-run-helpers';
+import { getStarterRecommendation } from './starter-recommendation';
 
 export function useFirstRunGuide({
   hasTransactions,
   hasConnection,
   hasBudget,
+  hasUncategorized = false,
   onOpenConnections,
   onAddManual,
   onOpenTrafficLight,
@@ -97,6 +99,18 @@ export function useFirstRunGuide({
     [steps]
   );
 
+  const recommendation = useMemo(
+    () =>
+      getStarterRecommendation({
+        hasTransactions,
+        hasConnection,
+        hasBudget,
+        hasUncategorized,
+        interactedSteps,
+      }),
+    [hasTransactions, hasConnection, hasBudget, hasUncategorized, interactedSteps]
+  );
+
   const setDismissedState = useCallback((dismissed: boolean) => {
     setIsDismissed(dismissed);
     try {
@@ -117,6 +131,7 @@ export function useFirstRunGuide({
 
   return {
     steps,
+    recommendation,
     completedCount,
     totalSteps,
     progressPercent,

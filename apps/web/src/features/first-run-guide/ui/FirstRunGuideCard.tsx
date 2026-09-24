@@ -19,6 +19,7 @@ interface FirstRunGuideCardProps extends FirstRunGuideOptions {
 export const FirstRunGuideCard: React.FC<FirstRunGuideCardProps> = (props) => {
   const {
     steps,
+    recommendation,
     completedCount,
     totalSteps,
     progressPercent,
@@ -103,48 +104,65 @@ export const FirstRunGuideCard: React.FC<FirstRunGuideCardProps> = (props) => {
 
           {!isCollapsed && (
             <div className="space-y-2 pt-1 animate-in fade-in-0 duration-200">
-              {steps.map((step, idx) => (
-                <div
-                  key={step.id}
-                  className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-2xl border p-3 transition ${
-                    step.isCompleted
-                      ? 'border-border/40 bg-muted/20 opacity-75'
-                      : 'border-border/80 bg-card hover:border-primary/40'
-                  }`}
-                >
-                  <div className="flex items-start gap-2.5 min-w-0 flex-1">
-                    {step.isCompleted ? (
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
-                    ) : (
-                      <span className="grid mt-0.5 h-4 w-4 shrink-0 place-items-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
-                        {idx + 1}
-                      </span>
-                    )}
-                    <div className="min-w-0">
-                      <p
-                        className={`text-xs sm:text-sm font-bold ${
-                          step.isCompleted ? 'text-muted-foreground line-through' : 'text-foreground'
-                        }`}
-                      >
-                        {step.title}
-                      </p>
-                      <p className="text-[11px] sm:text-xs text-muted-foreground leading-relaxed">
-                        {step.description}
-                      </p>
-                    </div>
-                  </div>
+              {steps.map((step, idx) => {
+                const isRecommended = step.id === recommendation.targetStepId && !step.isCompleted;
 
-                  <Button
-                    type="button"
-                    variant={step.isCompleted ? 'ghost' : 'outline'}
-                    size="sm"
-                    onClick={() => handleStepAction(step.id)}
-                    className="self-end sm:self-auto shrink-0 h-8 text-xs font-semibold"
+                return (
+                  <div
+                    key={step.id}
+                    className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-2xl border p-3 transition ${
+                      step.isCompleted
+                        ? 'border-border/40 bg-muted/20 opacity-75'
+                        : isRecommended
+                        ? 'border-primary/50 bg-primary/[0.04] shadow-sm ring-1 ring-primary/20'
+                        : 'border-border/80 bg-card hover:border-primary/40'
+                    }`}
                   >
-                    {step.actionLabel}
-                  </Button>
-                </div>
-              ))}
+                    <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                      {step.isCompleted ? (
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+                      ) : (
+                        <span
+                          className={`grid mt-0.5 h-4 w-4 shrink-0 place-items-center rounded-full text-[10px] font-bold ${
+                            isRecommended ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'
+                          }`}
+                        >
+                          {idx + 1}
+                        </span>
+                      )}
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <p
+                            className={`text-xs sm:text-sm font-bold ${
+                              step.isCompleted ? 'text-muted-foreground line-through' : 'text-foreground'
+                            }`}
+                          >
+                            {step.title}
+                          </p>
+                          {isRecommended && (
+                            <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[9px] font-black text-primary">
+                              👉 EMPIEZA AQUÍ
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] sm:text-xs text-muted-foreground leading-relaxed">
+                          {step.description}
+                        </p>
+                      </div>
+                    </div>
+
+                    <Button
+                      type="button"
+                      variant={step.isCompleted ? 'ghost' : isRecommended ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => handleStepAction(step.id)}
+                      className="self-end sm:self-auto shrink-0 h-8 text-xs font-semibold"
+                    >
+                      {step.actionLabel}
+                    </Button>
+                  </div>
+                );
+              })}
             </div>
           )}
         </CardContent>
