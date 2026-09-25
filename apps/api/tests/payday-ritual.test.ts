@@ -44,14 +44,74 @@ describe('payday ritual', () => {
 
   it('calculates proportional biweekly income across active streams in PrismaPaydayIncomeReader', async () => {
     vi.mocked(prisma.incomeStream.findMany).mockResolvedValue([
-      { id: '1', amount: 30000, frequency: 'BIWEEKLY_15_30', isActive: true },
-      { id: '2', amount: 50000, frequency: 'MONTHLY', isActive: true },
-      { id: '3', amount: 5000, frequency: 'WEEKLY', isActive: true },
-      { id: '4', amount: 10000, frequency: 'CUSTOM', isActive: true },
+      { id: '1', amount: 30000, frequency: 'BIWEEKLY_15_30', savingsTarget: 5000, dayOfMonth: 14, secondDayOfMonth: 29, isActive: true },
+      { id: '2', amount: 50000, frequency: 'MONTHLY', savingsTarget: 10000, isActive: true },
+      { id: '3', amount: 5000, frequency: 'WEEKLY', savingsTarget: null, isActive: true },
+      { id: '4', amount: 10000, frequency: 'CUSTOM', savingsTarget: null, isActive: true },
     ] as any);
 
     const reader = new PrismaPaydayIncomeReader();
-    const total = await reader.plannedBiweeklyIncome('workspace', 'DOP');
-    expect(total).toBe(65000);
+    const details = await reader.getIncomePlanDetails('workspace', 'DOP');
+    expect(details.plannedBiweeklyIncome).toBe(65000);
+    expect(details.savingsTarget).toBe(10000); // 5000 + 5000 (10000/2)
+    expect(details.paydayDays).toEqual([14, 29]);
+  });
+
+  it('supports custom payday days such as 14 and 29', () => {
+    // On the 14th, cycle is from 14th to 28th
+    const midCycle = currentPaydayCycle('2026-10-14', [14, 29]);
+    expect(midCycle).toMatchObject({
+      start: '2026-10-14',
+      end: '2026-10-28',
+      daysRemaining: 15,
+    });
+
+    // On the 29th, cycle is from 29th to 13th of next month
+    const endCycle = currentPaydayCycle('2026-10-29', [14, 29]);
+    expect(endCycle).toMatchObject({
+      start: '2026-10-29',
+      end: '2026-11-13',
+    });
+  });
+
+  it('protects savings target in calculatePaydayAmounts', () => {
+    const withSavings = calculatePaydayAmounts({
+      plannedIncome: 25_000,
+      paidFixed: 6_000,
+      otherSpent: 2_000,
+      futureFixed: 2_000,
+      savingsTarget: 5_000,
+      daysRemaining: 15,
+    });
+    // Deductions: 5000 (savings) + 6000 + 2000 + 2000 = 15000
+    // Available: 25000 - 15000 = 10000
+    expect(withSavings.available).toBe(10_000);
+    expect(withSavings.dailyAvailable).toBe(666.67);
+  });
+
+  it('detects when savings target has been met in cycle', async () => {
+    const service = new PaydayRitualService(
+      {
+        plannedBiweeklyIncome: async () => 25_000,
+        getIncomePlanDetails: async () => ({
+          plannedBiweeklyIncome: 25_000,
+          savingsTarget: 5_000,
+          paydayDays: [14, 29],
+        }),
+      },
+      { summarizeCycle: async () => ({ paidFixed: 5_000, otherSpent: 1_000 }) },
+      { sumFutureThrough: async () => 2_000 },
+      { completedAt: async () => null, complete: async () => new Date() },
+      undefined,
+      { findSavingsTransfersInCycle: async () => 5_000 }, // Savings transferred = 5,000
+    );
+
+    const ritual = await service.current('workspace', 'profile', 'DOP', new Date('2026-10-15T12:00:00Z'));
+    expect(ritual.eligible).toBe(true);
+    expect(ritual.savingsTarget).toBe(5_000);
+    expect(ritual.savingsTransferred).toBe(5_000);
+    expect(ritual.savingsStatus).toBe('MET');
+    expect(ritual.paydayDays).toEqual([14, 29]);
+    expect(ritual.available).toBe(12_000); // 25000 - (5000 savings + 5000 fixed + 1000 other + 2000 future)
   });
 });

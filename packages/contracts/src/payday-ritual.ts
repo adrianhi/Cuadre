@@ -2,6 +2,9 @@ import { z } from 'zod';
 import { budgetCurrencySchema } from './budgets';
 
 export const paydayRitualStatusSchema = z.enum(['UNAVAILABLE', 'OPEN', 'COMPLETED']);
+export const paydaySavingsStatusSchema = z.enum(['MET', 'PARTIAL', 'PENDING', 'NOT_SET']);
+export type PaydaySavingsStatus = z.infer<typeof paydaySavingsStatusSchema>;
+
 export const paydayRitualSchema = z.object({
   eligible: z.boolean(),
   currency: budgetCurrencySchema,
@@ -13,6 +16,10 @@ export const paydayRitualSchema = z.object({
   paidFixed: z.number().nonnegative(),
   otherSpent: z.number().nonnegative(),
   futureFixed: z.number().nonnegative(),
+  savingsTarget: z.number().nonnegative().default(0),
+  savingsTransferred: z.number().nonnegative().default(0),
+  savingsStatus: paydaySavingsStatusSchema.default('NOT_SET'),
+  paydayDays: z.array(z.number().int()).default([15, 30]),
   available: z.number().nonnegative(),
   overage: z.number().nonnegative(),
   dailyAvailable: z.number().nonnegative(),

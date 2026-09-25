@@ -1,17 +1,24 @@
-import { useState } from 'react';
-import { AlertCircle, ArrowRight, Loader2, Sparkles, Wallet } from 'lucide-react';
+import { AlertCircle, ArrowRight, Loader2, Sparkles, SlidersHorizontal, Calculator } from 'lucide-react';
 import type { IncomeFrequency } from '@bills/contracts';
-import { formatAmountInputOnBlur, formatCurrency, parseAmountInput } from '@/shared/lib';
+import { formatCurrency } from '@/shared/lib';
 import { Button, Card, CardContent, CurrencyAmountInput } from '@/shared/ui';
 import { COMMON_RD_SERVICES } from '../model/common-recurring-services';
-import { OptionalFinancialDetails } from './OptionalFinancialDetails';
+import { useFinancialBaseline } from '../model/useFinancialBaseline';
+import { SavingsBaselineCalculator } from './SavingsBaselineCalculator';
+import { RecurringServiceSelector } from './RecurringServiceSelector';
 
 interface FinancialBaselineStepProps {
   busy: boolean;
   error?: string;
   onFinish: (
     monthlySpendingLimit: number,
-    income?: { amount: number; frequency: IncomeFrequency },
+    income?: {
+      amount: number;
+      frequency: IncomeFrequency;
+      dayOfMonth?: number | null;
+      secondDayOfMonth?: number | null;
+      savingsTarget?: number | null;
+    },
     recurringServices?: Array<{ name: string; amount: number }>,
   ) => void;
   onSkip: () => void;
@@ -23,57 +30,47 @@ export function FinancialBaselineStep({
   onFinish,
   onSkip,
 }: FinancialBaselineStepProps) {
-  const [monthlySpendingLimit, setMonthlySpendingLimit] = useState('');
-  const [incomeAmount, setIncomeAmount] = useState('');
-  const [frequency, setFrequency] = useState<IncomeFrequency>('BIWEEKLY_15_30');
-  const [selectedServices, setSelectedServices] = useState<string[]>([]);
-  const [serviceAmounts, setServiceAmounts] = useState<Record<string, string>>(
-    Object.fromEntries(COMMON_RD_SERVICES.map((service) => [service.id, formatAmountInputOnBlur(service.defaultAmount)])),
-  );
-
-  const parsedLimit = Number(parseAmountInput(monthlySpendingLimit)) || 0;
-  const parsedIncome = Number(parseAmountInput(incomeAmount)) || 0;
-  const monthlyIncome = parsedIncome > 0
-    ? frequency === 'BIWEEKLY_15_30'
-      ? parsedIncome * 2
-      : frequency === 'WEEKLY'
-        ? parsedIncome * 52 / 12
-        : parsedIncome
-    : 0;
-
-  const estimatedFixedExpenses = COMMON_RD_SERVICES
-    .filter((s) => selectedServices.includes(s.id))
-    .reduce((sum, s) => sum + (Number(parseAmountInput(serviceAmounts[s.id])) || 0), 0);
-
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'America/Santo_Domingo', year: 'numeric', month: '2-digit', day: '2-digit',
-  }).formatToParts(new Date());
-  const year = Number(parts.find((part) => part.type === 'year')?.value);
-  const month = Number(parts.find((part) => part.type === 'month')?.value);
-  const day = Number(parts.find((part) => part.type === 'day')?.value);
-  const daysRemaining = new Date(Date.UTC(year, month, 0)).getUTCDate() - day + 1;
-  const variableMonthlyMargin = Math.max(0, parsedLimit - estimatedFixedExpenses);
-  const estimatedDailyMargin = daysRemaining > 0 ? variableMonthlyMargin / daysRemaining : 0;
-  const validLimit = parsedLimit > 0 && parsedLimit <= 999_999_999.99;
-  const validServices = selectedServices.every((id) => {
-    const amount = Number(parseAmountInput(serviceAmounts[id]));
-    return amount > 0 && amount <= 999_999_999.99;
-  });
-
-  const toggleService = (id: string) => {
-    setSelectedServices((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
-    );
-  };
+  const {
+    mode, setMode,
+    incomeAmount, setIncomeAmount,
+    frequency, setFrequency,
+    paydayPreset, setPaydayPreset,
+    customDay1, setCustomDay1,
+    customDay2, setCustomDay2,
+    resolvedDay1, resolvedDay2,
+    savingsAmount, setSavingsAmount,
+    selectSavingsPercentage,
+    manualSpendingLimit, setManualSpendingLimit,
+    selectedServices, toggleService,
+    serviceAmounts, setServiceAmounts,
+    parsedIncome, parsedSavings,
+    calculatedMonthlyIncome, calculatedMonthlySavings,
+    effectiveSpendingLimit, estimatedFixedExpenses,
+    estimatedDailyMargin,
+    validLimit, validServices,
+  } = useFinancialBaseline();
 
   const handleComplete = () => {
-    const incomeData = parsedIncome > 0 ? { amount: parsedIncome, frequency } : undefined;
+    if (!validLimit || !validServices) return;
+
+    const incomeData = parsedIncome > 0
+      ? {
+          amount: parsedIncome,
+          frequency,
+          dayOfMonth: resolvedDay1,
+          secondDayOfMonth: resolvedDay2,
+          savingsTarget: parsedSavings > 0 ? parsedSavings : null,
+        }
+      : undefined;
+
     const recurringData = COMMON_RD_SERVICES
       .filter((s) => selectedServices.includes(s.id))
-      .map((s) => ({ name: s.name, amount: Number(parseAmountInput(serviceAmounts[s.id])) }));
+      .map((s) => ({
+        name: s.name,
+        amount: Number(serviceAmounts[s.id]) || 0,
+      }));
 
-    if (!validLimit || !validServices) return;
-    onFinish(parsedLimit, incomeData, recurringData);
+    onFinish(effectiveSpendingLimit, incomeData, recurringData);
   };
 
   return (
@@ -83,71 +80,118 @@ export function FinancialBaselineStep({
           <Sparkles className="h-6 w-6" />
         </div>
         <p className="text-xs font-bold uppercase tracking-wider text-emerald-100">
-          Paso 2 de 2 · Margen Seguro
+          Paso 2 de 2 · Tu Punto de Partida
         </p>
-        <h1 className="mt-1 text-2xl font-bold">Calcula tu Margen Seguro</h1>
+        <h1 className="mt-1 text-2xl font-bold">Diseña tu Presupuesto Seguro</h1>
         <p className="mt-2 max-w-lg text-sm text-emerald-50/90">
-          Define cuánto quieres gastar y Cuadre lo convertirá en una guía diaria que se ajusta con tus movimientos.
+          Aparta tu ahorro primero, separa tus compromisos fijos y descubre cuánto puedes gastar cada día sin remordimientos.
         </p>
       </div>
 
       <CardContent className="space-y-6 p-6">
-        <div className="space-y-3 rounded-2xl border border-primary/25 bg-primary/[0.04] p-4">
-          <div className="flex items-center gap-2">
-            <Wallet className="h-4 w-4 text-primary" />
-            <h3 className="text-sm font-bold text-foreground">¿Cuál es tu límite mensual de gasto?</h3>
+        {/* Mode switcher tab / toggle */}
+        <div className="flex items-center justify-between border-b border-border/60 pb-3">
+          <span className="text-xs font-semibold text-muted-foreground">Método de configuración:</span>
+          <div className="flex gap-1 rounded-lg bg-muted/60 p-1">
+            <button
+              type="button"
+              onClick={() => setMode('guided')}
+              className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold transition-all ${
+                mode === 'guided'
+                  ? 'bg-background text-foreground shadow-2xs'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Calculator className="h-3.5 w-3.5" />
+              <span>Guiado (Págate primero)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode('manual')}
+              className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold transition-all ${
+                mode === 'manual'
+                  ? 'bg-background text-foreground shadow-2xs'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <SlidersHorizontal className="h-3.5 w-3.5" />
+              <span>Límite manual</span>
+            </button>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Incluye gastos variables y compromisos fijos. Este límite activa tu Margen Seguro Diario.
-          </p>
-          <label className="grid gap-1 text-xs font-medium text-muted-foreground">
-            Límite mensual (DOP)
-            <CurrencyAmountInput
-              placeholder="Ej. 45,000"
-              value={monthlySpendingLimit}
-              onValueChange={setMonthlySpendingLimit}
-              aria-invalid={monthlySpendingLimit.length > 0 && !validLimit}
-              className="font-mono text-base font-semibold"
-            />
-          </label>
-          {monthlySpendingLimit.length > 0 && !validLimit && (
-            <p className="text-xs text-destructive">El límite debe ser mayor que cero.</p>
-          )}
         </div>
 
-        <OptionalFinancialDetails
-          incomeAmount={incomeAmount}
-          frequency={frequency}
-          selectedServices={selectedServices}
-          serviceAmounts={serviceAmounts}
-          validServices={validServices}
-          onIncomeChange={setIncomeAmount}
-          onFrequencyChange={setFrequency}
-          onToggleService={toggleService}
-          onServiceAmountChange={(id, amount) => setServiceAmounts((current) => ({
-            ...current,
-            [id]: amount,
-          }))}
-        />
+        {mode === 'guided' ? (
+          <SavingsBaselineCalculator
+            incomeAmount={incomeAmount}
+            frequency={frequency}
+            paydayPreset={paydayPreset}
+            customDay1={customDay1}
+            customDay2={customDay2}
+            savingsAmount={savingsAmount}
+            calculatedMonthlyIncome={calculatedMonthlyIncome}
+            calculatedMonthlySavings={calculatedMonthlySavings}
+            effectiveSpendingLimit={effectiveSpendingLimit}
+            onIncomeChange={setIncomeAmount}
+            onFrequencyChange={setFrequency}
+            onPaydayPresetChange={setPaydayPreset}
+            onCustomDay1Change={setCustomDay1}
+            onCustomDay2Change={setCustomDay2}
+            onSavingsChange={setSavingsAmount}
+            onSavingsPercentageSelect={selectSavingsPercentage}
+          />
+        ) : (
+          <div className="space-y-3 rounded-2xl border border-primary/25 bg-primary/[0.04] p-4">
+            <h3 className="text-sm font-bold text-foreground">¿Cuál es tu límite mensual de gasto?</h3>
+            <p className="text-xs text-muted-foreground">
+              Monto total que planeas gastar en el mes incluyendo gastos fijos y variables.
+            </p>
+            <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+              Límite mensual (DOP)
+              <CurrencyAmountInput
+                placeholder="Ej. 45,000"
+                value={manualSpendingLimit}
+                onValueChange={setManualSpendingLimit}
+                aria-invalid={manualSpendingLimit.length > 0 && !validLimit}
+                className="font-mono text-base font-semibold"
+              />
+            </label>
+          </div>
+        )}
+
+        {/* 3. Recurring Fixed Services */}
+        <div className="space-y-3 rounded-2xl border border-border/60 bg-muted/20 p-4">
+          <h3 className="text-sm font-bold text-foreground">3. Compromisos fijos habituales (opcional)</h3>
+          <p className="text-xs text-muted-foreground">
+            Servicios que se cobran cada mes y no deben contarse como dinero libre para el día a día.
+          </p>
+          <RecurringServiceSelector
+            selectedServices={selectedServices}
+            serviceAmounts={serviceAmounts}
+            valid={validServices}
+            onToggle={toggleService}
+            onAmountChange={(id, amount) => setServiceAmounts((c) => ({ ...c, [id]: amount }))}
+          />
+        </div>
 
         {/* Live Calculation Preview Card */}
         {validLimit && (
           <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.04] p-4 text-center sm:text-left">
             <p className="text-xs font-semibold text-emerald-800 dark:text-emerald-300">
-              Estimación inicial de tu Margen Seguro:
+              Margen Seguro Diario resultante:
             </p>
             <div className="mt-2 flex flex-col justify-between gap-2 sm:flex-row sm:items-baseline">
               <p className="text-xs text-muted-foreground">
-                Límite: <strong className="text-foreground">{formatCurrency(parsedLimit, 'DOP')}</strong> - Compromisos:{' '}
-                <strong className="text-foreground">{formatCurrency(estimatedFixedExpenses, 'DOP')}</strong>
+                Presupuesto mensual: <strong className="text-foreground">{formatCurrency(effectiveSpendingLimit, 'DOP')}</strong>
+                {estimatedFixedExpenses > 0 ? (
+                  <> - Fijos: <strong className="text-foreground">{formatCurrency(estimatedFixedExpenses, 'DOP')}</strong></>
+                ) : null}
               </p>
               <p className="text-base font-black text-emerald-700 dark:text-emerald-400 sm:text-lg">
                 ≈ {formatCurrency(estimatedDailyMargin, 'DOP')} / día
               </p>
             </div>
             <p className="mt-2 text-[11px] text-muted-foreground">
-              Se ajustará con tus movimientos importados y los días que quedan del mes.
-              {monthlyIncome > 0 ? ` Ingreso mensual estimado: ${formatCurrency(monthlyIncome, 'DOP')}.` : ''}
+              Se ajustará en tiempo real con tus movimientos bancarios y los días restantes del mes.
             </p>
           </div>
         )}

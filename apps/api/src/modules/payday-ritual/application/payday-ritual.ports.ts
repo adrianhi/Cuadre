@@ -1,5 +1,16 @@
+export interface PaydayIncomeDetails {
+  plannedBiweeklyIncome: number;
+  savingsTarget: number;
+  paydayDays: [number, number];
+}
+
 export interface PaydayIncomeReader {
   plannedBiweeklyIncome(workspaceId: string, currency: string): Promise<number>;
+  getIncomePlanDetails?(workspaceId: string, currency: string): Promise<PaydayIncomeDetails>;
+}
+
+export interface PaydaySavingsReader {
+  findSavingsTransfersInCycle(workspaceId: string, currency: string, start: string, through: string): Promise<number>;
 }
 
 export interface PaydayExpenseReader {

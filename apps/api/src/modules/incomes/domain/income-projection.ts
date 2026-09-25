@@ -7,6 +7,8 @@ export interface ProjectableIncomeStream {
   currency: string;
   frequency: IncomeFrequency;
   dayOfMonth?: number | null;
+  secondDayOfMonth?: number | null;
+  savingsTarget?: number | string | null;
   isActive: boolean;
 }
 
@@ -45,5 +47,27 @@ export function projectTotalMonthlyIncome(
     (acc, stream) => acc + calculateProjectedStreamMonthly(stream, targetCurrency),
     0,
   );
+  return round(sum);
+}
+
+export function projectTotalMonthlySavings(
+  streams: ProjectableIncomeStream[],
+  targetCurrency: string,
+): number {
+  const sum = streams.reduce((acc, stream) => {
+    if (!stream.isActive || stream.currency.toUpperCase() !== targetCurrency.toUpperCase()) return acc;
+    const baseSavings = Number(stream.savingsTarget) || 0;
+    if (baseSavings <= 0) return acc;
+    switch (stream.frequency) {
+      case 'BIWEEKLY_15_30':
+        return acc + round(baseSavings * 2);
+      case 'MONTHLY':
+        return acc + round(baseSavings);
+      case 'WEEKLY':
+        return acc + round(baseSavings * 4);
+      default:
+        return acc + round(baseSavings);
+    }
+  }, 0);
   return round(sum);
 }

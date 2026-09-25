@@ -56,7 +56,7 @@ import {
 import { EngagementController, EngagementService, PrismaEngagementRepository } from './modules/engagement';
 import {
   PaydayRitualController, PaydayRitualService, PrismaPaydayExpenseReader,
-  PrismaPaydayIncomeReader, PrismaPaydayReviewRepository,
+  PrismaPaydayIncomeReader, PrismaPaydayReviewRepository, PrismaPaydaySavingsReader,
 } from './modules/payday-ritual';
 import {
   EmailNotificationController, EmailTransportService, PrismaEmailRepository, PrismaProactiveRepository,
@@ -105,7 +105,7 @@ const getSafeToSpend = new GetSafeToSpend(
 );
 const paydayRitualService = new PaydayRitualService(
   new PrismaPaydayIncomeReader(), new PrismaPaydayExpenseReader(), recurringService,
-  new PrismaPaydayReviewRepository(), engagementService,
+  new PrismaPaydayReviewRepository(), engagementService, new PrismaPaydaySavingsReader(),
 );
 const budgetController = new BudgetController({
   getMonthly: getMonthlyBudget,

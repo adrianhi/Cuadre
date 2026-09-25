@@ -73,7 +73,13 @@ export function useBankOnboarding(authenticated: boolean, onComplete: () => void
 
   const finishWithBaseline = async (
     monthlySpendingLimit: number,
-    income?: { amount: number; frequency: IncomeFrequency },
+    income?: {
+      amount: number;
+      frequency: IncomeFrequency;
+      dayOfMonth?: number | null;
+      secondDayOfMonth?: number | null;
+      savingsTarget?: number | null;
+    },
     recurringServices?: Array<{ name: string; amount: number }>,
   ) => {
     setSavingBaseline(true);
@@ -96,6 +102,9 @@ export function useBankOnboarding(authenticated: boolean, onComplete: () => void
             amount: income.amount,
             frequency: income.frequency,
             currency: 'DOP',
+            dayOfMonth: income.dayOfMonth,
+            secondDayOfMonth: income.secondDayOfMonth,
+            savingsTarget: income.savingsTarget,
             isActive: true,
           });
         } else {
@@ -104,6 +113,9 @@ export function useBankOnboarding(authenticated: boolean, onComplete: () => void
             amount: income.amount,
             frequency: income.frequency,
             currency: 'DOP',
+            dayOfMonth: income.dayOfMonth,
+            secondDayOfMonth: income.secondDayOfMonth,
+            savingsTarget: income.savingsTarget,
           });
         }
       }

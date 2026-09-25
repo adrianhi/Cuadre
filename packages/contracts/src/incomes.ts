@@ -10,6 +10,8 @@ export const incomeStreamSchema = z.object({
   currency: z.string(),
   frequency: incomeFrequencySchema,
   dayOfMonth: z.number().nullable().optional(),
+  secondDayOfMonth: z.number().nullable().optional(),
+  savingsTarget: z.number().nullable().optional(),
   isActive: z.boolean(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
@@ -22,6 +24,8 @@ export const createIncomeStreamSchema = z.object({
   currency: z.string().trim().min(3).max(3).default('DOP').transform((v) => v.toUpperCase()),
   frequency: incomeFrequencySchema.default('BIWEEKLY_15_30'),
   dayOfMonth: z.coerce.number().min(1).max(31).optional().nullable(),
+  secondDayOfMonth: z.coerce.number().min(1).max(31).optional().nullable(),
+  savingsTarget: z.coerce.number().min(0).optional().nullable(),
 });
 export type CreateIncomeStreamInput = z.infer<typeof createIncomeStreamSchema>;
 
