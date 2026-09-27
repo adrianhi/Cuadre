@@ -49,8 +49,9 @@ async function main() {
 
   // Reset baseline financial records
   for (const wsId of workspaceIds) {
-    await prisma.monthlyBudget.deleteMany({ where: { workspaceId: wsId } });
+    await prisma.spendingBudgetLimit.deleteMany({ where: { workspaceId: wsId } });
     await prisma.incomeStream.deleteMany({ where: { workspaceId: wsId } });
+
     await prisma.recurringBill.deleteMany({ where: { workspaceId: wsId } });
 
     if (isFull) {
