@@ -200,22 +200,25 @@ test('activates the monthly margin through the legal to onboarding to dashboard 
   await page.getByRole('checkbox').check();
   await page.getByRole('button', { name: 'Aceptar y continuar' }).click();
 
-  await expect(page.getByText('Paso 1 de 2 · Movimientos')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Trae tus movimientos automáticamente' })).toBeVisible();
-  await page.getByRole('button', { name: 'Continuar con movimientos manuales por ahora' }).click();
+  await expect(page.getByRole('button', { name: 'Configurar con mis cuartos' })).toBeVisible();
+  await page.getByRole('button', { name: 'Configurar con mis cuartos' }).click();
 
-  await expect(page.getByText('Paso 2 de 2 · Margen Seguro')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Calcula tu Margen Seguro' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Diseña tu Presupuesto Seguro' })).toBeVisible();
   const finish = page.getByRole('button', { name: 'Guardar y ver mi Margen Seguro' });
   await expect(finish).toBeDisabled();
-  await page.getByText('Ingresos y cobros fijos', { exact: true }).click();
+
+  await page.getByLabel('Monto por cobro (DOP)').fill('30000');
+  await page.getByLabel('Ahorro por cada pago (DOP)').fill('7500');
   await expect(page.getByRole('button', { name: /Internet \/ Telecom/ })).toHaveAttribute('aria-pressed', 'false');
-  await page.getByLabel('Límite mensual (DOP)').fill('45000');
-  await page.getByLabel('Monto por pago (DOP)').fill('30000');
   await page.getByRole('button', { name: /Internet \/ Telecom/ }).click();
+  await expect(page.getByRole('button', { name: /Internet \/ Telecom/ })).toHaveAttribute('aria-pressed', 'true');
   await page.getByLabel('Monto mensual estimado (DOP)').fill('2500');
-  await expect(page.getByText(/Estimación inicial de tu Margen Seguro/)).toBeVisible();
+  await expect(page.getByText(/Margen Seguro Diario resultante/)).toBeVisible();
+  await expect(finish).toBeEnabled();
   await finish.click();
+
+  await expect(page.getByRole('heading', { name: 'Trae tus movimientos automáticamente' })).toBeVisible();
+  await page.getByRole('button', { name: 'Continuar con movimientos manuales por ahora' }).click();
 
   await expect(page.getByRole('heading', { name: 'Tu panorama' })).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText('Margen Seguro Diario', { exact: true })).toBeVisible();
@@ -281,11 +284,13 @@ test('keeps the user in the margin step when the budget cannot be saved', async 
   });
 
   await page.goto('/app');
-  await page.getByRole('button', { name: 'Continuar con movimientos manuales por ahora' }).click();
+  await expect(page.getByRole('button', { name: 'Configurar con mis cuartos' })).toBeVisible();
+  await page.getByRole('button', { name: 'Configurar con mis cuartos' }).click();
+  await page.getByRole('tab', { name: 'Límite manual' }).click();
   await page.getByLabel('Límite mensual (DOP)').fill('45000');
   await page.getByRole('button', { name: 'Guardar y ver mi Margen Seguro' }).click();
 
-  await expect(page.getByRole('heading', { name: 'Calcula tu Margen Seguro' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Diseña tu Presupuesto Seguro' })).toBeVisible();
   await expect(page.getByText('No pudimos guardar tu límite mensual.')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Guardar y ver mi Margen Seguro' })).toBeEnabled();
   expect(completionRequests).toBe(0);

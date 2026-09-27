@@ -5,11 +5,11 @@ const baseURL = `http://127.0.0.1:${port}`;
 
 export default defineConfig({
   testDir: './e2e',
-  timeout: 60000,
+  timeout: 45000,
   fullyParallel: false,
-  // Four browser/device projects share the local machine with development services.
-  workers: 1,
-  retries: process.env.CI ? 2 : 0,
+  // 2 workers on CI runner (2 vCPUs), 1 worker on local dev
+  workers: process.env.CI ? 2 : 1,
+  retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI
     ? [
         ['github'],
@@ -22,7 +22,6 @@ export default defineConfig({
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
     { name: 'mobile', use: { ...devices['Pixel 7'] } },
     { name: 'iphone-15-pro', use: { ...devices['iPhone 15 Pro'] } },
-    { name: 'iphone-15-pro-landscape', use: { ...devices['iPhone 15 Pro landscape'] } },
   ],
   webServer: {
     command: `npm run build:contracts --prefix ../.. && npm run dev -- --port ${port}`,

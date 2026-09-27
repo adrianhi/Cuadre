@@ -108,7 +108,7 @@ async function expectSettledStep(page: Page, title: string) {
   await expect(page.locator('[data-product-tour-phase="settled"]')).toBeVisible();
   await expect(page.locator('[data-product-tour-card]')).toBeVisible();
   await expect(page.getByRole('heading', { name: title })).toBeVisible();
-  const primaryAction = title === 'Revisa los movimientos que forman el cálculo' ? 'Terminar' : 'Siguiente';
+  const primaryAction = title === 'Tus Movimientos al día' ? 'Terminar' : 'Siguiente';
   await expect(page.getByRole('button', { name: primaryAction })).toBeFocused();
 }
 
@@ -129,11 +129,12 @@ test('the tour settles every target before revealing its card', async ({ page })
   await page.goto('/app/home');
   await page.getByRole('button', { name: 'Ver recorrido' }).click();
 
-  await expectSettledStep(page, 'Tu Margen Seguro Diario');
-  await moveTour(page, 'Siguiente', 'Tus movimientos mantienen el margen actualizado');
-  await moveTour(page, 'Atrás', 'Tu Margen Seguro Diario');
-  await moveTour(page, 'Siguiente', 'Tus movimientos mantienen el margen actualizado');
-  await moveTour(page, 'Siguiente', 'Revisa los movimientos que forman el cálculo');
+  await expectSettledStep(page, 'Tu Margen de Hoy (El Dial)');
+  await moveTour(page, 'Siguiente', 'Tu Ahorro Blindado & Quincena');
+  await moveTour(page, 'Atrás', 'Tu Margen de Hoy (El Dial)');
+  await moveTour(page, 'Siguiente', 'Tu Ahorro Blindado & Quincena');
+  await moveTour(page, 'Siguiente', 'Tus Superpoderes');
+  await moveTour(page, 'Siguiente', 'Tus Movimientos al día');
 
   await page.getByRole('button', { name: 'Terminar' }).click();
   await expect(page.locator('[data-product-tour-phase]')).toHaveCount(0);
@@ -144,7 +145,7 @@ test('Escape cancels the tour and leaves normal navigation usable', async ({ pag
   const productGuideUpdates = await mockAuthenticatedDashboard(page);
   await page.goto('/app/home');
   await page.getByRole('button', { name: 'Ver recorrido' }).click();
-  await expectSettledStep(page, 'Tu Margen Seguro Diario');
+  await expectSettledStep(page, 'Tu Margen de Hoy (El Dial)');
   await page.keyboard.press('Escape');
   await expect(page.locator('[data-product-tour-phase]')).toHaveCount(0);
   expect(productGuideUpdates).toEqual([false, false]);
