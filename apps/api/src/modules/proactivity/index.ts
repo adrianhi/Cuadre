@@ -16,4 +16,4 @@ export { WeeklyEmailBuilder } from './application/weekly-email.builder';
 export { ProactiveEmailService } from './application/proactive-email.service';
 export { ProactiveEmailScheduler } from './application/proactive-email.scheduler';
 export { ProactiveEmailRunner } from './application/proactive-email.runner';
-
+export { renderProductUpdateEmail } from './domain/product-update-template';

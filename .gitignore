@@ -28,5 +28,6 @@ dev.db-wal
 .gemini/
 backups/
 *.dump
+*preview.html
 pnpm-lock.yaml
 pnpm-workspace.yaml
