@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { AlertCircle, ArrowRight, Calculator, Loader2, SlidersHorizontal, Sparkles } from 'lucide-react';
 import type { IncomeFrequency } from '@bills/contracts';
-import { formatCurrency } from '@/shared/lib';
+import { formatCurrency, parseAmountInput } from '@/shared/lib';
 import { Button, Card, CardContent, CurrencyAmountInput, Tabs, TabsList, TabsTrigger } from '@/shared/ui';
 import { COMMON_RD_SERVICES } from '../model/common-recurring-services';
 import { useFinancialBaseline } from '../model/useFinancialBaseline';
@@ -59,7 +59,10 @@ export function FinancialBaselineStep({
 
     const recurringData = COMMON_RD_SERVICES
       .filter((s) => selectedServices.includes(s.id))
-      .map((s) => ({ name: s.name, amount: Number(serviceAmounts[s.id]) || 0 }));
+      .map((s) => ({
+        name: s.name,
+        amount: Number(parseAmountInput(serviceAmounts[s.id])) || 0,
+      }));
 
     onFinish(effectiveSpendingLimit, incomeData, recurringData);
   };
