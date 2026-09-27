@@ -13,19 +13,25 @@ export const PRODUCT_TOUR_STEPS: readonly TourStep[] = [
   {
     section: 'home',
     target: 'safe-to-spend',
-    title: 'Tu Margen Seguro Diario',
-    description: 'Este número te dice cuánto puedes gastar hoy sin salirte de tu límite mensual ni olvidar tus compromisos.',
+    title: 'Tu Margen de Hoy (El Dial)',
+    description: 'Tu guía diaria real para gastar libremente sin culpa.',
   },
   {
     section: 'home',
-    target: 'connection-health',
-    title: 'Tus movimientos mantienen el margen actualizado',
-    description: 'Aquí puedes comprobar si Gmail está conectado, sincronizando o necesita tu atención. También puedes usar Cuadre manualmente.',
+    target: 'starter-hero',
+    title: 'Tu Ahorro Blindado & Quincena',
+    description: 'Apartas tu ahorro primero y tus transferencias nunca se descuentan como gastos.',
+  },
+  {
+    section: 'home',
+    target: 'quick-action-rail',
+    title: 'Tus Superpoderes',
+    description: 'Consulta el Semáforo de Tarjetas para financiarte a costo cero y simula gastos.',
   },
   {
     section: 'transactions',
     target: 'transactions',
-    title: 'Revisa los movimientos que forman el cálculo',
-    description: 'Aquí puedes verificar y corregir cualquier movimiento. Los cobros fijos confirmados ya se reservan dentro de tu Margen Seguro.',
+    title: 'Tus Movimientos al día',
+    description: 'Se actualizan automáticamente con tus bancos compatibles.',
   },
 ] as const;

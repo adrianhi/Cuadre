@@ -39,7 +39,7 @@ export function PaydayRitualCard({
 
   if (!ritual || !ritual.eligible || ritual.status === 'UNAVAILABLE' || !ritual.cycleKey) {
     return (
-      <Card className="overflow-hidden border-border/60 shadow-xs">
+      <Card className="overflow-hidden border-border/60 shadow-xs" data-product-tour="payday-ritual">
         <CardContent className="p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3.5">
@@ -69,7 +69,7 @@ export function PaydayRitualCard({
 
   if (ritual.status === 'COMPLETED') {
     return (
-      <Card className="overflow-hidden border-emerald-500/30 bg-emerald-500/5 shadow-xs">
+      <Card className="overflow-hidden border-emerald-500/30 bg-emerald-500/5 shadow-xs" data-product-tour="payday-ritual">
         <CardContent className="space-y-4 p-5">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-start gap-2.5 min-w-0 flex-1">
@@ -127,7 +127,7 @@ export function PaydayRitualCard({
   }
 
   return (
-    <Card className="overflow-hidden border-violet-400/30 bg-gradient-to-br from-violet-500/15 via-card to-primary/10 shadow-xs">
+    <Card className="overflow-hidden border-violet-400/30 bg-gradient-to-br from-violet-500/15 via-card to-primary/10 shadow-xs" data-product-tour="payday-ritual">
       <CardContent className="space-y-4 p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-2.5 min-w-0 flex-1">

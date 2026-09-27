@@ -1,7 +1,11 @@
 import { measureRect, type TourRect, type TourViewport } from './tour-geometry';
 
 export function visibleTourTarget(id: string): HTMLElement | undefined {
-  return Array.from(document.querySelectorAll<HTMLElement>(`[data-product-tour="${id}"]`)).find((element) => {
+  const selector =
+    id === 'starter-hero' || id === 'payday-ritual'
+      ? `[data-product-tour="${id}"], [data-product-tour="starter-hero"], [data-product-tour="payday-ritual"]`
+      : `[data-product-tour="${id}"]`;
+  return Array.from(document.querySelectorAll<HTMLElement>(selector)).find((element) => {
     const rect = element.getBoundingClientRect();
     const style = window.getComputedStyle(element);
     return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
