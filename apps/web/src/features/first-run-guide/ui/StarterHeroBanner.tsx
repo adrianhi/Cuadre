@@ -7,7 +7,9 @@ import { AppExplainerDialog } from './AppExplainerDialog';
 
 interface StarterHeroBannerProps extends FirstRunGuideOptions {
   onStartTour?: () => void;
+  onOpenComparison?: () => void;
 }
+
 
 const STARTER_BANNER_DISMISSED_KEY = 'cuadre_starter_hero_dismissed_v1';
 
@@ -65,6 +67,19 @@ export const StarterHeroBanner: React.FC<StarterHeroBannerProps> = (props) => {
             </div>
 
             <div className="flex items-center gap-1 shrink-0">
+              {props.onOpenComparison && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={props.onOpenComparison}
+                  className="h-8 gap-1 px-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700"
+                  title="Comparar Mes Pasado vs Este Mes"
+                >
+                  <Sparkles className="h-3.5 w-3.5 text-emerald-500" />
+                  <span className="hidden sm:inline">Mes Pasado vs Este Mes</span>
+                </Button>
+              )}
               <Button
                 type="button"
                 variant="ghost"
@@ -88,6 +103,7 @@ export const StarterHeroBanner: React.FC<StarterHeroBannerProps> = (props) => {
                 <X className="h-4 w-4" />
               </Button>
             </div>
+
           </div>
 
           {/* Primary Recommended Action Card */}

@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/shared/ui';
 import { ONBOARDING_HOOK_SLIDES } from '../model/onboarding-hook-slides';
 import { useOnboardingHook } from '../model/useOnboardingHook';
 import { OnboardingHookSlide } from './OnboardingHookSlide';
+import { MonthComparisonModal } from './MonthComparisonModal';
 
 interface OnboardingHookCarouselProps {
   onStartSetup: () => void;
@@ -15,6 +16,7 @@ export const OnboardingHookCarousel: React.FC<OnboardingHookCarouselProps> = ({
   onStartSetup,
   onSkip,
 }) => {
+  const [isComparisonOpen, setIsComparisonOpen] = useState(false);
   const {
     currentSlide,
     isLastSlide,
@@ -26,6 +28,7 @@ export const OnboardingHookCarousel: React.FC<OnboardingHookCarouselProps> = ({
   } = useOnboardingHook(ONBOARDING_HOOK_SLIDES.length);
 
   const activeSlide = ONBOARDING_HOOK_SLIDES[currentSlide];
+
 
   return (
     <div className="flex min-h-screen flex-col justify-between bg-background px-4 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-[calc(2rem+env(safe-area-inset-bottom))] sm:px-6">
@@ -56,7 +59,12 @@ export const OnboardingHookCarousel: React.FC<OnboardingHookCarouselProps> = ({
         onTouchEnd={handleTouchEnd}
       >
         <div className="transition-all duration-300 ease-out">
-          {activeSlide && <OnboardingHookSlide slide={activeSlide} />}
+          {activeSlide && (
+            <OnboardingHookSlide
+              slide={activeSlide}
+              onOpenComparison={() => setIsComparisonOpen(true)}
+            />
+          )}
         </div>
 
         <nav
@@ -116,6 +124,13 @@ export const OnboardingHookCarousel: React.FC<OnboardingHookCarouselProps> = ({
           </Button>
         )}
       </footer>
+
+      <MonthComparisonModal
+        open={isComparisonOpen}
+        onOpenChange={setIsComparisonOpen}
+        onContinue={onStartSetup}
+      />
     </div>
   );
 };
+

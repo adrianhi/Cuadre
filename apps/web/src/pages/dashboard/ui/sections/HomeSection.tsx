@@ -21,11 +21,13 @@ import { RecentTransactionsCard } from "./RecentTransactionsCard";
 import { QuickActionRail } from "./QuickActionRail";
 import { CardTrafficLightModal } from "@/features/credit-cards";
 import { CuadreDelMesModal } from "@/features/cuadre-del-mes";
+import { MonthComparisonModal } from "@/features/onboarding";
 import {
   FirstRunGuideCard,
   StarterHeroBanner,
   type FirstRunGuideOptions,
 } from "@/features/first-run-guide";
+
 
 interface HomeSectionProps {
   periodToolbar: ReactNode;
@@ -85,6 +87,7 @@ export const HomeSection: React.FC<HomeSectionProps> = ({
   const [isDigestOpen, setIsDigestOpen] = useState(false);
   const [isTrafficLightOpen, setIsTrafficLightOpen] = useState(false);
   const [isWrappedOpen, setIsWrappedOpen] = useState(false);
+  const [isComparisonOpen, setIsComparisonOpen] = useState(false);
 
   useTrackProductView(safeToSpend.data ? {
     name: 'SAFE_TO_SPEND_VIEWED',
@@ -119,7 +122,12 @@ export const HomeSection: React.FC<HomeSectionProps> = ({
       </div>
 
       {/* Full-width starter hero banner for new users */}
-      <StarterHeroBanner {...guideOptions} onStartTour={onStartTour} />
+      <StarterHeroBanner
+        {...guideOptions}
+        onStartTour={onStartTour}
+        onOpenComparison={() => setIsComparisonOpen(true)}
+      />
+
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
         <div className="space-y-6 xl:col-span-7 2xl:col-span-8">
@@ -217,6 +225,12 @@ export const HomeSection: React.FC<HomeSectionProps> = ({
         initialStats={stats}
         currency={currency}
       />
+
+      <MonthComparisonModal
+        open={isComparisonOpen}
+        onOpenChange={setIsComparisonOpen}
+      />
     </>
   );
 };
+

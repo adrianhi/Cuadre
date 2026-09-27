@@ -1,11 +1,14 @@
-import { AlertCircle, ArrowRight, Loader2, Sparkles, SlidersHorizontal, Calculator } from 'lucide-react';
+import { useState } from 'react';
+
+import { AlertCircle, ArrowRight, Calculator, Loader2, SlidersHorizontal, Sparkles } from 'lucide-react';
 import type { IncomeFrequency } from '@bills/contracts';
 import { formatCurrency } from '@/shared/lib';
-import { Button, Card, CardContent, CurrencyAmountInput } from '@/shared/ui';
+import { Button, Card, CardContent, CurrencyAmountInput, Tabs, TabsList, TabsTrigger } from '@/shared/ui';
 import { COMMON_RD_SERVICES } from '../model/common-recurring-services';
 import { useFinancialBaseline } from '../model/useFinancialBaseline';
 import { SavingsBaselineCalculator } from './SavingsBaselineCalculator';
 import { RecurringServiceSelector } from './RecurringServiceSelector';
+import { MonthComparisonModal } from './MonthComparisonModal';
 
 interface FinancialBaselineStepProps {
   busy: boolean;
@@ -30,45 +33,33 @@ export function FinancialBaselineStep({
   onFinish,
   onSkip,
 }: FinancialBaselineStepProps) {
+  const [isComparisonOpen, setIsComparisonOpen] = useState(false);
+  const baseline = useFinancialBaseline();
   const {
-    mode, setMode,
-    incomeAmount, setIncomeAmount,
-    frequency, setFrequency,
-    paydayPreset, setPaydayPreset,
-    customDay1, setCustomDay1,
-    customDay2, setCustomDay2,
-    resolvedDay1, resolvedDay2,
-    savingsAmount, setSavingsAmount,
-    selectSavingsPercentage,
-    manualSpendingLimit, setManualSpendingLimit,
-    selectedServices, toggleService,
-    serviceAmounts, setServiceAmounts,
-    parsedIncome, parsedSavings,
-    calculatedMonthlyIncome, calculatedMonthlySavings,
-    effectiveSpendingLimit, estimatedFixedExpenses,
-    estimatedDailyMargin,
-    validLimit, validServices,
-  } = useFinancialBaseline();
+    mode, setMode, incomeAmount, setIncomeAmount, frequency, setFrequency,
+    paydayPreset, setPaydayPreset, customDay1, setCustomDay1, customDay2, setCustomDay2,
+    resolvedDay1, resolvedDay2, savingsAmount, setSavingsAmount, selectSavingsPercentage,
+    manualSpendingLimit, setManualSpendingLimit, selectedServices, toggleService,
+    serviceAmounts, setServiceAmounts, parsedIncome, parsedSavings, calculatedMonthlyIncome,
+    calculatedMonthlySavings, effectiveSpendingLimit, estimatedFixedExpenses,
+    estimatedDailyMargin, validLimit, validServices,
+  } = baseline;
+
 
   const handleComplete = () => {
     if (!validLimit || !validServices) return;
 
-    const incomeData = parsedIncome > 0
-      ? {
-          amount: parsedIncome,
-          frequency,
-          dayOfMonth: resolvedDay1,
-          secondDayOfMonth: resolvedDay2,
-          savingsTarget: parsedSavings > 0 ? parsedSavings : null,
-        }
-      : undefined;
+    const incomeData = parsedIncome > 0 ? {
+      amount: parsedIncome,
+      frequency,
+      dayOfMonth: resolvedDay1,
+      secondDayOfMonth: resolvedDay2,
+      savingsTarget: parsedSavings > 0 ? parsedSavings : null,
+    } : undefined;
 
     const recurringData = COMMON_RD_SERVICES
       .filter((s) => selectedServices.includes(s.id))
-      .map((s) => ({
-        name: s.name,
-        amount: Number(serviceAmounts[s.id]) || 0,
-      }));
+      .map((s) => ({ name: s.name, amount: Number(serviceAmounts[s.id]) || 0 }));
 
     onFinish(effectiveSpendingLimit, incomeData, recurringData);
   };
@@ -89,35 +80,42 @@ export function FinancialBaselineStep({
       </div>
 
       <CardContent className="space-y-6 p-6">
-        {/* Mode switcher tab / toggle */}
-        <div className="flex items-center justify-between border-b border-border/60 pb-3">
-          <span className="text-xs font-semibold text-muted-foreground">Método de configuración:</span>
-          <div className="flex gap-1 rounded-lg bg-muted/60 p-1">
-            <button
-              type="button"
-              onClick={() => setMode('guided')}
-              className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold transition-all ${
-                mode === 'guided'
-                  ? 'bg-background text-foreground shadow-2xs'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <Calculator className="h-3.5 w-3.5" />
-              <span>Guiado (Págate primero)</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setMode('manual')}
-              className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold transition-all ${
-                mode === 'manual'
-                  ? 'bg-background text-foreground shadow-2xs'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <SlidersHorizontal className="h-3.5 w-3.5" />
-              <span>Límite manual</span>
-            </button>
-          </div>
+        {/* Full-width mode switcher tabs - No line wrap */}
+        <div className="space-y-2.5">
+          <Tabs
+            value={mode}
+            onValueChange={(val) => setMode(val as 'guided' | 'manual')}
+            className="w-full"
+          >
+            <TabsList className="grid w-full grid-cols-2 rounded-xl bg-muted/60 p-1 border border-border/60">
+              <TabsTrigger
+                value="guided"
+                className="flex items-center justify-center gap-1.5 rounded-lg py-2.5 text-xs font-bold transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs"
+              >
+                <Calculator className="h-4 w-4 shrink-0 text-emerald-500" />
+                <span className="truncate">Guiado (Págate primero)</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="manual"
+                className="flex items-center justify-center gap-1.5 rounded-lg py-2.5 text-xs font-bold transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs"
+              >
+                <SlidersHorizontal className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <span className="truncate">Límite manual</span>
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          <button
+            type="button"
+            onClick={() => setIsComparisonOpen(true)}
+            className="flex w-full items-center justify-between rounded-xl border border-emerald-500/25 bg-emerald-500/5 px-3 py-1.5 text-xs text-emerald-800 dark:text-emerald-300 transition hover:bg-emerald-500/10"
+          >
+            <span className="flex items-center gap-1.5 font-bold text-[11px]">
+              <Sparkles className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+              ¿Dudas? Compara tu mes con vs sin Cuadre
+            </span>
+            <span className="font-semibold text-emerald-600 dark:text-emerald-400 text-[11px]">Ver comparativa &rarr;</span>
+          </button>
         </div>
 
         {mode === 'guided' ? (
@@ -232,6 +230,12 @@ export function FinancialBaselineStep({
           </button>
         </div>
       </CardContent>
+
+      <MonthComparisonModal
+        open={isComparisonOpen}
+        onOpenChange={setIsComparisonOpen}
+        initialIncome={parsedIncome > 0 ? parsedIncome : 50000}
+      />
     </Card>
   );
 }

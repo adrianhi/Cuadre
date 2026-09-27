@@ -8,6 +8,8 @@ import { CardTrafficLightModal } from '@/features/credit-cards';
 import { DobleSueldoDialog } from '../modals/DobleSueldoDialog';
 import { CuadreDelMesModal } from '@/features/cuadre-del-mes';
 import { AppExplainerDialog } from '@/features/first-run-guide';
+import { MonthComparisonModal } from '@/features/onboarding';
+
 
 interface HubSectionProps {
   onOpenCoro: (coroId?: string) => void;
@@ -90,6 +92,7 @@ export function HubSection({
   const [isDobleSueldoOpen, setIsDobleSueldoOpen] = useState(false);
   const [isWrappedOpen, setIsWrappedOpen] = useState(false);
   const [isExplainerOpen, setIsExplainerOpen] = useState(false);
+  const [isComparisonOpen, setIsComparisonOpen] = useState(false);
 
   return (
     <div className="space-y-8 animate-in fade-in-0 duration-200">
@@ -100,17 +103,30 @@ export function HubSection({
             Herramientas inteligentes, experiencias y utilidades para tus finanzas dominicanas.
           </p>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => setIsExplainerOpen(true)}
-          className="self-start sm:self-auto gap-2 rounded-xl text-xs font-bold text-primary"
-        >
-          <HelpCircle className="h-4 w-4" />
-          ¿Cómo funciona Cuadre?
-        </Button>
+        <div className="flex flex-wrap gap-2 self-start sm:self-auto">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsComparisonOpen(true)}
+            className="gap-2 rounded-xl text-xs font-bold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10"
+          >
+            <Sparkles className="h-4 w-4 text-emerald-500" />
+            Mes Pasado vs Este Mes
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsExplainerOpen(true)}
+            className="gap-2 rounded-xl text-xs font-bold text-primary"
+          >
+            <HelpCircle className="h-4 w-4" />
+            ¿Cómo funciona Cuadre?
+          </Button>
+        </div>
       </div>
+
 
       <div className="space-y-3">
         <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Social & Cuentas Compartidas</p>
@@ -145,7 +161,17 @@ export function HubSection({
 
       <div className="space-y-3">
         <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Experiencias & Reportes</p>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <HubCard
+            icon={Sparkles}
+            badge="El Core"
+            badgeVariant="emerald"
+            title="Mes Anterior vs Este Mes"
+            description="Compara tu vida financiera antes de Cuadre vs en Piloto Automático con Ahorro Blindado."
+            actionLabel="Ver comparativa"
+            onAction={() => setIsComparisonOpen(true)}
+            iconBgClass="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+          />
           <HubCard
             icon={Sparkles}
             badge="Wrapped"
@@ -195,6 +221,8 @@ export function HubSection({
       <DobleSueldoDialog open={isDobleSueldoOpen} onOpenChange={setIsDobleSueldoOpen} currency={currency} />
       <CuadreDelMesModal open={isWrappedOpen} onOpenChange={setIsWrappedOpen} initialStats={stats} currency={currency} />
       <AppExplainerDialog open={isExplainerOpen} onOpenChange={setIsExplainerOpen} />
+      <MonthComparisonModal open={isComparisonOpen} onOpenChange={setIsComparisonOpen} />
     </div>
   );
 }
+
