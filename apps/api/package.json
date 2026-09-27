@@ -22,6 +22,8 @@
     "beta:invite:prod": "tsx src/scripts/create-beta-invite.ts --prod",
     "beta:status": "tsx src/scripts/beta-status.ts",
     "beta:status:prod": "tsx src/scripts/beta-status.ts --prod",
+    "beta:remind": "tsx src/scripts/send-beta-reminders.ts",
+    "beta:remind:prod": "tsx src/scripts/send-beta-reminders.ts --prod",
     "email:update": "tsx src/scripts/send-product-update.ts",
     "email:update:prod": "tsx src/scripts/send-product-update.ts --prod",
     "ops:status": "tsx src/scripts/ops.ts status",
