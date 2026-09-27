@@ -38,7 +38,9 @@
     "verify:preflight": "node scripts/verify-production-readiness.js",
     "prisma:generate": "npm run prisma:generate --prefix apps/api",
     "prisma:deploy": "npm run prisma:deploy --prefix apps/api",
+    "prisma:deploy:prod": "node scripts/deploy-prod-migrations.js",
     "prisma:push": "npm run prisma:push --prefix apps/api",
+
     "prisma:studio": "npm run prisma:studio --prefix apps/api",
     "db:truncate": "npm run db:truncate --prefix apps/api",
     "beta:invite": "npm run beta:invite --prefix apps/api --",

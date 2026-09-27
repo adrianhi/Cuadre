@@ -1,5 +1,18 @@
+const path = require('path');
+const fs = require('fs');
+const dotenv = require('dotenv');
 const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+
+dotenv.config();
+if (process.argv.includes('--prod') && fs.existsSync(path.resolve(__dirname, '../.env.production'))) {
+  dotenv.config({ path: path.resolve(__dirname, '../.env.production'), override: true });
+  console.log('Targeting PRODUCTION database...');
+} else {
+  console.log('Targeting default/development database...');
+}
+
+const dbUrl = process.env.DIRECT_URL || process.env.DATABASE_URL;
+const prisma = new PrismaClient({ datasources: { db: { url: dbUrl } } });
 
 async function main() {
   console.log('Enabling RLS on all Supabase tables in public schema...');
@@ -12,7 +25,6 @@ async function main() {
 
   for (const table of tables) {
     await prisma.$executeRawUnsafe(`ALTER TABLE "${table}" ENABLE ROW LEVEL SECURITY;`);
-    console.log(`  ✔ RLS activado en: ${table}`);
   }
 
   // Revoke public privileges
@@ -38,4 +50,3 @@ main()
     process.exit(1);
   })
   .finally(() => prisma.$disconnect());
-
