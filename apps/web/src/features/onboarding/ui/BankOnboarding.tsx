@@ -3,6 +3,7 @@ import { Button, Card, CardContent } from '@/shared/ui';
 import { BankSelector } from '@/entities/connection';
 import { useBankOnboarding } from '../model/useBankOnboarding';
 import { FinancialBaselineStep } from './FinancialBaselineStep';
+import { CoreValueExplainer } from './CoreValueExplainer';
 
 interface BankOnboardingProps {
   authToken: string;
@@ -50,6 +51,8 @@ export function BankOnboarding({ authToken, onComplete, onLogout }: BankOnboardi
           </div>
           <Button variant="ghost" size="sm" className="gap-2" onClick={onLogout}><LogOut className="h-4 w-4" /> Salir</Button>
         </div>
+
+        <CoreValueExplainer />
 
         <Card className="overflow-hidden border-border/60 shadow-xl">
           <div className="bg-gradient-to-br from-emerald-600 to-teal-600 p-6 text-white">

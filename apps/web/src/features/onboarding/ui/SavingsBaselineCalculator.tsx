@@ -1,4 +1,4 @@
-import { PiggyBank, Sparkles, Wallet } from 'lucide-react';
+import { ArrowRightLeft, PiggyBank, Sparkles, Wallet } from 'lucide-react';
 import type { IncomeFrequency } from '@bills/contracts';
 import { formatCurrency } from '@/shared/lib';
 import { CurrencyAmountInput, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui';
@@ -180,6 +180,15 @@ export function SavingsBaselineCalculator(props: SavingsBaselineCalculatorProps)
               <span>Tu presupuesto para vivir:</span>
               <span className="text-primary">{formatCurrency(effectiveSpendingLimit, 'DOP')} / mes</span>
             </div>
+          </div>
+        )}
+
+        {calculatedMonthlySavings > 0 && (
+          <div className="flex items-start gap-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-2.5 text-[11px] text-emerald-800 dark:text-emerald-300">
+            <ArrowRightLeft className="h-4 w-4 shrink-0 mt-0.5" />
+            <span>
+              <strong>Transferencia inteligente:</strong> Al cobrar y transferir tu ahorro a tu otra cuenta, Cuadre lo asociará a tu meta y nunca se descontará como gasto.
+            </span>
           </div>
         )}
       </div>

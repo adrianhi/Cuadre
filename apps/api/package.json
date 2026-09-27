@@ -17,6 +17,7 @@
     "prisma:studio": "prisma studio",
     "db:push": "prisma db push",
     "db:truncate": "tsx src/scripts/truncate.ts",
+    "user:reset": "tsx src/scripts/reset-user.ts",
     "beta:invite": "tsx src/scripts/create-beta-invite.ts",
     "beta:invite:prod": "tsx src/scripts/create-beta-invite.ts --prod",
     "beta:status": "tsx src/scripts/beta-status.ts",
